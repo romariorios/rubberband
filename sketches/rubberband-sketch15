@@ -1,0 +1,62 @@
+Lists:
+~[:a = [| 1, 2, 3, 4, 5, 6]]    # a implicitly has been allocated with 6 elements
+~[:b = [6| 1, 2, 3, 4, 5, 6]]   # b explicitly has been allocated with 6 elements
+# ~[:c = [2| 1, 2, 3]]          # ERROR. more elements than the declared amount
+~[:d = [12| 1, 2, 3, 4, 5]]     # d has been allocated with 12 elements. The remaining 7 positions are left empty
+
+~a ?|                           # == 6
+~d ?|                           # == 12
+---
+# Subblocks and blocks or
+# Blocks and contexts or
+# Only blocks :)
+# TODO grabbing the return value from the symbol table may be dangerous
+
+~[:sqr = { ~[:% = $ * $] } []]
+~[:2sqr = ~sqr 2]
+---
+# About the return value problem...
+~[:sqr = {| $ + $ } []]     # or
+~[:sqr = { << $ + $ } []]
+
+# { whatever code << answered object }
+# { whatever code | answered object }
+# { whatever code ! answered object } <<<
+#         (or other separator)
+
+{ ~[: sqr = {! $ + $ } []] }
+# Problem solved!
+---
+Parse tree for the above
+start
+object
+block
+{ expr_list                                                                                         block_answer }
+  expr                                                                               expr_list_tail .
+  msg_send                                                                           .
+  expr   msg
+  object object
+  ~        gen_object
+           [: answer_list                                                          ]
+              answer                                              answer_list_tail
+              symbol = expr                                       .
+              sqr      msg_send
+                       expr                                msg
+                       object                              object
+                       block                               empty
+                       { expr_list block_answer          } []
+                         .         ! expr
+                                     msg_send
+                                     expr          msg
+                                     msg_send      object
+                                     expr   msg    $
+                                     object object
+                                     $      symbol
+                                            +
+---
+# Message before sender syntax
+~[:sqr = [].{!$ + $}]
+[^io]print (~sqr 2)   # or
+[^io]print 2.(~sqr)   # or
+[^io]print 2.sqr.~    # or
+2.(~sqr).(print.[^io])

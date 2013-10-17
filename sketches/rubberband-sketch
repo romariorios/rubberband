@@ -1,0 +1,186 @@
+method partition $v $left $right
+    i = left
+    for each j in range (left + 1) (right + 1) begin if v[j] < v[left] begin i += 1, v[i] = v[j], v[j] = v[i]. end
+    v[i] = v[left]
+    v[left] = v[i]
+    = i!
+
+method quicksort $v $left $right
+    if right > left
+        pivotindex = partition v left right
+        quicksort v left pivotindex - 1
+        quicksort v pivotindex + 1 right!
+
+?: ===================
+
+method quicksort $v $left $right begin if right > left begin pivotindex = partition v left right, quicksort v left pivotindex - 1, quicksort v pivotindex + 1 right!
+
+method partition $v $left $right begin i = left, foreach j in range left + 1 right + 1 begin if v[j] < v[left] begin i += 1, v[i] = v[j], v[j] = v[i]. end v[i] = v[left], v[left] = v[i], = i!
+
+?: ===================
+
+method partition $v$left$right begin i=left,foreach j in range left+1 right+1 begin if v[j]<v[left] begin i+=1,v[i]=v[j],v[j]=v[i]..end v[i]=v[left],v[left]=v[i],=i!
+method quicksort $v$left$right begin if right>left begin pivotindex=partition v left right,quicksort v left pivotindex-1,quicksort v pivotindex+1 right!
+
+?: Most of the above is outdated
+?: Base language
+?: Get a list of numbers and produce another list with the square of each one
+[+n: _ = 10]
+[+numbers: | 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+[+sqr_numbers: |n|]
+[+sqr_l: (args >> ___) {
+    [args << numbers >> numbers]
+    [args << i >> i]
+    [numbers << [*i] >> num]
+    [args << sqr_numbers >> sqr_numbers]
+    [*sqr_numbers: [*i] = [num * num]]
+    [*args: i = [i++]]
+    [args << n >> n]
+    [args << sqr_l >> sqr_l]
+    [?[i < n] : [sqr_l << args] [:]]
+}]
+[sqr_l << [: n = [*n],
+             i = 0,
+             numbers = [*numbers],
+             sqr_numbers = [*sqr_numbers],
+             sqr_l = [*sqr_l]]]
+
+?? More compact (but more cumbersome (and maybe wrong[1])) code
+[+n: _ = 10]
+[+numbers:| 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+[+sqr_numbers: |n|]
+[+sqr_l: (args >> ___) {
+    [+num: _ = [args << numbers] << [: _ = [args << i]]]
+    [num * num >> [[args << sqr_numbers] << [args << i]]] ?? [1] because of this line
+    [*args: i = [[args << i]++]]
+    [?[[args << i] < [args << n]] : [sqr_l << args] [:]]
+}]
+[sqr_l << [: n = [*n],
+             i = 0,
+             numbers = [*numbers],
+             sqr_numbers = [*sqr_numbers],
+             sqr_l = [*sqr_l]]]
+
+?: Primitive objects
+[:] ?: Empty object
+[: x = 3, y = 5] ?: A point
+[: x = 100, y = 50, width = 12, height = 24] ?: A rectangle
+[+me: age = 22, height = 1.83] ?: A named object. This object will be available in the context until it's deleted
+[: _ = 22] ?: A number
+(: Note: the pure "22" token represents the number 22. In order to make it _variable_, to pass it around
+   and to manipulate it, we need to create a _reference_ to the number 22, so that, when it's modified,
+   the only needed thing to do will be change the referenced number (it works differently in the
+   background, but that's basically the idea) :)
+[: _ = 'c] ?: A character
+[: _ = \231] ?: Another character
+[: _ = age] ?: A symbol
+(: Symbols have nothing to do with characters. Internally the symbol "age" does not contain any of the
+   characters "a", "g" or "e". Instead, it's evaluated in creation-time and reduced to a pointer in a tree. :)
+[:| 1, 2, 3, 4] ?: A list. Internally, it's an array, so it does not change in size during its lifetime
+[:|5| 12, 8, ha] ?: Another list. Its size is defined by the value between the bars
+[:|5| 12, 8, ha, [:], [:]] ?: Same as the above
+[:| 12, 8, ha, [:], [:]] ?: Also the same as the above
+[: (message >> answer) { [+answer: _ = message] }] ?: A block. It gets the message (which can be any object),
+                                                   ?: executes and returns the defined answer object. If
+                                                   ?: answer is not defined inside the block, it defaults to [:]
+[+name :| 'R, 'o, 'm, \225, 'r, 'i, 'o, \0] ?: C-like string.
+[*me : +name = [*name]] ?: The "me" object is now [: age = 22, height = 1.83, name = [:| 'R, 'o, 'm, \225, 'r, 'i, 'o, \0]]
+[/"$cstr:str;" : (>> _str) { [str << _ >> _str] }] ?: Definition of a string literal
+[*me : name = "Luiz"] ?: Attribution using the newly created syntax
+[-name] ?: Deleted the old "name" object, which is not in use anymore
+
+?: A "class". Speed's base language has no built-in class support, but you can make a factory object, which
+?: is essentially the same
+[+point:
+    new = [: (params >> n_point, +point) {
+        [+n_point:
+            x = [params << 0],
+            y = [params << 1],
+            plus = [: (other_point >> result, +point, +n_point) {
+                [point << [:| [[n_point << x] + [other_point << x]],
+                              [[n_point << y] + [other_point << y]]] >> result]
+            }]
+            minus = [: (other_point >> result, +point, +n_point) {
+                [point << [:| [[n_point << x] - [other_point << x]],
+                              [[n_point << y] - [other_point << y]]] >> result]
+            }]
+        ]
+    }]
+]
+
+[[point << new] << [:| 110, 82] >> topleft]
+[[point << new] << [:| 975, 523] >> bottomright]
+[[bottomright << minus] << topleft] ?: Returns a [: x = 865, y = 441, ...] object
+
+?? === The syntax used above is obsolete ===
+
+?? basic object operations:
+[obj << msg]: response of the message msg to the object obj (THIS)
+[name -> obj]: assing or reassign object to name (name must be a symbol, returns empty) (THIS)
+[obj1 << msg -> obj2]: redefines the response of obj to msg as obj2 (fails if forbidden by the object, returns empty)
+[<- name]: reference to the object assigned to name (name must be a symbol) (THIS)
+[+ obj]: copy of obj (THIS)
+[- obj]: destroy obj (THIS)
+[: attr1=obj1, attr2=obj2]: new struct object (THIS)
+[| obj1, obj2, obj3]: new list object (THIS)
+[(<- ret, << msg) { ?: set of operations :? }]: new block object
+
+?? Syntax operations:
+?? TODO (previous idea: [/ parserblock])
+
+?? Arithmetic operations (return a number):
+[=op num1, num2] (op can be: +, -, *, /, %, << and >>) (THIS)
+
+?? Boolean operations (return the true symbol or the false symbol) (THESE):
+[?=op num1, num2] (op can be: <, >, <=, >=, =)
+[?~ obj1, obj2] (compare values), [?~= obj1, obj2] (compare objects)
+[?! sym]: if sym is true, returns false and vice versa
+[?| sym1, sym2]: or operation
+[?& sym1, sym2]: and operation
+
+?? Control operations (return the object returned by the chosen block):
+[^ sym, block1, block2, msg] (THIS)
+
+?? ex:
+?? A while loop
+[i -> [: val=0]]
+[while > [(<, << msg) {
+    [i -> [msg << i]]
+    [^ [?=< [i << val], 10], [(<-, << msg) {
+        [i -> [msg << i]]
+        [i << val -> [=+ [i << val], 1]]
+        [[msg << while] << [: i=[<- i], while=[msg << while]]]
+    }], [(<-, <<) {}], [: i=[<- i], while=[msg << while]]]
+}]]
+[[<- while] << [: i=[<- i], while=[<- while]]]
+
+[/name, parent, block] ?? Syntax handler (returns empty)
+[//name] ?? External handler declared for use inside some handler
+
+?? Example:
+
+[foreach > [(<, << args) {
+    [i -> 0]
+    [loop > [(<, << args) {
+        [size > [[< args] << size]]
+        [i > [[< args] << i]]
+        [list > [[< args] << list]]
+        [[[<- args] << block] << [: it = [[<- list] << [<- i]]]]
+        [^ 
+            [?=< [<- i], [<- size]],
+            [[<- loop] << [: size = [[<- args] << size], i = [=+ [<- i], 1]]],
+            [(<-, <<) {}]
+        ]
+    }]]
+    [loop << [: size = [[<- args] << size], i = [<- i], list = [[<- args] << list], loop = [<- loop]]]
+}]]
+
+[/main, [:], [(retblock <-, << context) {
+    [//lexer]
+    [tokens ->
+        [[<- lexer] << [[<- context] << text]]
+    ]
+    [retblock ->
+        
+    ]
+}]]

@@ -1,0 +1,20 @@
+~:while = & <do >condblk ~ + : {
+    ~:do = & <>execblk ~ {
+        ~condblk::
+        ~istrue? {
+            ~execblk::
+            @::
+        } else {}
+    }
+}
+---
+~:while = & ~ + : {
+    ~:% = & ~ + : condblk = $ {
+        ~condblk::
+        ~istrue? {
+            ~execblk::
+            @::
+        } {}
+    }
+}
+

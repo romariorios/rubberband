@@ -1,0 +1,72 @@
+Short syntax:
+[obj << msg] -> obj msg
+[[obj << msg1] << msg2] -> obj msg1 msg2
+[obj1 << [obj2 << msg]] -> obj1 (obj2 msg2)
+---
+New syntax: [symb -> obj] -> [symb ~> obj]
+[symb ~> obj] -> symb ~> obj
+---
+New syntax: [<- symb] -> [~ symb]
+[~ symb] -> ~symb
+---
+New syntax: [(<- ret, << msg) { ?: body :? }] -> [(~ret, msg) { ?: body :? }]
+[(~ret, msg) { ?: body :? }] -> (~ret, msg) { ?: body :? }
+(brackets are redundant in this case, since the curly brackets already indicate the end of the block definition)
+or
+[(~ret, msg) { ?: body :? }] -> [(~ret, msg) ?: body :?]
+---
+?? Example (while loop):
+?? Old syntax
+[i -> [: val=0]]
+[while -> [(<-, << msg) {
+    [i -> [[<- msg] << i]]
+    [^ [?=< [[<- i] << val], 10], [(<-, << msg) {
+        [i -> [[<- msg] << i]]
+        [[<- i] << val -> [=+ [[<- i] << val], 1]]
+        [[[<- msg] << while] << [: i=[<- i], while=[[<- msg] << while]]]
+    }], [(<-, <<) {}], [: i=[<- i], while=[[<- msg] << while]]]
+}]]
+[[<- while] << [: i=[<- i], while=[<- while]]]
+
+?? New syntax
+i ~> [: val = 0]
+while ~> (~, msg) {
+    i ~> ~msg i
+    [^ [?=< ~i val, 10], (~, msg) {
+        i ~> ~msg i
+        ~i val ~> [=+ ~i val, 1]
+        ~msg while [: i = ~i, while = ~msg while]
+    }, [(<-, <<) {}], [: i = ~i, while = ~msg while]]
+}
+~while [: i = ~i, while = ~while]
+
+?? or
+i ~> [: val = 0]
+while ~> [(~, msg)
+    i ~> ~msg i
+    [^ [?=< ~i val, 10], [(~, msg)
+        i ~> ~msg i
+        ~i val ~> [=+ ~i val, 1]
+        ~msg while [: i = ~i, while = ~msg while]
+    ], [(<-, <<) {}], [: i = ~i, while = ~msg while]]
+]
+~while [: i = ~i, while = ~while]
+
+?? But does the new syntax work?
+sqrt_of_2 ~> (~xsqrd, x) {
+    xsqrd ~> [=* ~x, ~x]
+} 2
+
+or
+
+sqrt_of_2 ~> [(~xsqrd, x)
+    xsqrd ~> [=* ~x, ~x]
+] 2
+
+or
+
+sqrt_of_2 ~> [~xsqrd, x {
+    xsqrd ~> [=* ~x, ~x]
+}]
+
+?? Yes, it does (but maybe the braces will cause some confusion in the parser, since they will be used to solve ambiguities)

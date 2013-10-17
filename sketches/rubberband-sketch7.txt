@@ -1,0 +1,9 @@
+# Modifying an object
+# Just send it another object with the new fields :D
+~[: obj1 = [: x = 100, y = 200 ] ]
+~obj1 [: z = 60 ] # obj1 now points to [: x = 100, y = 200, z = 60 ]
+~obj1 [: x = ~obj1 x + 50 ] # obj1 now points to [: x = 150, y = 200, z = 60 ]
+~obj1 [: y = [] ] # obj1 now points to [: x = 150, z = 60 ]
+~[: self = ~ ] # We just renamed the self-reference
+~self obj1 # The same as ~obj1
+~self [: obj1 = [] ] # obj1 now points to empty

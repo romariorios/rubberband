@@ -1,0 +1,37 @@
+# ~: reference to self
+# (think about "context" and "block" names
+# contexts ([<, >]) copy the parent context
+# blocks ({}) reference the parent context
+# the message :: (maybe) executes the block returning empty
+~load "core"
+
+fib30 = [<fib, >n {
+    (n > 1)? [| {
+        fib = ~(n - 1) + (~(n - 2))
+    }, {
+        fib = n
+    }]
+}] 30
+
+n2 = [: + = [<res, >x { res = __core_arith [| +, 2, x] } ] ]
+n2 + 5 ?? Equals 7
+n2 + ?? Equals [<res, >x { res = __core_arith [| +, 2, x] } ]
+---
+if cond a
+\/
+if = [<fun, >cond {
+    __core_decision [| cond, {
+        fun = [<, >bl { bl:: }]
+    }, {
+    }]
+}]
+\/
+__core_decision [| cond, a, {}]
+---
+boolean? [| a, b]
+Ex:
+(n > 1)? [| {
+    fib = ~(n - 1) + (~(n - 2))
+}, {
+    fib = n
+}]

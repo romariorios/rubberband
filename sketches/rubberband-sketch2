@@ -1,0 +1,92 @@
+symbol
+2
+[:]
+[|]
+--- General rules ---
+static <class>::create(<relevant args>): must construct new data
+<class>::copy(): returns a copy of the object, if it's copiable
+<class>::msg(message): returns an answer to the message
+<class>::reassgn_msg(message, object): tells the object to reassign the given message to the given object
+<class>::destroy(): deallocs the object, if possible
+--- How to represent the symbol as an object ---
+symboltree
+   *
+ / | \
+a  s  t
+   |  |
+   p  e
+      | \
+      s  x
+      |  |
+      t  t <~ symbol_node (represents the symbol "text")
+
+symbol {
+    data: symbol_node
+}
+
+static symbol::create(name): parses name and returns the symbol containing the symbol_node which represents name
+symbol::copy(): returns this, impossible to copy symbol
+symbol::msg(message):
+    returns empty if message is not a symbol
+    returns true or false if message is equal to this
+symbol::reassgn_msg(message, object): does nothing, returns empty
+symbol::destroy(): does nothing, impossible to destroy symbol; returns empty
+--- How ro represent the number as an object ---
+number {
+    data: double
+}
+
+static number::create(double): stores the double-precision number in data
+number::copy(): returns this, impossible to copy number
+number::msg(message):
+    accepts a [|op, num] list, in which op is a valid operator symbol (+, -, *, /, **, %, etc.) and num is another number; returns the result
+    (or accepts a symbol, which returns a block, which accepts numbers as arguments, then, returning the result)
+    accepts a [|comp, num] list, in which comp is a valid comparison operator symbol (<=, >=, <, etc.) and num is another number; returns the symbols true or false
+    also accepts empty, returning this
+    returns empty otherwise
+number::reassgn_msg(message, object): does nothing; returns empty
+number::destroy(): does nothing, returns empty
+--- How to implement object ---
+object_data {
+    int alloc
+    int size
+    symbol *names
+    object *values
+}
+
+object {
+    data: object_data
+}
+
+static object::create(size, names, values):
+    creates the object; if size == 0, data is left empty, otherwise:
+     - creates a new object_data, allocating new names and values
+     - starts ordering names: executes a quicksort partition, sorted by names, filling names and values
+     - executes an in-place quicksort in the resulting arrays
+     - assigns the new object_data to data
+object::copy(): shallow-copies the object
+object::msg(member): if member is a symbol and the object has a member[1] on that symbol, returns a reference to that member; otherwise, returns empty
+    [1] a binary search is conducted in the names array; that's why it has to keep ordered
+object::reassgn_msg(member, obj): 
+    if member is not a symbol, returns empty; otherwise:
+     - if member exists in this object, the object it already points to has its refcount decremented and obj takes its place
+     - if member does not exist, insert new member:
+         * if size == alloc, create a new symbol array and a new value array, both double the size of the original size
+         *    populate the new arrays ordered by names
+         * otherwise, just insert the new item orderly
+object::destroy(): deletes object from memory
+--- How to implement list ---
+list_data {
+    int size
+    object *values
+}
+
+list {
+    data: list_data
+}
+
+static list::create(size, values): if size == 0, data is left empty, otherwise, copies values to the new object
+list::copy(): create shallow copy
+list::msg(index): returns empty if index is not a number or if it's out of range; otherwise, returns the object in index
+list::reassgn_msg(index, obj): if index is out of range, this does nothing; otherwise, replaces the object in index for obj
+list::destroy(): deletes list

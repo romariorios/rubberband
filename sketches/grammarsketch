@@ -1,0 +1,88 @@
+Non-terminals start with :
+_ is empty string
+:program -> :expr_list
+:expr_list -> _ | :expr_list_tail
+:expr_list_tail -> :expr | :expr STM_SEP :expr_list_tail
+:expr -> :attr | :msg_send | :symb_eval | :object | (:expr)
+:attr -> symbol ~> :expr
+:msg_send -> :expr :msg
+:msg -> :attr | :symb_eval | :object | (:expr)
+:symb_eval -> ~symbol
+:object -> symbol | number | :membered_object | :list | :block
+:membered_object -> [\: :memb_obj_list ]
+:memb_obj_list -> _ | :memb_obj_list_tail
+:memb_obj_list_tail -> :member_def | :member_def, :memb_obj_list_tail
+:member_def -> symbol = :expr
+:list -> [\| :list_element_list ]
+:list_element_list -> _ | :list_element_list_tail
+:list_element_list_tail -> :expr | :expr, :list_element_list_tail
+:block -> [(~symbol, symbol) :expr_list ]
+
+(example)
+?? xyswitched will be [: x = 30, y = 20]
+xyswitched ~> [(~yx, xy)
+    yx ~> [: x = ~xy y, y = ~xy x]
+] [: x = 20, y = 30]
+
+Parse tree:
+:program
+:expr_list
+:expr_list_tail
+:expr
+:attr
+symbol     ~> :expr
+xyswitched    |
+              :msg_send
+              :expr                                                                                           :msg
+              :object                                                                                         |
+              :block                                                                                          |
+              [(~symbol, symbol) :expr_list                                                                 ] |
+                 yx      |       |                                                                            |
+                         xy      |                                                                            |
+                                 :expr_list_tail                                                              |
+                                 :expr                                                                        |
+                                 :attr                                                                        |
+                                 symbol ~> :expr                                                              |
+                                 yx        |                                                                  |
+                                           :object                                                            |
+                                           :membered_object                                                   |
+                                           [\: :memb_obj_list                                             ]   |
+                                               :memb_obj_list_tail                                            |
+                                               :member_def                  , :memb_obj_list_tail             |
+                                               symbol = :expr                 |                               |
+                                               x        |                     |                               |
+                                                        :msg_send             |                               |
+                                                        :expr        :msg     |                               |
+                                                        :symbol_eval |        |                               |
+                                                        ~symbol      |        |                               |
+                                                         xy          |        |                               |
+                                                                     :object  |                               |
+                                                                     symbol   |                               |
+                                                                     y        |                               |
+                                                                              :member_def                     |
+                                                                              symbol = :expr                  |
+                                                                              y        |                      |
+                                                                                       :msg_send              |
+                                                                                       :expr        :msg      |
+                                                                                       :symbol_eval |         |
+                                                                                       ~symbol      |         |
+                                                                                        xy          |         |
+                                                                                                    :object   |
+                                                                                                    symbol    |
+                                                                                                    x         |
+                                                                                                              :object
+                                                                                                              :membered_object
+                                                                                                              [\: :memb_obj_list                       ]
+                                                                                                                  :memb_obj_list_tail
+                                                                                                                  :member_def     , :memb_obj_list_tail
+                                                                                                                  symbol = :expr    |
+                                                                                                                  x        |        |
+                                                                                                                           :object  |
+                                                                                                                           number   |
+                                                                                                                           20       |
+                                                                                                                                    :member_def
+                                                                                                                                    symbol = :expr
+                                                                                                                                    y        |
+                                                                                                                                             :object
+                                                                                                                                             number
+                                                                                                                                             30

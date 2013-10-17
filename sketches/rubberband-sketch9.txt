@@ -1,0 +1,87 @@
+# More simplifications
+[: a=100,b=200 ] -> : a=100, b=200 or
+                    : a=100, b=200. or
+                    : a=100, b=200 ]
+[| 1, 2, 3 ] -> | 1, 2, 3 or
+                | 1, 2, 3.
+                | 1, 2, 3 ]
+[<a >b [:] {}] -> & :] {} (Inside the block: ~ is the symbol table, $ is the argument, ~% is the answer)
+~ is the symbol table of the current block
+@ is a reference to the current block
+---
+~:a =| 1, 2, 3
+~a 1                 # == 2                   (getting an element)
+~:b = ~a + | 4, 5    # ~b == | 1, 2, 3, 4, 5  (concatenating two arrays)
+~b ?|                # == 5                   (length)
+~b|4, 6              # ~b == | 1, 2, 3, 4, 6  (modifying an element)
+~:c = ~b /| 1, 3     # ~c == | 2, 3, 4        (slicing)
+---
+(New attempt at syntax)
+~:a = 1, 2, 3.
+~a 1
+~:b = ~a + |4, 5
+~b ?|
+~b|4, 6
+~c = ~b / |1, 3
+~:obj = : prop1 = 51, prop2 = 100, prop3 = 200. obj2 = 1, 2, 3
+~obj ?|
+~obj2 ?|
+(End of new attempt)
+---
+~:obj =: prop1 = 51, prop2 = 100, prop3 = 200
+~obj ?:              # == | prop1, prop2, prop3
+---
+~ :merge = & :] {
+    
+}.
+---
+(New if syntax)
+~n < 2? :
+    ++ = &~ { ~:% = ~n },
+    -- = &~ { ~:% = 2 }.
+---
+~:fib = & : fnum = | 0, 1, 1 ]. {
+    ~:n = 2
+    ~:arg = $
+    ~:sfnum = &:] { ~:n = $; ~n < 2? &~ { ~:% = ~n } &~ { ~:% = 2 } }
+    ~:shift = &~ {
+        ~n <= (~arg)? {
+            ~:% = ~fnum (~sfnum (~n))
+        } &~ {
+            ~fnum|0, ~fnum 1.
+            ~fnum|1, ~fnum 2.
+            ~fnum|2, ~fnum 0 + (~fnum 1).
+            ~shift []
+        }
+    }
+}.
+---
+List:
+ - Full syntax = | 1, 2, 3, 4, 5 |
+ - Indicate the start only = | 1, 2, 3, 4, 5
+ - Indicate the end only = 1, 2, 3, 4, 5 |
+ - Indicate neither = 1, 2, 3, 4, 5
+ - Empty list = ||
+Generic object:
+ - Full syntax = : prop1 = 1, prop2 = 2, prop3 = 3.
+ - Empty generic object = :.
+---
+~:fib -> & :fnum -> 0, 1, 1. {
+    ~:n -> 2
+    ~:arg -> $
+    ~:sfnum -> &:. { ~:n -> $; ~n < 2? &~ { ~:% -> ~n } &~ { ~:% -> 2 } }
+    ~:shift -> &~ {
+        ~n <= (~arg)? {
+            ~:% -> ~fnum (~sfnum (~n))
+        } &~ {
+            ~fnum|0, ~fnum 1
+            ~fnum|1, ~fnum 2
+            ~fnum|2, ~fnum 0 + (~fnum 1)
+            ~shift []
+        }
+    }
+}.
+
+~:io -> ^"io"
+~io print (~fib 20)
+

@@ -1,0 +1,29 @@
+O: The object space
+Functions:
+  msg: O x O |--> O
+---
+_: The empty object (_ is a member of O)
+msg(_, o) = _, for every o in O
+
+S: The symbol space (S is contained in O)
+_ is not a member of S
+s_true is a member of S
+s_false is a member of S
+s_true != s_false
+
+Let s in S, o in O
+            s_true   iff o is a member of S and o = s
+msg(s, o) = s_false  iff o is a member of S and o != s
+            _        iff o is not a member of S
+
+R: The real numbers (number space, R is contained in O)
+_ is not a member of R
+S is not contained in R
+
+Let n in R, o in O, s_gt in S, s_eq in S, s_lt in S
+            s_gt  iff o is a member of R and n > o
+            s_eq  iff o is a member of R and n = o
+msg(n, o) = s_lt  iff o is a member of R and n < o
+            _     iff o is not a member of R
+
+L: The list space (L is a member of O)

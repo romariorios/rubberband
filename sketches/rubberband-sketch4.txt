@@ -1,0 +1,8 @@
+empty: non-modifiable, static properties
+symbols: non-modifiable, static properties
+numbers: non-modifiable, static properties
+---
+variables (?): modifiable, static properties
+lists: modifiable, non-resizable, static properties
+objects: modifiable, can remove or add properties, has some static properties
+blocks: non-modifiable after initialization

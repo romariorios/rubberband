@@ -1,0 +1,207 @@
+Rubberband plan:
+ - Gather all the sketches together in this list
+ - Define each base object and all the messages they will respond to
+   (Note: if an object receives an unexpected message, it answers Empty and does nothing)
+   * Boolean
+     Lexemes: [true] | [false] (TODO change to generic symbols)
+     Expected messages:
+     ° == (Symbol)
+       Answer:  Block
+         Expects: Boolean "a"
+         Answer:  True if both Booleans are equal, false otherwise
+     ° != (Symbol)
+       Answer:  Block
+         Expects: Boolean "a"
+         Answer:  False if both Booleans are equal, true otherwise
+     ° ? (Symbol)
+       Answer:  Block
+         Expects: Block "a"
+         Answer:  Block
+           Expects: Block "b"
+           Does:    Runs "a" if the Boolean is true; runs "b" if the Boolean is false
+           Answer:  Empty
+   * Empty
+     Lexemes: [\[][\]]
+     Expected messages:
+     ° == (Symbol)
+       Answer:  Block
+         Expects: Object
+         Answer:  True if the Object is Empty, false otherwise
+     ° != (Symbol)
+       Answer:  Block
+         Expects: Object
+         Answer:  False if the Object is Empty, true otherwise
+   * Number
+     Lexemes: [0-9]+ ([\.][0-9]+)?
+     Expected messages:
+     ° == (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  True if both Numbers are equal, false otherwise
+     ° != (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  False if both Numbers are equal, true otherwise
+     ° > (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  True if the Number is greater than "a", false otherwise
+     ° < (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  True if the Number is less than "a", false otherwise
+     ° <= (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  True if the Number is less than or equal to "a", false otherwise
+     ° >= (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  True if the Number is greater than or equal to "a", false otherwise
+     ° + (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  The Number plus "a"
+     ° - (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  The Number minus "a"
+     ° * (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  The Number times "a"
+     ° / (Symbol)
+       Answer:  Block
+         Expects: Number "a"
+         Answer:  The Number divided by "a"
+   * Symbol
+     Lexemes: [a-zA-Z_] [a-zA-Z0-9_]* | ([=] | [!]) [=] | ([<] | [>]) [=]? | [+] | [\-] | [*] | [/] | [?][|]?
+     Expected messages:
+     ° == (Symbol)
+       Answer:  Block
+         Expects: Symbol "a"
+         Answer:  True if the Symbol is equal to "a", false other wise
+     ° != (Symbol)
+       Answer:  Block
+         Expects: Symbol "a"
+         Answer:  False if the Symbol is equal to "a", true other wise
+   * List
+     Syntax: [\[] {Object}? [|] (({Object} [\,])* {Object})? [\]]
+     Expected messages:
+     ° == (Symbol)
+       Answer: Block
+         Expects: Object
+         Answer: True if the Object is this List. False otherwise
+     ° != (Symbol)
+       Answer: Block
+         Expects: Object
+         Answer: False if the Object is this List. True otherwise
+     ° Number
+       Answer: The Object at the position of the number. Empty if there's no number in that position
+     ° List "a"
+       Does: Makes this list's position defined at "a"'s first element point to the object at "a"'s second position
+       Answer: Empty
+     ° ?| (Symbol)
+       Answer: The list length (a Number)
+     ° + (Symbol)
+       Answer: Block
+         Expects: List "a"
+         Answer: This List and List "a" concatenated
+     ° / (Symbol)
+       Answer: Block
+         Expects: List "a"
+         Answer: Slice the amount of elements indicated by "a"'s second element starting from the position indicated by "a"'s first element
+   * Block
+     Syntax: [\{] ({Msgchain} ({Separator} {Msgchain})*)? ([!] {Msgchain}?)? [\}]
+     Expected messages:
+     ° Generic object
+       Answer: Block "a"
+         Expects: Object
+         Does: Passes the Object as the argument ($) of this block and executes it
+         Answer: The Object that results from the Msgchain after the exclamation mark
+   * Generic object
+     Syntax: [\[] [\:](({Object} [=] {Object} [\,])* {Object} [=] {Object})? [\]]
+     Expected messages:
+     ° == (Symbol)
+       Answer: Block
+         Expects: Object
+         Answer: True if the Object is this Generic object. False otherwise
+     ° != (Symbol)
+       Answer: Block
+         Expects: Object
+         Answer: False if the Object is this Generic object. True otherwise
+     ° + (Symbol)
+       Answer: Block
+         Expects: Generic object "a"
+         Answer: This Generic object and "a" concatenated
+     ° ?: (Symbol)
+       Answer: List containing the symbols to which this Generic object responds
+     ° Symbol
+       Answer: If it isn't any of the symbols above, the Object to which this Symbol points
+     ° Generic object "a"
+       Does: Unites "a" into this Generic object
+       Answer: Empty
+   * External object
+     Syntax: [\[] [\^]{Symbol} [\]]
+     Expected messages: All defined in the object
+ - Define the language syntax
+   * Grammar
+     start -> object
+     object -> boolean | empty | number | symbol | list | block | gen_object | ext_object | \~ | \$
+     boolean -> \true | \false
+     empty -> \[]
+     number -> [0-9]+([\.][0-9]+)?
+     symbol -> [a-zA-Z_] [a-zA-Z0-9_]* | ([=] | [!]) [=] | ([<] | [>]) [=]? | [+] | [\-] | [*] | [/] | [?][|]?
+     expr -> object | msg_send
+     msg_send -> expr msg
+     msg -> object | \( expr \)
+     list -> \[ list_size \| list_elements \]
+     list_size -> expr | $/
+     list_elements -> expr list_elements_tail | $
+     list_elements_tail -> \, expr list_elements_tail | $
+     block -> \{ expr_list block_answer \}
+     expr_list -> expr expr_list_tail | $
+     expr_list_tail -> separator expr expr_list_tail | $
+     block_answer -> \! expr | $
+     gen_object -> \[ \: answer_list \]
+     answer_list -> answer answer_list_tail | $
+     answer_list_tail -> \, answer answer_list_tail | $
+     answer -> symbol \= expr
+     ext_object -> \^ symbol
+   * Semantics
+     Boolean: True and false. It's meant to handle control structures.
+     Empty: The void. Answers itself to any message.
+     Number: A number. Implements arithmetic stuff.
+     Symbol: It's used as a label of objects.
+     List: [size| element1, element2, element3, ...]
+     ° Creates a list of size "size" with the defined objects as elements. If a size isn't specified, the list will be the size of the amount of elements.
+       If size is smaller than the amount of elements passed, the last elements which don't fit the list will simply be ignored. If size is bigger than the
+       amount of elements passed, the remaining spaces remain empty in the list. Trying to get an out-of-range element will return empty. Note that the size
+       of a list cannot change during its lifetime; trying to make an out-of-bounds position point to any object will have no effect. Also, the length of
+       a list is the length with which it was created, not the amount of non-empty elements it contains. Apart from that, every list is mutable -- in the
+       sense that the user can change its elements.
+     Block: { ~object1 $ msg1; ~object2 $ msg2; ... ! ~answer } or
+     { ~object1 $ msg1
+       ~object2 $ msg2
+       ...
+       ! answer }
+     ° Creates a block of code that executes the passed statements and, then, returns the object defined after the exclamation mark. Inside a block, there
+       are two special objects: ~ and $. ~ is meant to be the block's symbol table, where the variables are stored to and retrieved from. It's undefined until
+       a message is sent to this object. When this object receives a message, it sets that message as the ~ of this block and returns it. This returned
+       object is the true executable block. Any message it receives is passed inside the block as the $ upon execution. Worth noting is that, although ~
+       is meant to be a generic object, you can pass any object to it if you want (even an empty one). Every block is mutable.
+     Generic object: [: msg1 = obj1, msg2 = obj2, ...]
+     ° Maps symbols to objects. There are no guarantees of the order of the symbols. Note that pointing a symbol which is already used by the object (like :?)
+       has no effect.
+     External object: [^external]
+     ° Loads an object defined outside the context of the current program. The way the object is constructed (and brought into the current context) is up to
+       the interpreter, which may look for files inside a predefined directory.
+ - Define the source code dir structure
+   /
+   /LICENSE -- License
+   /sketches -- Already there
+   /src -- Source files
+   /src/core -- Core rubberband files
+   /src/core/objects.{h|c}pp -- The base objects defined above
+   /src/interpreter -- Files for the interpreter
+ - Starting coding the base objects (Yay!)

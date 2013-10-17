@@ -1,0 +1,30 @@
+~[: sqr = [& [:] { ~:% = $ * $ }]]
+~: sqr = & :] { ~:% = $ * $ }]]
+---
+: enter generic object input mode
+| enter list input mode
+& enter block input mode
+{ enter subblock input mode
+If an invalid command is entered for the current mode, the current input mode is ended and the command is tried again at the upper level
+---
+ex.:
+~ # The symbol table (valid command for a block)
+~: # Entering the generic object input mode, expecting symbol
+~: first_primes # Valid symbol, input accepted, expecting = sign
+~: first_primes = # = sign, input accepted, expecting any object
+~: first_primes = | # Entering list input mode, expecting any object
+~: first_primes = | 2 # Got number, input accepted, expecting a comma
+~: first_primes = | 2, # Got comma, input accepted, expecting any object
+~: first_primes = | 2, 3 # Got number, input accepted, expecting a comma
+~: first_primes = | 2, 3, # Got comma, input accepted, expecting any object
+~: first_primes = | 2, 3, 5 # Got number, input accepted, expecting a comma
+~: first_primes = | 2, 3, 5
+# Got newline, input rejected, list input mode ended, putting newline at the end of the generic object input queue
+~: first_primes = | 2, 3, 5
+# Got list, input accepted, expecting a comma
+~: first_primes = | 2, 3, 5
+# Got newline, input rejected, generic object input ended, putting newline at the end of the subblock input queue
+~: first_primes = | 2, 3, 5
+# Got generic object, input accepted, expecting object or newline
+~: first_primes = | 2, 3, 5
+# Got newline, input accepted, expecting any object or newline

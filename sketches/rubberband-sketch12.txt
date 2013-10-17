@@ -1,0 +1,19 @@
+~:load = ^"load"
+~load base ~
+
+~:point = ~class:
+    init = : x = number, y = number, def = {
+        ~self x = ~args x
+        ~self y = ~args y
+    },
+    + = : other = point, def = {
+        ~self x = ~self x + (~other x)
+        ~self y = ~self y + (~other y)
+    },
+    - = : other = point, def = {
+        ~self x = ~self x - (~other x)
+        ~self y = ~self y - (~other y)
+    }.
+
+~:a = ~point new: x = 150, y = 200.
+~:b = ~point new: x = 300, y = 400.
