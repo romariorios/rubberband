@@ -179,42 +179,43 @@ double number_to_double(const object &num)
         num.__value.floating : (double) num.__value.integer;
 }
 
-// TODO Join eq and ne (and gt and lt, etc.) in a single function or macro
-SEND_MSG(number_comp_eq)
+object compare_numbers(const object &thisobj, const object &msg,
+                       bool (*cmp_int)(long, long), bool (*cmp_float)(double, double))
 {
-    if (!msg.__value.type & value_t::number_t)
+    if (!thisobj.__value.type & value_t::number_t)
         return empty();
-    
-    if (thisptr->__value.type == value_t::integer_t &&
-        msg.__value.type == value_t::integer_t
-    ) {
-        return boolean(thisptr->__value.integer == msg.__value.integer);
-    }
-    
-    double this_val = number_to_double(*thisptr);
-    double msg_val = number_to_double(msg);
-    
-    return boolean(this_val == msg_val);
-}
-OBJECT_METHODS_NO_DATA(number_comp_eq)
 
-SEND_MSG(number_comp_ne)
-{
-    if (!msg.__value.type & value_t::number_t)
-        return empty();
-    
-    if (thisptr->__value.type == value_t::integer_t &&
+    if (thisobj.__value.type == value_t::integer_t &&
         msg.__value.type == value_t::integer_t
     ) {
-        return boolean(thisptr->__value.integer != msg.__value.integer);
+        return boolean(cmp_int(thisobj.__value.integer, msg.__value.integer));
     }
-    
-    double this_val = number_to_double(*thisptr);
+
+    double this_val = number_to_double(thisobj);
     double msg_val = number_to_double(msg);
-    
-    return boolean(this_val != msg_val);
+
+    return boolean(cmp_float(this_val, msg_val));
 }
-OBJECT_METHODS_NO_DATA(number_comp_ne)
+
+#define NUMBER_COMP(operation, symbol)\
+bool number_cmp_int_##operation(long a, long b)\
+{ return a symbol b; }\
+bool number_cmp_float_##operation(double a, double b)\
+{ return a symbol b; }\
+\
+SEND_MSG(number_comp_##operation)\
+{\
+    return compare_numbers(*thisptr, msg,\
+                           number_cmp_int_##operation, number_cmp_float_##operation);\
+}\
+OBJECT_METHODS_NO_DATA(number_comp_##operation)
+
+NUMBER_COMP(eq, ==)
+NUMBER_COMP(ne, !=)
+NUMBER_COMP(lt, <)
+NUMBER_COMP(gt, >)
+NUMBER_COMP(le, <=)
+NUMBER_COMP(ge, >=)
 
 SEND_MSG(number)
 {
@@ -227,6 +228,14 @@ SEND_MSG(number)
         comp.__m = number_comp_eq_object_methods();
     else if (msg == symbol("!="))
         comp.__m = number_comp_ne_object_methods();
+    else if (msg == symbol("<"))
+        comp.__m = number_comp_lt_object_methods();
+    else if (msg == symbol(">"))
+        comp.__m = number_comp_gt_object_methods();
+    else if (msg == symbol("<="))
+        comp.__m = number_comp_le_object_methods();
+    else if (msg == symbol(">="))
+        comp.__m = number_comp_ge_object_methods();
     else
         return empty();
     
