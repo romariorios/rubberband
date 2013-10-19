@@ -1,8 +1,6 @@
 #include "tests_common.hpp"
 
-int main()
-{
-    TESTS_INIT()
+TESTS_INIT()
     
     rbb::object true_obj = rbb::boolean(true);
     rbb::object false_obj = rbb::boolean(false);
@@ -15,5 +13,4 @@ int main()
     TEST_CONDITION(true_obj.send_msg(equals).send_msg(true_obj) == true_obj, puts("(true == true) != true"))
     TEST_CONDITION(true_obj.send_msg(true_obj) == rbb::empty(), puts("Boolean responds to a boolean message (it shouldn't)"))
     
-    TESTS_END()
-}
+TESTS_END()
