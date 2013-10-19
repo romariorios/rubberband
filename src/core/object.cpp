@@ -47,6 +47,12 @@ static object_methods *typename##_object_methods() \
     return typename##_object_methods_ptr;\
 }
 
+#define OBJECT_METHODS_NO_DATA(typename)\
+DESTROY(typename) {}\
+REF(typename) {}\
+DEREF(typename) { return 0; }\
+OBJECT_METHODS(typename)
+
 using namespace rbb;
 
 struct rbb::object_methods
@@ -188,23 +194,23 @@ object rbb::number(double val)
 }
 
 // symbol: Symbol object
-// FIXME please remove these as soon as blocks are implemented
-object symbol_cmp_eq_send_msg(object *thisptr, const object &msg)
+SEND_MSG(symbol_comp_eq)
 {
     if (msg.__value.type != value_t::symbol_t)
         return empty();
     
     return thisptr->__value.symbol == msg.__value.symbol? boolean(true) : boolean(false);
 }
+OBJECT_METHODS_NO_DATA(symbol_comp_eq)
 
-object symbol_cmp_ne_send_msg(object *thisptr, const object &msg)
+SEND_MSG(symbol_comp_ne)
 {
     if (msg.__value.type != value_t::symbol_t)
         return empty();
     
     return thisptr->__value.symbol != msg.__value.symbol? boolean(true) : boolean(false);
 }
-// FIXME END
+OBJECT_METHODS_NO_DATA(symbol_comp_ne)
 
 SEND_MSG(symbol)
 {
@@ -212,12 +218,13 @@ SEND_MSG(symbol)
         return empty();
     
     object cmp_op;
+    cmp_op.__value.symbol = thisptr->__value.symbol;
     
     if (msg.__value.symbol == symbol_node::retrieve("=="))
-        cmp_op.__m->send_msg = symbol_cmp_eq_send_msg;
+        cmp_op.__m = symbol_comp_eq_object_methods();
     
     if (msg.__value.symbol == symbol_node::retrieve("!="))
-        cmp_op.__m->send_msg = symbol_cmp_ne_send_msg;
+        cmp_op.__m = symbol_comp_ne_object_methods();
     
     return cmp_op;
 }
