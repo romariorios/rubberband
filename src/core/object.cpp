@@ -68,16 +68,7 @@ SEND_MSG(noop)
 {
     return empty();
 }
-
-DESTROY(noop) {}
-REF(noop) {}
-
-DEREF(noop)
-{
-    return 0;
-}
-
-OBJECT_METHODS(noop)
+OBJECT_METHODS_NO_DATA(noop)
 
 object::object() :
     __m(noop_object_methods())
@@ -162,16 +153,7 @@ SEND_MSG(number)
     return msg;
     // TODO
 }
-
-DESTROY(number) {}
-REF(number) {}
-
-DEREF(number)
-{
-    return 0;
-}
-
-OBJECT_METHODS(number)
+OBJECT_METHODS_NO_DATA(number)
 
 // object number(long val)
 // {
@@ -228,16 +210,7 @@ SEND_MSG(symbol)
     
     return cmp_op;
 }
-
-DESTROY(symbol) {}
-REF(symbol) {}
-
-DEREF(symbol)
-{
-    return 0;
-}
-
-OBJECT_METHODS(symbol)
+OBJECT_METHODS_NO_DATA(symbol)
 
 object rbb::symbol(char* val)
 {
@@ -270,11 +243,7 @@ SEND_MSG(boolean_comp)
     
     return boolean(true);
 }
-
-DESTROY(boolean_comp) {}
-REF(boolean_comp) {}
-DEREF(boolean_comp) { return 0; }
-OBJECT_METHODS(boolean_comp)
+OBJECT_METHODS_NO_DATA(boolean_comp)
 
 SEND_MSG(boolean)
 {
@@ -297,16 +266,7 @@ SEND_MSG(boolean)
     
     return empty();
 }
-
-DESTROY(boolean) {}
-REF(boolean) {}
-
-DEREF(boolean)
-{
-    return 0;
-}
-
-OBJECT_METHODS(boolean)
+OBJECT_METHODS_NO_DATA(boolean)
 
 object rbb::boolean(bool val)
 {
