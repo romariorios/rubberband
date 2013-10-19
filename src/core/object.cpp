@@ -98,7 +98,7 @@ object::~object()
 
 bool object::operator==(const object& other) const
 {
-    if (!other.__value.type & __value.type)
+    if (!other.__value.type == __value.type)
         return false;
     
     switch (__value.type) {
