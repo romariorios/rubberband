@@ -140,10 +140,35 @@ int object::deref()
 }
 
 // empty: Empty object
+SEND_MSG(empty_cmp_eq) { return boolean(msg.__value.type == value_t::empty_t); }
+OBJECT_METHODS_NO_DATA(empty_cmp_eq)
+
+SEND_MSG(empty_cmp_ne) { return boolean(msg.__value.type != value_t::empty_t); }
+OBJECT_METHODS_NO_DATA(empty_cmp_ne)
+
+SEND_MSG(empty)
+{
+    if (msg.__value.type != value_t::symbol_t)
+        return empty();
+    
+    object cmp;
+    
+    if (msg == symbol("=="))
+        cmp.__m = empty_cmp_eq_object_methods();
+    else if (msg == symbol("!="))
+        cmp.__m = empty_cmp_ne_object_methods();
+    else
+        return empty();
+
+    return cmp;
+}
+OBJECT_METHODS_NO_DATA(empty)
+
 object rbb::empty()
 {
     object emp;
     emp.__value.type = value_t::empty_t;
+    emp.__m = empty_object_methods();
     
     return emp;
 }
