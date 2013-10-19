@@ -20,7 +20,6 @@
 #include "symbol.hpp"
 
 #include <cmath>
-#include <utility>
 
 #define SEND_MSG(typename)\
 static object typename##_send_msg(object *thisptr, const object &msg)
@@ -174,10 +173,76 @@ object rbb::empty()
 }
 
 // number: Numeric object
+double number_to_double(const object &num)
+{
+    return num.__value.type == value_t::floating_t?
+        num.__value.floating : (double) num.__value.integer;
+}
+
+// TODO Join eq and ne (and gt and lt, etc.) in a single function or macro
+SEND_MSG(number_comp_eq)
+{
+    if (!msg.__value.type & value_t::number_t)
+        return empty();
+    
+    if (thisptr->__value.type == value_t::integer_t &&
+        msg.__value.type == value_t::integer_t
+    ) {
+        return boolean(thisptr->__value.integer == msg.__value.integer);
+    }
+    
+    double this_val = number_to_double(*thisptr);
+    double msg_val = number_to_double(msg);
+    
+    return boolean(this_val == msg_val);
+}
+OBJECT_METHODS_NO_DATA(number_comp_eq)
+
+SEND_MSG(number_comp_ne)
+{
+    if (!msg.__value.type & value_t::number_t)
+        return empty();
+    
+    if (thisptr->__value.type == value_t::integer_t &&
+        msg.__value.type == value_t::integer_t
+    ) {
+        return boolean(thisptr->__value.integer != msg.__value.integer);
+    }
+    
+    double this_val = number_to_double(*thisptr);
+    double msg_val = number_to_double(msg);
+    
+    return boolean(this_val != msg_val);
+}
+OBJECT_METHODS_NO_DATA(number_comp_ne)
+
 SEND_MSG(number)
 {
-    return msg;
-    // TODO
+    if (msg.__value.type != value_t::symbol_t)
+        return empty();
+    
+    object comp;
+    
+    if (msg == symbol("=="))
+        comp.__m = number_comp_eq_object_methods();
+    else if (msg == symbol("!="))
+        comp.__m = number_comp_ne_object_methods();
+    else
+        return empty();
+    
+    comp.__value.type = thisptr->__value.type;
+    switch (thisptr->__value.type) {
+    case value_t::integer_t:
+        comp.__value.integer = thisptr->__value.integer;
+        break;
+    case value_t::floating_t:
+        comp.__value.floating = thisptr->__value.floating;
+        break;
+    default:
+        return empty();
+    }
+    
+    return comp;
 }
 OBJECT_METHODS_NO_DATA(number)
 
