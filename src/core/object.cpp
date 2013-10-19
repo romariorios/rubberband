@@ -19,6 +19,7 @@
 
 #include "symbol.hpp"
 
+#include <cmath>
 #include <utility>
 
 #define SEND_MSG(typename)\
@@ -155,22 +156,18 @@ SEND_MSG(number)
 }
 OBJECT_METHODS_NO_DATA(number)
 
-// object number(long val)
-// {
-//     object num;
-//     num.__m = number_object_methods();
-//     num.__value.type = value_t::integer_t;
-//     num.__value.integer = val;
-//     
-//     return num;
-// }
-
 object rbb::number(double val)
 {
     object num;
     num.__m = number_object_methods();
-    num.__value.type = value_t::floating_t;
-    num.__value.floating = val;
+    
+    if (val - trunc(val) != 0) {
+        num.__value.type = value_t::floating_t;
+        num.__value.floating = val;
+    } else {
+        num.__value.type = value_t::integer_t;
+        num.__value.integer = val;
+    }
     
     return num;
 }

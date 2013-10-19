@@ -75,7 +75,6 @@ private:
 
 object empty();
 
-// object &&number(long val);
 object number(double val);
 
 object symbol(char *val);
