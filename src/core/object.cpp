@@ -408,6 +408,11 @@ struct list_data
     int refc;
 };
 
+static list_data *l_data(object *thisptr)
+{
+    return reinterpret_cast<list_data *>(thisptr->__value.data);
+}
+
 static int get_index_from_obj(const object &obj)
 {
     if (obj.__value.type != value_t::number_t)
@@ -455,12 +460,20 @@ SEND_MSG(list)
     return d->arr[ind];
 }
 
-DESTROY(list) {}
-REF(list) {}
+DESTROY(list)
+{
+    delete[] l_data(thisptr)->arr;
+    delete l_data(thisptr);
+    
+}
+REF(list)
+{
+    ++l_data(thisptr)->refc;
+}
 
 DEREF(list)
 {
-    return 0;
+    return --l_data(thisptr)->refc;
 }
 
 OBJECT_METHODS(list)
@@ -480,27 +493,6 @@ object rbb::list(const object obj_array[], int size)
     
     return arr;
 }
-
-// void list::destroy()
-// {
-//     for (int i = 0; i < d->size; ++i) {
-//         delete d->arr[i];
-//     }
-//     
-//     delete d;
-// }
-// 
-// int list::deref()
-// {
-//     return --d->refc;
-// }
-// 
-// const value_t list::value() const
-// {
-//     value_t v;
-//     v.type = value_t::variable_t;
-//     v.variable = d;
-// }
 
 // TODO block
 
