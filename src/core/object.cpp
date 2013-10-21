@@ -393,6 +393,13 @@ object rbb::boolean(bool val)
     return b;
 }
 
+// Comparison for any other objects
+SEND_MSG(data_comparison_eq) { return rbb::boolean(thisptr->__value.data == msg.__value.data); }
+OBJECT_METHODS_NO_DATA(data_comparison_eq) // thisptr's data is handled in the answerer
+
+SEND_MSG(data_comparison_ne) { return rbb::boolean(thisptr->__value.data != msg.__value.data); }
+OBJECT_METHODS_NO_DATA(data_comparison_ne) // thisptr's data is handled in the answerer
+
 // list: Array of objects
 static int get_index_from_obj(const object &obj)
 {
@@ -413,6 +420,19 @@ static bool in_bounds(list_data *d, int i)
 
 SEND_MSG(list)
 {
+    if (msg.__value.type == value_t::symbol_t) {
+        object symb_ret;
+        symb_ret.__value.type = value_t::block_t;
+        symb_ret.__value.data = thisptr->__value.data;
+        
+        if (msg == symbol("=="))
+            symb_ret.__m = data_comparison_eq_object_methods();
+        if (msg == symbol("!="))
+            symb_ret.__m = data_comparison_ne_object_methods();
+        
+        return symb_ret;
+    }
+    
     int ind = get_index_from_obj(msg);
     if (ind < 0)
         return empty();
