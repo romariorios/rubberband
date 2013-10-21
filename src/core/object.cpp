@@ -184,9 +184,9 @@ double rbb::number_to_double(const object &num)
         num.__value.floating : (double) num.__value.integer;
 }
 
-object num_operation(const object &thisobj, const object &msg,
-                     object (*int_operation)(long, long),
-                     object (*float_operation)(double, double))
+static object num_operation(const object &thisobj, const object &msg,
+                            object (*int_operation)(long, long),
+                            object (*float_operation)(double, double))
 {
     if (!thisobj.__value.type & value_t::number_t)
         return empty();
