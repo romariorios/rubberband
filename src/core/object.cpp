@@ -428,6 +428,9 @@ static bool in_bounds(list_data *d, int i)
 SEND_MSG(list)
 {
     if (msg.__value.type == value_t::symbol_t) {
+        if (msg == symbol("?|"))
+            return rbb::number(l_data(thisptr)->size);
+        
         object symb_ret;
         symb_ret.__value.type = value_t::block_t;
         symb_ret.__value.data = thisptr->__value.data;
