@@ -6,6 +6,17 @@ TEST_CONDITION(\
     printf("%lf %s %lf doesn't equal %s!\n",\
            (double) num1, symb, (double) num2, eq? "true" : "false"))
 
+#define TEST_ARITH_OPERATION(num1, num2, symb, expected_result)\
+{\
+rbb::object result_ = rbb::number(num1).send_msg(rbb::symbol(symb)).send_msg(rbb::number(num2));\
+double result = rbb::number_to_double(result_);\
+double n1 = rbb::number_to_double(rbb::number(num1));\
+double n2 = rbb::number_to_double(rbb::number(num2));\
+TEST_CONDITION(\
+    result == expected_result,\
+    printf("%lf %s %lf resulted %lf (expected %lf)\n", n1, symb, n2, result, (double) expected_result))\
+}
+
 TESTS_INIT()
     TEST_CONDITION(
         rbb::number(15).__value.type & rbb::value_t::number_t,
@@ -37,4 +48,9 @@ TESTS_INIT()
     TEST_NUMBER_COMPARISON(30, 30, "<=", true)
     TEST_NUMBER_COMPARISON(12, 13, ">=", false)
     TEST_NUMBER_COMPARISON(14, 12, "<=", false)
+    
+    TEST_ARITH_OPERATION(10, 10, "+", 20)
+    TEST_ARITH_OPERATION(10, 20, "-", -10)
+    TEST_ARITH_OPERATION(5, 3, "*", 15)
+    TEST_ARITH_OPERATION(10, 3, "/", 10/3)
 TESTS_END()
