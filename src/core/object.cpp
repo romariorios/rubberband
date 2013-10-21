@@ -401,6 +401,13 @@ SEND_MSG(data_comparison_ne) { return rbb::boolean(thisptr->__value.data != msg.
 OBJECT_METHODS_NO_DATA(data_comparison_ne) // thisptr's data is handled in the answerer
 
 // list: Array of objects
+struct list_data
+{
+    const object *arr;
+    int size;
+    int refc;
+};
+
 static int get_index_from_obj(const object &obj)
 {
     if (obj.__value.type != value_t::number_t)

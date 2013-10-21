@@ -87,13 +87,6 @@ object boolean(bool val);
 
 object list(const object obj_array[], int size);
 
-struct list_data
-{
-    const object *arr;
-    int size;
-    int refc;
-};
-
 // TODO block
 
 object generic_object(const object symbol_array[], const object obj_array[], int size);
