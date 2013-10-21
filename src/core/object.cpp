@@ -403,19 +403,14 @@ OBJECT_METHODS_NO_DATA(data_comparison_ne) // thisptr's data is handled in the a
 // list: Array of objects
 struct list_data
 {
-    const object *arr;
+    object *arr;
     int size;
     int refc;
 };
 
-static list_data *l_data(object *thisptr)
-{
-    return reinterpret_cast<list_data *>(thisptr->__value.data);
-}
-
 static int get_index_from_obj(const object &obj)
 {
-    if (obj.__value.type != value_t::number_t)
+    if (!(obj.__value.type & value_t::number_t))
         return -1;
     
     int ind;
@@ -432,13 +427,15 @@ static bool in_bounds(list_data *d, int i)
 
 SEND_MSG(list)
 {
+    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
+    
     if (msg.__value.type == value_t::symbol_t) {
         if (msg == symbol("?|"))
-            return rbb::number(l_data(thisptr)->size);
+            return rbb::number(d->size);
         
         object symb_ret;
         symb_ret.__value.type = value_t::block_t;
-        symb_ret.__value.data = thisptr->__value.data;
+        symb_ret.__value.data = d;
         
         if (msg == symbol("=="))
             symb_ret.__m = data_comparison_eq_object_methods();
@@ -446,13 +443,24 @@ SEND_MSG(list)
             symb_ret.__m = data_comparison_ne_object_methods();
         
         return symb_ret;
+    } else if (msg.__value.type == value_t::list_t) {
+        list_data *msg_d = reinterpret_cast<list_data *>(msg.__value.data);
+        if (msg_d->size < 2)
+            return empty();
+        
+        int msg_ind = get_index_from_obj(msg_d->arr[0]);
+        
+        if (!in_bounds(d, msg_ind))
+            return empty();
+        
+        d->arr[msg_ind] = msg_d->arr[1];
+        
+        return empty();
     }
     
     int ind = get_index_from_obj(msg);
     if (ind < 0)
         return empty();
-    
-    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
     
     if (!in_bounds(d, ind))
         return empty();
@@ -462,18 +470,24 @@ SEND_MSG(list)
 
 DESTROY(list)
 {
-    delete[] l_data(thisptr)->arr;
-    delete l_data(thisptr);
+    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
+    
+    delete[] d->arr;
+    delete d;
     
 }
 REF(list)
 {
-    ++l_data(thisptr)->refc;
+    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
+    
+    ++d->refc;
 }
 
 DEREF(list)
 {
-    return --l_data(thisptr)->refc;
+    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
+    
+    return --d->refc;
 }
 
 OBJECT_METHODS(list)
@@ -482,9 +496,12 @@ object rbb::list(const object obj_array[], int size)
 {
     list_data *d = new list_data;
     
-    d->arr = obj_array;
+    d->arr = new object[size];
     d->size = size;
     d->refc = 1;
+    
+    for (int i = 0; i < size; ++i)
+        d->arr[i] = obj_array[i];
     
     object arr;
     arr.__value.type = value_t::list_t;
