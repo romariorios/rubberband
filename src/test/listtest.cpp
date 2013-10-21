@@ -13,4 +13,22 @@ TESTS_INIT()
     TEST_CONDITION(
         l.send_msg(rbb::symbol("?|")) == rbb::number(3),
         puts("The list doesn't correctly report its size"))
+    TEST_CONDITION(
+        l.send_msg(rbb::number(0)) == rbb::number(1),
+        puts("The list doesn't return its elements"))
+    TEST_CONDITION(
+        l.send_msg(rbb::number(1)) == rbb::number(4),
+        puts("The list doesn't return its elements"))
+    TEST_CONDITION(
+        l.send_msg(rbb::number(3)) == rbb::empty(),
+        puts("The list isn't handling out-of-bounds well"))
+    
+    rbb::object ch_0_arr[] = { rbb::number(0), rbb::symbol("number_list") };
+    rbb::object ch_0 = rbb::list(ch_0_arr, 2);
+    
+    l.send_msg(ch_0);
+    
+    TEST_CONDITION(
+        l.send_msg(rbb::number(0)) == rbb::symbol("number_list"),
+        puts("Assigning an object to a position has no effect"))
 TESTS_END()
