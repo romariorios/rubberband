@@ -76,6 +76,7 @@ private:
 object empty();
 
 object number(double val);
+double number_to_double(const object &num);
 
 object symbol(char *val);
 object symbol(const char *val);

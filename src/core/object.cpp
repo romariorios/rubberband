@@ -173,14 +173,18 @@ object rbb::empty()
 }
 
 // number: Numeric object
-double number_to_double(const object &num)
+double rbb::number_to_double(const object &num)
 {
+    if (!num.__value.type & value_t::number_t)
+        return NAN;
+    
     return num.__value.type == value_t::floating_t?
         num.__value.floating : (double) num.__value.integer;
 }
 
-object compare_numbers(const object &thisobj, const object &msg,
-                       bool (*cmp_int)(long, long), bool (*cmp_float)(double, double))
+object num_operation(const object &thisobj, const object &msg,
+                     object (*int_operation)(long, long),
+                     object (*float_operation)(double, double))
 {
     if (!thisobj.__value.type & value_t::number_t)
         return empty();
@@ -188,34 +192,39 @@ object compare_numbers(const object &thisobj, const object &msg,
     if (thisobj.__value.type == value_t::integer_t &&
         msg.__value.type == value_t::integer_t
     ) {
-        return boolean(cmp_int(thisobj.__value.integer, msg.__value.integer));
+        return int_operation(thisobj.__value.integer, msg.__value.integer);
     }
 
     double this_val = number_to_double(thisobj);
     double msg_val = number_to_double(msg);
 
-    return boolean(cmp_float(this_val, msg_val));
+    return float_operation(this_val, msg_val);
 }
 
-#define NUMBER_COMP(operation, symbol)\
-bool number_cmp_int_##operation(long a, long b)\
-{ return a symbol b; }\
-bool number_cmp_float_##operation(double a, double b)\
-{ return a symbol b; }\
+#define NUM_OPERATION(operation, symbol, ret_obj)\
+object num_int_operation_##operation(long a, long b)\
+{ return ret_obj(a symbol b); }\
+object num_float_operation_##operation(double a, double b)\
+{ return ret_obj(a symbol b); }\
 \
-SEND_MSG(number_comp_##operation)\
+SEND_MSG(num_op_##operation)\
 {\
-    return compare_numbers(*thisptr, msg,\
-                           number_cmp_int_##operation, number_cmp_float_##operation);\
+    return num_operation(*thisptr, msg,\
+                         num_int_operation_##operation, num_float_operation_##operation);\
 }\
-OBJECT_METHODS_NO_DATA(number_comp_##operation)
+OBJECT_METHODS_NO_DATA(num_op_##operation)
 
-NUMBER_COMP(eq, ==)
-NUMBER_COMP(ne, !=)
-NUMBER_COMP(lt, <)
-NUMBER_COMP(gt, >)
-NUMBER_COMP(le, <=)
-NUMBER_COMP(ge, >=)
+NUM_OPERATION(eq, ==, boolean)
+NUM_OPERATION(ne, !=, boolean)
+NUM_OPERATION(lt, <, boolean)
+NUM_OPERATION(gt, >, boolean)
+NUM_OPERATION(le, <=, boolean)
+NUM_OPERATION(ge, >=, boolean)
+
+NUM_OPERATION(add, +, number)
+NUM_OPERATION(sub, -, number)
+NUM_OPERATION(mul, *, number)
+NUM_OPERATION(div, /, number)
 
 SEND_MSG(number)
 {
@@ -225,17 +234,25 @@ SEND_MSG(number)
     object comp;
     
     if (msg == symbol("=="))
-        comp.__m = number_comp_eq_object_methods();
+        comp.__m = num_op_eq_object_methods();
     else if (msg == symbol("!="))
-        comp.__m = number_comp_ne_object_methods();
+        comp.__m = num_op_ne_object_methods();
     else if (msg == symbol("<"))
-        comp.__m = number_comp_lt_object_methods();
+        comp.__m = num_op_lt_object_methods();
     else if (msg == symbol(">"))
-        comp.__m = number_comp_gt_object_methods();
+        comp.__m = num_op_gt_object_methods();
     else if (msg == symbol("<="))
-        comp.__m = number_comp_le_object_methods();
+        comp.__m = num_op_le_object_methods();
     else if (msg == symbol(">="))
-        comp.__m = number_comp_ge_object_methods();
+        comp.__m = num_op_ge_object_methods();
+    else if (msg == symbol("+"))
+        comp.__m = num_op_add_object_methods();
+    else if (msg == symbol("-"))
+        comp.__m = num_op_sub_object_methods();
+    else if (msg == symbol("*"))
+        comp.__m = num_op_mul_object_methods();
+    else if (msg == symbol("/"))
+        comp.__m = num_op_div_object_methods();
     else
         return empty();
     
