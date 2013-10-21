@@ -173,6 +173,8 @@ object rbb::empty()
 }
 
 // number: Numeric object
+// TODO make comparison and arithmetic objects store their answerer value in data instead of
+// integer or floating
 double rbb::number_to_double(const object &num)
 {
     if (!num.__value.type & value_t::number_t)
