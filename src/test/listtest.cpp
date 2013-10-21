@@ -10,4 +10,7 @@ TESTS_INIT()
     TEST_CONDITION(
         l.send_msg(rbb::symbol("!=")).send_msg(l) == rbb::boolean(false),
         puts("A list differs from itself"))
+    TEST_CONDITION(
+        l.send_msg(rbb::symbol("?|")) == rbb::number(3),
+        puts("The list doesn't correctly report its size"))
 TESTS_END()
