@@ -1,5 +1,35 @@
 #include "tests_common.hpp"
 
+#include <cstring>
+
+#define TEST_SYMBOL_COMPARISON(sym1, sym2, symb, eq)\
+TEST_CONDITION(\
+    rbb::symbol(sym1).send_msg(rbb::symbol(symb)).send_msg(rbb::symbol(sym2)) == rbb::boolean(eq),\
+    printf("%s %s %s doesn't equal %s!\n", sym1, symb, sym2, eq? "true" : "false"))
+
+#define COMPARE_EQ_AND_NE(sym1, sym2)\
+{\
+bool eq;\
+eq = strcmp(sym1, sym2) == 0;\
+TEST_SYMBOL_COMPARISON(sym1, sym2, "==", eq)\
+TEST_SYMBOL_COMPARISON(sym1, sym2, "!=", !eq)\
+}
+
+#define COMPARE_WITH_SPECIAL_SYMBOLS(sym)\
+COMPARE_EQ_AND_NE(sym, "==")\
+COMPARE_EQ_AND_NE(sym, "!=")\
+COMPARE_EQ_AND_NE(sym, "?")\
+COMPARE_EQ_AND_NE(sym, ">")\
+COMPARE_EQ_AND_NE(sym, "<")\
+COMPARE_EQ_AND_NE(sym, "<=")\
+COMPARE_EQ_AND_NE(sym, ">=")\
+COMPARE_EQ_AND_NE(sym, "+")\
+COMPARE_EQ_AND_NE(sym, "-")\
+COMPARE_EQ_AND_NE(sym, "*")\
+COMPARE_EQ_AND_NE(sym, "/")\
+COMPARE_EQ_AND_NE(sym, "?|")\
+COMPARE_EQ_AND_NE(sym, "?:")
+
 TESTS_INIT()
     TEST_CONDITION(rbb::symbol("abcd") == rbb::symbol("abcd"), puts("Error when comparing equal symbols"))
     
@@ -14,4 +44,19 @@ TESTS_INIT()
     TEST_CONDITION(
         rbb::symbol("a12345").send_msg(rbb::symbol("!=")).send_msg(rbb::symbol("a1234")) == rbb::boolean(true),
         puts("Error when cheking two symbols for inequality"))
+    
+    // Test all special symbols
+    COMPARE_WITH_SPECIAL_SYMBOLS("==")
+    COMPARE_WITH_SPECIAL_SYMBOLS("!=")
+    COMPARE_WITH_SPECIAL_SYMBOLS("?")
+    COMPARE_WITH_SPECIAL_SYMBOLS(">")
+    COMPARE_WITH_SPECIAL_SYMBOLS("<")
+    COMPARE_WITH_SPECIAL_SYMBOLS("<=")
+    COMPARE_WITH_SPECIAL_SYMBOLS(">=")
+    COMPARE_WITH_SPECIAL_SYMBOLS("+")
+    COMPARE_WITH_SPECIAL_SYMBOLS("-")
+    COMPARE_WITH_SPECIAL_SYMBOLS("*")
+    COMPARE_WITH_SPECIAL_SYMBOLS("/")
+    COMPARE_WITH_SPECIAL_SYMBOLS("?|")
+    COMPARE_WITH_SPECIAL_SYMBOLS("?:")
 TESTS_END()
