@@ -91,7 +91,7 @@ static bool is_atom(const value_t &val)
 
 object::~object()
 {
-    if (is_atom(__value) && deref() == 0)
+    if (!is_atom(__value) && deref() == 0)
         destroy();
 }
 
