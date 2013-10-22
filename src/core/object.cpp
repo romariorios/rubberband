@@ -81,12 +81,18 @@ object::object(const object &other) :
     ref();
 }
 
+static bool is_numeric(const value_t &val)
+{
+    return val.type == value_t::integer_t ||
+           val.type == value_t::floating_t;
+}
+
 static bool is_atom(const value_t &val)
 {
-    return val.type & value_t::empty_t   ||
-           val.type & value_t::number_t  ||
-           val.type & value_t::boolean_t ||
-           val.type & value_t::symbol_t  ;
+    return val.type == value_t::empty_t   ||
+           is_numeric(val)                ||
+           val.type == value_t::boolean_t ||
+           val.type == value_t::symbol_t   ;
 }
 
 object::~object()
@@ -177,7 +183,7 @@ object rbb::empty()
 // integer or floating
 double rbb::number_to_double(const object &num)
 {
-    if (!num.__value.type & value_t::number_t)
+    if (!is_numeric(num.__value))
         return NAN;
     
     return num.__value.type == value_t::floating_t?
@@ -443,9 +449,45 @@ SEND_MSG(list_concatenation)
 }
 OBJECT_METHODS_NO_DATA(list_concatenation)
 
+static int get_index_from_obj(const object &obj);
+
+SEND_MSG(list_slicing)
+{
+    if (msg.__value.type != value_t::list_t)
+        return empty();
+    
+    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
+    list_data *msg_d = reinterpret_cast<list_data *>(msg.__value.data);
+    
+    if (msg_d->size < 2)
+        return empty();
+    
+    int pos = get_index_from_obj(msg_d->arr[0]);
+    int size = get_index_from_obj(msg_d->arr[1]);
+    
+    if (pos < 0 || size < 0)
+        return empty();
+    
+    int this_len = d->size;
+    
+    if (pos + size > this_len)
+        return empty();
+    
+    list_data *new_d = new list_data;
+    new_d->refc = 1;
+    new_d->size = size;
+    new_d->arr = new object[size];
+    
+    for (int i = 0, j = pos; i < size; ++i, ++j)
+        new_d->arr[i] = d->arr[j];
+    
+    return create_list_object(new_d);
+}
+OBJECT_METHODS_NO_DATA(list_slicing)
+
 static int get_index_from_obj(const object &obj)
 {
-    if (!(obj.__value.type & value_t::number_t))
+    if (!is_numeric(obj.__value))
         return -1;
     
     int ind;
@@ -478,6 +520,8 @@ SEND_MSG(list)
             symb_ret.__m = data_comparison_ne_object_methods();
         if (msg == symbol("+"))
             symb_ret.__m = list_concatenation_object_methods();
+        if (msg == symbol("/"))
+            symb_ret.__m = list_slicing_object_methods();
         
         return symb_ret;
     } else if (msg.__value.type == value_t::list_t) {
