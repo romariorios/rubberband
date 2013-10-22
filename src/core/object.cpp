@@ -408,6 +408,41 @@ struct list_data
     int refc;
 };
 
+static object_methods *list_object_methods();
+
+static object create_list_object(list_data *d)
+{
+    object l;
+    l.__value.type = value_t::list_t;
+    l.__value.data = (void *) d;
+    l.__m = list_object_methods();
+    
+    return l;
+}
+
+SEND_MSG(list_concatenation)
+{
+    if (msg.__value.type != value_t::list_t)
+        return empty();
+    
+    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
+    list_data *msg_d = reinterpret_cast<list_data *>(msg.__value.data);
+    
+    list_data *new_d = new list_data;
+    new_d->refc = 1;
+    new_d->size = d->size + msg_d->size;
+    new_d->arr = new object[new_d->size];
+    
+    for (int i = 0; i < d->size; ++i)
+        new_d->arr[i] = d->arr[i];
+    
+    for (int i = d->size, j = 0; j < msg_d->size; ++i, ++j)
+        new_d->arr[i] = msg_d->arr[j];
+    
+    return create_list_object(new_d);
+}
+OBJECT_METHODS_NO_DATA(list_concatenation)
+
 static int get_index_from_obj(const object &obj)
 {
     if (!(obj.__value.type & value_t::number_t))
@@ -441,6 +476,8 @@ SEND_MSG(list)
             symb_ret.__m = data_comparison_eq_object_methods();
         if (msg == symbol("!="))
             symb_ret.__m = data_comparison_ne_object_methods();
+        if (msg == symbol("+"))
+            symb_ret.__m = list_concatenation_object_methods();
         
         return symb_ret;
     } else if (msg.__value.type == value_t::list_t) {
@@ -503,12 +540,7 @@ object rbb::list(const object obj_array[], int size)
     for (int i = 0; i < size; ++i)
         d->arr[i] = obj_array[i];
     
-    object arr;
-    arr.__value.type = value_t::list_t;
-    arr.__value.data = (void *) d;
-    arr.__m = list_object_methods();
-    
-    return arr;
+    return create_list_object(d);
 }
 
 // TODO block
