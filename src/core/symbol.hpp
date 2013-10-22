@@ -21,18 +21,33 @@
 namespace rbb
 {
 
+struct symbol_node;
+
+struct symbol_downtree_node
+{
+    symbol_downtree_node(symbol_node *sym) :
+        sym(sym),
+        smaller(0),
+        bigger(0)
+    {}
+    ~symbol_downtree_node();
+    
+    symbol_node *sym;
+    symbol_downtree_node *smaller, *bigger;
+};
+
 struct symbol_node
 {
     char ch;
     symbol_node *up;
-    symbol_node **down;
+    symbol_downtree_node *down_root;
     
     static symbol_node *retrieve(char *string);
     inline static symbol_node *retrieve(const char *string)
         { return retrieve(const_cast<char *>(string)); }
     symbol_node(char ch, symbol_node *up);
     ~symbol_node();
-    symbol_node *down_symbol(char ch) const;
+    symbol_node *down_symbol(char ch);
 };
 
 }

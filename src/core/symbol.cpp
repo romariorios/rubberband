@@ -19,72 +19,59 @@
 
 #include <cstring>
 
-// In the following order, each index of down represents a char:
-// abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-*/><=:_
-
 using namespace rbb;
 
-/* 26 * 2 letters + 10 algarisms + 8 special symbols + underscore */
-static const short rbb_alphabet_size = 71;
-static const short rbb_small_letters_offset = 0;
-static const short rbb_big_letters_offset = 26;
-static const short rbb_numbers_offset = 52;
-static const short rbb_special_symbols_offset = 62;
-static const short rbb_underscore_index = 70;
-
-static const short ch_to_i(char ch)
+symbol_downtree_node::~symbol_downtree_node()
 {
-    if (ch >= 'a' && ch <= 'z')
-        return ((short) ch - 'a') + rbb_small_letters_offset;
-    
-    if (ch >= 'A' && ch <= 'Z')
-        return ((short) ch - 'A') + rbb_big_letters_offset;
-    
-    if (ch >= '0' && ch <= '9')
-        return ((short) ch - '0') + rbb_numbers_offset;
-    
-    switch (ch) {
-    case '+':
-        return rbb_special_symbols_offset;
-    case '-':
-        return rbb_special_symbols_offset + 1;
-    case '*':
-        return rbb_special_symbols_offset + 2;
-    case '/':
-        return rbb_special_symbols_offset + 3;
-    case '>':
-        return rbb_special_symbols_offset + 4;
-    case '<':
-        return rbb_special_symbols_offset + 5;
-    case '=':
-        return rbb_special_symbols_offset + 6;
-    case ':':
-        return rbb_special_symbols_offset + 7;
-    }
-    
-    return rbb_underscore_index;
+    delete sym;
+    if (smaller)
+        delete smaller;
+    if (bigger)
+        delete bigger;
 }
 
 symbol_node::symbol_node(char ch, symbol_node* up) :
     ch(ch),
     up(up),
-    down(new symbol_node *[rbb_alphabet_size])
+    down_root(0)
 {
-    if (up)
-        this->up->down[ch_to_i(ch)] = this;
+    if (up) {
+        up->down_symbol(ch);
+    }
 }
 
 symbol_node::~symbol_node()
 {
-    for (short i = 0; i < rbb_alphabet_size; ++i)
-        delete down[i];
-    
-    delete[] down;
+    delete down_root;
 }
 
-symbol_node* symbol_node::down_symbol(char ch) const
+symbol_node* symbol_node::down_symbol(char ch)
 {
-    return down[ch_to_i(ch)];
+    // TODO tree balancing
+    if (!down_root) {
+        symbol_node *sym = new symbol_node(ch, 0);
+        down_root = new symbol_downtree_node(sym);
+        return sym;
+    }
+    
+    symbol_downtree_node *prev = 0;
+    for (symbol_downtree_node *cur = down_root; cur;
+         cur = ch < cur->sym->ch? cur->smaller : cur->bigger) {
+        if (cur->sym->ch == ch) {
+            return cur->sym;
+        }
+        
+        prev = cur;
+    }
+    
+    symbol_node *sym = new symbol_node(ch, 0);
+    
+    if (ch < prev->sym->ch)
+        prev->smaller = new symbol_downtree_node(sym);
+    else
+        prev->bigger = new symbol_downtree_node(sym);
+    
+    return sym;
 }
 
 static symbol_node *trie_head = 0;
@@ -101,9 +88,6 @@ symbol_node *rbb::symbol_node::retrieve(char *string)
     for (int i = 0; i < length; ++i) {
         char ch = string[i];
         symbol_node *down = node->down_symbol(ch);
-        if (!down)
-            down = new symbol_node(ch, node);
-
         node = down;
     }
     
