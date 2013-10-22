@@ -24,10 +24,10 @@ using namespace rbb;
 symbol_downtree_node::~symbol_downtree_node()
 {
     delete sym;
-    if (smaller)
-        delete smaller;
-    if (bigger)
-        delete bigger;
+    if (left)
+        delete left;
+    if (right)
+        delete right;
 }
 
 symbol_node::symbol_node(char ch, symbol_node* up) :
@@ -45,9 +45,66 @@ symbol_node::~symbol_node()
     delete down_root;
 }
 
+// Splay tree rebalancing functions
+static void rotate_left(symbol_node *sym, symbol_downtree_node *x)
+{
+    symbol_downtree_node *y = x->right;
+    x->right = y->left;
+    if (y->left)
+        y->left->parent = x;
+    y->parent = x->parent;
+    if (!x->parent) {
+        sym->down_root = y;
+    } else if (x == x->parent->left)
+        x->parent->left = y;
+    else
+        x->parent->right = y;
+    y->left = x;
+    x->parent = y;
+}
+
+static void rotate_right(symbol_node *sym, symbol_downtree_node *x)
+{
+    symbol_downtree_node *y = x->left;
+    x->left = y->right;
+    if (y->right)
+        y->right->parent = x;
+    y->parent = x->parent;
+    if (!x->parent) {
+        sym->down_root = y;
+    } else if (x == x->parent->right)
+        x->parent->right = y;
+    else
+        x->parent->left = y;
+    y->right = x;
+    x->parent = y;
+}
+
+static void splay(symbol_node *sym, symbol_downtree_node *x) {
+    while (x->parent) {
+        if (!x->parent->parent) {
+            if (x->parent->left == x)
+                rotate_right(sym, x->parent);
+            else
+                rotate_left(sym, x->parent);
+        } else if (x->parent->left == x && x->parent->parent->left == x->parent) {
+            rotate_right(sym, x->parent->parent);
+            rotate_right(sym, x->parent);
+        } else if (x->parent->right == x && x->parent->parent->right == x->parent) {
+            rotate_left(sym, x->parent->parent);
+            rotate_left(sym, x->parent);
+        } else if (x->parent->left == x && x->parent->parent->right == x->parent) {
+            rotate_right(sym, x->parent);
+            rotate_left(sym, x->parent);
+        } else {
+            rotate_left(sym, x->parent);
+            rotate_right(sym, x->parent);
+        }
+    }
+}
+
 symbol_node* symbol_node::down_symbol(char ch)
 {
-    // TODO tree balancing
     if (!down_root) {
         symbol_node *sym = new symbol_node(ch, 0);
         down_root = new symbol_downtree_node(sym);
@@ -55,8 +112,8 @@ symbol_node* symbol_node::down_symbol(char ch)
     }
     
     symbol_downtree_node *prev = 0;
-    for (symbol_downtree_node *cur = down_root; cur;
-         cur = ch < cur->sym->ch? cur->smaller : cur->bigger) {
+    symbol_downtree_node *cur = down_root;
+    for (; cur; cur = ch < cur->sym->ch? cur->left : cur->right) {
         if (cur->sym->ch == ch) {
             return cur->sym;
         }
@@ -65,11 +122,15 @@ symbol_node* symbol_node::down_symbol(char ch)
     }
     
     symbol_node *sym = new symbol_node(ch, 0);
+    cur = new symbol_downtree_node(sym);
+    cur->parent = prev;
     
     if (ch < prev->sym->ch)
-        prev->smaller = new symbol_downtree_node(sym);
+        prev->left = cur;
     else
-        prev->bigger = new symbol_downtree_node(sym);
+        prev->right = cur;
+    
+    splay(this, cur);
     
     return sym;
 }

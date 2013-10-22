@@ -27,13 +27,28 @@ struct symbol_downtree_node
 {
     symbol_downtree_node(symbol_node *sym) :
         sym(sym),
-        smaller(0),
-        bigger(0)
+        left(0),
+        right(0),
+        parent(0)
     {}
     ~symbol_downtree_node();
     
     symbol_node *sym;
-    symbol_downtree_node *smaller, *bigger;
+    symbol_downtree_node *left, *right, *parent;
+    
+    void set_left(symbol_downtree_node *n)
+    {
+        left = n;
+        if (left)
+            left->parent = this;
+    }
+    
+    void set_right(symbol_downtree_node *n)
+    {
+        right = n;
+        if (right)
+            right->parent = this;
+    }
 };
 
 struct symbol_node
