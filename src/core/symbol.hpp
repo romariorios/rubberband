@@ -1,4 +1,4 @@
-// Rubberband language symbol (constructs a symbol from a string)
+// Rubberband language
 // Copyright (C) 2013  Luiz Romário Santana Rios <luizromario at gmail dot com>
 // 
 // This library is free software; you can redistribute it and/or
