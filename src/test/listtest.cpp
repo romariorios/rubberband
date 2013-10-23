@@ -1,5 +1,29 @@
 #include "tests_common.hpp"
 
+bool cmp_list(rbb::object &l1, rbb::object &l2)
+{
+    if (l1.__value.type != rbb::value_t::list_t ||
+        l2.__value.type != rbb::value_t::list_t)
+        return false;
+    
+    int l1_len = l1.send_msg(rbb::symbol("?|")).__value.integer;
+    int l2_len = l2.send_msg(rbb::symbol("?|")).__value.integer;
+    
+    if (l1_len != l2_len)
+        return false;
+    
+    bool l1_eq_l2 = true;
+    for (int i = 0; i < l1_len; ++i) {
+        if (l1.send_msg(rbb::number(i)) == l2.send_msg(rbb::number(i))) {
+        } else {
+            l1_eq_l2 = false;
+            break;
+        }
+    }
+    
+    return l1_eq_l2;
+}
+
 TESTS_INIT()
     rbb::object numbers[] = {rbb::number(1), rbb::number(4), rbb::number(9)};
     rbb::object l = rbb::list(numbers, 3);
@@ -50,15 +74,15 @@ TESTS_INIT()
     };
     rbb::object l4 = rbb::list(all_numbers, 6);
     
-    bool l3_eq_l4 = true;
+    TEST_CONDITION(cmp_list(l3, l4), puts("Concatenation doesn't work"));
     
-    for (int i = 0; i < 6; ++i) {
-        if (l3.send_msg(rbb::number(i)) == l4.send_msg(rbb::number(i))) {
-        } else {
-            l3_eq_l4 = false;
-            break;
-        }
-    }
+    rbb::object slice_by[] = {rbb::number(1), rbb::number(3)};
+    rbb::object sb = rbb::list(slice_by, 2);
     
-    TEST_CONDITION(l3_eq_l4, puts("Concatenation doesn't work"));
+    rbb::object l5 = l3.send_msg(rbb::symbol("/")).send_msg(sb);
+    
+    rbb::object expected_list[] = {rbb::number(4), rbb::number(9), rbb::number(2)};
+    rbb::object el = rbb::list(expected_list, 3);
+    
+    TEST_CONDITION(cmp_list(l5, el), puts("Slicing doesn't work"))
 TESTS_END()
