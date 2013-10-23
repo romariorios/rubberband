@@ -18,51 +18,37 @@
 #ifndef SYMBOL_HPP
 #define SYMBOL_HPP
 
+#include "splay_tree.hpp"
+
 namespace rbb
 {
 
 struct symbol_node;
 
-struct symbol_downtree_node
+class symbol_downtree : public splay_tree<char, symbol_node *>
 {
-    symbol_downtree_node(symbol_node *sym) :
-        sym(sym),
-        left(0),
-        right(0),
-        parent(0)
-    {}
-    ~symbol_downtree_node();
+public:
+    symbol_downtree() {}
+    ~symbol_downtree();
+
+protected:
+    char key_from_node(node *n) const;
     
-    symbol_node *sym;
-    symbol_downtree_node *left, *right, *parent;
-    
-    void set_left(symbol_downtree_node *n)
-    {
-        left = n;
-        if (left)
-            left->parent = this;
-    }
-    
-    void set_right(symbol_downtree_node *n)
-    {
-        right = n;
-        if (right)
-            right->parent = this;
-    }
+private:
+    void delete_tree(node *n);
 };
 
 struct symbol_node
 {
     char ch;
     symbol_node *up;
-    symbol_downtree_node *down_root;
+    symbol_downtree down;
     
     static symbol_node *retrieve(char *string);
     inline static symbol_node *retrieve(const char *string)
         { return retrieve(const_cast<char *>(string)); }
-    symbol_node(char ch, symbol_node *up);
+    symbol_node(char ch);
     ~symbol_node();
-    symbol_node *down_symbol(char ch);
 };
 
 }
