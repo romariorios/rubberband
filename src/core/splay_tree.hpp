@@ -29,6 +29,7 @@ public:
     virtual ~splay_tree();
     
     T at(const Key &k) const;
+    T at(const Key &k);
     void insert(const Key &k, const T &item);
     
     T insert_if_not_found(const Key &k, const T& item);
@@ -82,6 +83,19 @@ T splay_tree<Key, T>::at(const Key& k) const
 {
     splay_tree::node *n = find(k).cur;
     return n? n->item : T();
+}
+
+template <class Key, class T>
+T splay_tree<Key, T>::at(const Key &k)
+{
+    splay_tree::node *n = find(k).cur;
+    
+    if (n) {
+        splay(n);
+        return n->item;
+    }
+    
+    return T();
 }
 
 template <class Key, class T>
