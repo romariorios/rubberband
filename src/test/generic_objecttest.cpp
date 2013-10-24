@@ -9,4 +9,7 @@ TESTS_INIT()
     TEST_CONDITION(
         g_object.send_msg(rbb::symbol("==")).send_msg(g_object) == rbb::boolean(true),
         puts("Generic object doesn't equal itself"))
+    TEST_CONDITION(
+        g_object.send_msg(rbb::symbol("!=")).send_msg(g_object) == rbb::boolean(false),
+        puts("g_object != g_object doesn't equal false"))
 TESTS_END()
