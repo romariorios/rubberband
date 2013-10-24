@@ -40,6 +40,7 @@ bool test_operator_eq(const rbb::object &obj1, const rbb::object &obj2)
     float error_rate = ((float) errors / (float) tests);\
     error_rate  *= 100;\
     printf("Result: %d tests, %d failures (%.0f%%).\n", tests, errors, error_rate);\
+    return errors;\
 }
 
 #endif // TESTS_COMMON
