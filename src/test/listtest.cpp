@@ -85,4 +85,8 @@ TESTS_INIT()
     rbb::object el = rbb::list(expected_list, 3);
     
     TEST_CONDITION(cmp_list(l5, el), puts("Slicing doesn't work"))
+    
+    TEST_OPERATOR_EQ(l, l5)
+    TEST_OPERATOR_EQ(l5, rbb::empty())
+    TEST_OPERATOR_EQ(rbb::empty(), l5)
 TESTS_END()
