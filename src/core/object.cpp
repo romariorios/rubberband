@@ -535,7 +535,7 @@ object rbb::list(const object obj_array[], int size)
 // Generic object: Basically, a map from symbols to objects
 struct symbol_object_pair
 {
-    symbol_object_pair(symbol_node *sym, const object &obj) :
+    symbol_object_pair(symbol_node *sym = 0, const object &obj = empty()) :
         sym(sym),
         obj(obj)
     {}
@@ -561,6 +561,25 @@ public:
 
 SEND_MSG(generic_object)
 {
+    if (msg.__value.type == value_t::symbol_t) {
+        object answer;
+        answer.__value.type = value_t::no_data_t;
+        answer.__value.data = thisptr->__value.data;
+        
+        if (msg == rbb::symbol("=="))
+            answer.__send_msg = data_comparison_eq_send_msg;
+        else if (msg == rbb::symbol("!="))
+            answer.__send_msg = data_comparison_ne_send_msg;
+        else {
+            generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
+            
+            const symbol_object_pair &pair = d->objtree.at(msg.__value.symbol);
+            return pair.obj;
+        }
+            
+        return answer;
+    }
+    
     return empty();
 }
 
