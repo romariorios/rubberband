@@ -23,6 +23,8 @@ namespace rbb
 
 class symbol_node;
 
+class shared_data_t;
+
 struct value_t
 {
     enum
@@ -45,11 +47,9 @@ struct value_t
         double floating;
         bool boolean;
         symbol_node *symbol;
-        void *data;
+        shared_data_t *data;
     };
 };
-
-struct object_methods;
 
 // Object
 class object
@@ -65,7 +65,7 @@ public:
     object send_msg(const object &msg);
     
     value_t __value;
-    object_methods *__m;
+    object (*__send_msg)(object *, const object &);
     
 private:
     void destroy();

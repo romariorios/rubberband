@@ -25,43 +25,19 @@
 #define SEND_MSG(typename)\
 static object typename##_send_msg(object *thisptr, const object &msg)
 
-#define DESTROY(typename)\
-static void typename##_destroy(object *thisptr)
-
-#define REF(typename)\
-static void typename##_ref(object *thisptr)
-
-#define DEREF(typename)\
-static int typename##_deref(object *thisptr)
-
-#define OBJECT_METHODS(typename)\
-static object_methods *typename##_object_methods_ptr = 0; \
-static object_methods *typename##_object_methods() \
-{ \
-    if (!typename##_object_methods_ptr) {\
-        typename##_object_methods_ptr = new object_methods;\
-        typename##_object_methods_ptr->send_msg = typename##_send_msg;\
-        typename##_object_methods_ptr->destroy = typename##_destroy;\
-        typename##_object_methods_ptr->ref = typename##_ref;\
-        typename##_object_methods_ptr->deref = typename##_deref;\
-    }\
-    return typename##_object_methods_ptr;\
-}
-
-#define OBJECT_METHODS_NO_DATA(typename)\
-DESTROY(typename) {}\
-REF(typename) {}\
-DEREF(typename) { return 0; }\
-OBJECT_METHODS(typename)
-
 using namespace rbb;
 
-struct rbb::object_methods
+class rbb::shared_data_t
 {
-    object (*send_msg)(object *, const object &);
-    void (*destroy)(object *);
-    void (*ref)(object *);
-    int (*deref)(object *);
+public:
+    shared_data_t() :
+        refc(1)
+    {}
+    
+    virtual ~shared_data_t()
+    {}
+
+    int refc;
 };
 
 // object: The base for everything
@@ -69,15 +45,14 @@ SEND_MSG(noop)
 {
     return empty();
 }
-OBJECT_METHODS_NO_DATA(noop)
 
 object::object() :
-    __m(noop_object_methods())
+    __send_msg(noop_send_msg)
 {}
 
 object::object(const object &other) :
     __value(other.__value),
-    __m(other.__m)
+    __send_msg(other.__send_msg)
 {
     ref();
 }
@@ -127,30 +102,27 @@ bool object::operator==(const object& other) const
 
 object object::send_msg(const object &msg)
 {
-    return __m->send_msg(this, msg);
+    return __send_msg(this, msg);
 }
 
 void object::destroy()
 {
-    __m->destroy(this);
+    delete __value.data;
 }
 
 void object::ref()
 {
-    __m->ref(this);
+    ++__value.data->refc;
 }
 
 int object::deref()
 {
-    return __m->deref(this);
+    return --__value.data->refc;
 }
 
 // empty: Empty object
 SEND_MSG(empty_cmp_eq) { return boolean(msg.__value.type == value_t::empty_t); }
-OBJECT_METHODS_NO_DATA(empty_cmp_eq)
-
 SEND_MSG(empty_cmp_ne) { return boolean(msg.__value.type != value_t::empty_t); }
-OBJECT_METHODS_NO_DATA(empty_cmp_ne)
 
 SEND_MSG(empty)
 {
@@ -160,21 +132,20 @@ SEND_MSG(empty)
     object cmp;
     
     if (msg == symbol("=="))
-        cmp.__m = empty_cmp_eq_object_methods();
+        cmp.__send_msg = empty_cmp_eq_send_msg;
     else if (msg == symbol("!="))
-        cmp.__m = empty_cmp_ne_object_methods();
+        cmp.__send_msg = empty_cmp_ne_send_msg;
     else
         return empty();
 
     return cmp;
 }
-OBJECT_METHODS_NO_DATA(empty)
 
 object rbb::empty()
 {
     object emp;
     emp.__value.type = value_t::empty_t;
-    emp.__m = empty_object_methods();
+    emp.__send_msg = empty_send_msg;
     
     return emp;
 }
@@ -220,8 +191,7 @@ SEND_MSG(num_op_##operation)\
 {\
     return num_operation(*thisptr, msg,\
                          num_int_operation_##operation, num_float_operation_##operation);\
-}\
-OBJECT_METHODS_NO_DATA(num_op_##operation)
+}
 
 NUM_OPERATION(eq, ==, boolean)
 NUM_OPERATION(ne, !=, boolean)
@@ -243,25 +213,25 @@ SEND_MSG(number)
     object comp;
     
     if (msg == symbol("=="))
-        comp.__m = num_op_eq_object_methods();
+        comp.__send_msg = num_op_eq_send_msg;
     else if (msg == symbol("!="))
-        comp.__m = num_op_ne_object_methods();
+        comp.__send_msg = num_op_ne_send_msg;
     else if (msg == symbol("<"))
-        comp.__m = num_op_lt_object_methods();
+        comp.__send_msg = num_op_lt_send_msg;
     else if (msg == symbol(">"))
-        comp.__m = num_op_gt_object_methods();
+        comp.__send_msg = num_op_gt_send_msg;
     else if (msg == symbol("<="))
-        comp.__m = num_op_le_object_methods();
+        comp.__send_msg = num_op_le_send_msg;
     else if (msg == symbol(">="))
-        comp.__m = num_op_ge_object_methods();
+        comp.__send_msg = num_op_ge_send_msg;
     else if (msg == symbol("+"))
-        comp.__m = num_op_add_object_methods();
+        comp.__send_msg = num_op_add_send_msg;
     else if (msg == symbol("-"))
-        comp.__m = num_op_sub_object_methods();
+        comp.__send_msg = num_op_sub_send_msg;
     else if (msg == symbol("*"))
-        comp.__m = num_op_mul_object_methods();
+        comp.__send_msg = num_op_mul_send_msg;
     else if (msg == symbol("/"))
-        comp.__m = num_op_div_object_methods();
+        comp.__send_msg = num_op_div_send_msg;
     else
         return empty();
     
@@ -279,12 +249,11 @@ SEND_MSG(number)
     
     return comp;
 }
-OBJECT_METHODS_NO_DATA(number)
 
 object rbb::number(double val)
 {
     object num;
-    num.__m = number_object_methods();
+    num.__send_msg = number_send_msg;
     
     if (val - trunc(val) != 0) {
         num.__value.type = value_t::floating_t;
@@ -305,7 +274,6 @@ SEND_MSG(symbol_comp_eq)
     
     return thisptr->__value.symbol == msg.__value.symbol? boolean(true) : boolean(false);
 }
-OBJECT_METHODS_NO_DATA(symbol_comp_eq)
 
 SEND_MSG(symbol_comp_ne)
 {
@@ -314,7 +282,6 @@ SEND_MSG(symbol_comp_ne)
     
     return thisptr->__value.symbol != msg.__value.symbol? boolean(true) : boolean(false);
 }
-OBJECT_METHODS_NO_DATA(symbol_comp_ne)
 
 SEND_MSG(symbol)
 {
@@ -325,19 +292,18 @@ SEND_MSG(symbol)
     cmp_op.__value.symbol = thisptr->__value.symbol;
     
     if (msg.__value.symbol == symbol_node::retrieve("=="))
-        cmp_op.__m = symbol_comp_eq_object_methods();
+        cmp_op.__send_msg = symbol_comp_eq_send_msg;
     
     if (msg.__value.symbol == symbol_node::retrieve("!="))
-        cmp_op.__m = symbol_comp_ne_object_methods();
+        cmp_op.__send_msg = symbol_comp_ne_send_msg;
     
     return cmp_op;
 }
-OBJECT_METHODS_NO_DATA(symbol)
 
 object rbb::symbol(char* val)
 {
     object symb;
-    symb.__m = symbol_object_methods();
+    symb.__send_msg = symbol_send_msg;
     symb.__value.type = value_t::symbol_t;
     symb.__value.symbol = symbol_node::retrieve(val);
     
@@ -347,7 +313,7 @@ object rbb::symbol(char* val)
 object rbb::symbol(const char* val)
 {
     object symb;
-    symb.__m = symbol_object_methods();
+    symb.__send_msg = symbol_send_msg;
     symb.__value.type = value_t::symbol_t;
     symb.__value.symbol = symbol_node::retrieve(val);
     
@@ -365,7 +331,6 @@ SEND_MSG(boolean_comp)
     
     return boolean(true);
 }
-OBJECT_METHODS_NO_DATA(boolean_comp)
 
 SEND_MSG(boolean)
 {
@@ -373,7 +338,7 @@ SEND_MSG(boolean)
         return empty();
     
     object comp_block;
-    comp_block.__m = boolean_comp_object_methods();
+    comp_block.__send_msg = boolean_comp_send_msg;
     comp_block.__value.type = value_t::external_obj_t;
     
     if (msg.__value.symbol == symbol("==").__value.symbol) {
@@ -388,12 +353,11 @@ SEND_MSG(boolean)
     
     return empty();
 }
-OBJECT_METHODS_NO_DATA(boolean)
 
 object rbb::boolean(bool val)
 {
     object b;
-    b.__m = boolean_object_methods();
+    b.__send_msg = boolean_send_msg;
     b.__value.type = value_t::boolean_t;
     b.__value.boolean = val;
     
@@ -402,27 +366,38 @@ object rbb::boolean(bool val)
 
 // Comparison for any other objects
 SEND_MSG(data_comparison_eq) { return rbb::boolean(thisptr->__value.data == msg.__value.data); }
-OBJECT_METHODS_NO_DATA(data_comparison_eq) // thisptr's data is handled in the answerer
+// thisptr's data is handled in the answerer
 
 SEND_MSG(data_comparison_ne) { return rbb::boolean(thisptr->__value.data != msg.__value.data); }
-OBJECT_METHODS_NO_DATA(data_comparison_ne) // thisptr's data is handled in the answerer
+// thisptr's data is handled in the answerer
 
 // list: Array of objects
-struct list_data
+class list_data : public shared_data_t
 {
+public:
+    list_data(const int size) :
+        size(size)
+    {
+        arr = new object[size];
+    }
+    
+    ~list_data()
+    {
+        delete[] arr;
+    }
+    
     object *arr;
     int size;
-    int refc;
 };
 
-static object_methods *list_object_methods();
+SEND_MSG(list);
 
 static object create_list_object(list_data *d)
 {
     object l;
     l.__value.type = value_t::list_t;
-    l.__value.data = (void *) d;
-    l.__m = list_object_methods();
+    l.__value.data = d;
+    l.__send_msg = list_send_msg;
     
     return l;
 }
@@ -432,13 +407,10 @@ SEND_MSG(list_concatenation)
     if (msg.__value.type != value_t::list_t)
         return empty();
     
-    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
-    list_data *msg_d = reinterpret_cast<list_data *>(msg.__value.data);
+    list_data *d = static_cast<list_data *>(thisptr->__value.data);
+    list_data *msg_d = static_cast<list_data *>(msg.__value.data);
     
-    list_data *new_d = new list_data;
-    new_d->refc = 1;
-    new_d->size = d->size + msg_d->size;
-    new_d->arr = new object[new_d->size];
+    list_data *new_d = new list_data(d->size + msg_d->size);
     
     for (int i = 0; i < d->size; ++i)
         new_d->arr[i] = d->arr[i];
@@ -448,7 +420,6 @@ SEND_MSG(list_concatenation)
     
     return create_list_object(new_d);
 }
-OBJECT_METHODS_NO_DATA(list_concatenation)
 
 static int get_index_from_obj(const object &obj);
 
@@ -474,17 +445,13 @@ SEND_MSG(list_slicing)
     if (pos + size > this_len)
         return empty();
     
-    list_data *new_d = new list_data;
-    new_d->refc = 1;
-    new_d->size = size;
-    new_d->arr = new object[size];
+    list_data *new_d = new list_data(size);
     
     for (int i = 0, j = pos; i < size; ++i, ++j)
         new_d->arr[i] = d->arr[j];
     
     return create_list_object(new_d);
 }
-OBJECT_METHODS_NO_DATA(list_slicing)
 
 static int get_index_from_obj(const object &obj)
 {
@@ -505,7 +472,7 @@ static bool in_bounds(list_data *d, int i)
 
 SEND_MSG(list)
 {
-    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
+    list_data *d = static_cast<list_data *>(thisptr->__value.data);
     
     if (msg.__value.type == value_t::symbol_t) {
         if (msg == symbol("?|"))
@@ -516,17 +483,17 @@ SEND_MSG(list)
         symb_ret.__value.data = d;
         
         if (msg == symbol("=="))
-            symb_ret.__m = data_comparison_eq_object_methods();
+            symb_ret.__send_msg = data_comparison_eq_send_msg;
         if (msg == symbol("!="))
-            symb_ret.__m = data_comparison_ne_object_methods();
+            symb_ret.__send_msg = data_comparison_ne_send_msg;
         if (msg == symbol("+"))
-            symb_ret.__m = list_concatenation_object_methods();
+            symb_ret.__send_msg = list_concatenation_send_msg;
         if (msg == symbol("/"))
-            symb_ret.__m = list_slicing_object_methods();
+            symb_ret.__send_msg = list_slicing_send_msg;
         
         return symb_ret;
     } else if (msg.__value.type == value_t::list_t) {
-        list_data *msg_d = reinterpret_cast<list_data *>(msg.__value.data);
+        list_data *msg_d = static_cast<list_data *>(msg.__value.data);
         if (msg_d->size < 2)
             return empty();
         
@@ -550,37 +517,9 @@ SEND_MSG(list)
     return d->arr[ind];
 }
 
-DESTROY(list)
-{
-    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
-    
-    delete[] d->arr;
-    delete d;
-    
-}
-REF(list)
-{
-    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
-    
-    ++d->refc;
-}
-
-DEREF(list)
-{
-    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
-    
-    return --d->refc;
-}
-
-OBJECT_METHODS(list)
-
 object rbb::list(const object obj_array[], int size)
 {
-    list_data *d = new list_data;
-    
-    d->arr = new object[size];
-    d->size = size;
-    d->refc = 1;
+    list_data *d = new list_data(size);
     
     for (int i = 0; i < size; ++i)
         d->arr[i] = obj_array[i];
