@@ -29,16 +29,13 @@ struct value_t
 {
     enum
     {
-        empty_t        = 0x00,
-        number_t       = 0x10,
-        integer_t      = 0x11,
-        floating_t     = 0x12,
-        boolean_t      = 0x01,
-        symbol_t       = 0x02,
-        block_t        = 0x08,
-        list_t         = 0x04,
-        generic_obj_t  = 0x20,
-        external_obj_t = 0x40
+        no_data_t  = 0x10,
+        empty_t    = 0x11,
+        integer_t  = 0x12,
+        floating_t = 0x13,
+        boolean_t  = 0x14,
+        symbol_t   = 0x15,
+        data_t     = 0x20
     } type;
     
     union

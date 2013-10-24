@@ -2,8 +2,8 @@
 
 bool cmp_list(rbb::object &l1, rbb::object &l2)
 {
-    if (l1.__value.type != rbb::value_t::list_t ||
-        l2.__value.type != rbb::value_t::list_t)
+    if (l1.__value.type != rbb::value_t::data_t ||
+        l2.__value.type != rbb::value_t::data_t)
         return false;
     
     int l1_len = l1.send_msg(rbb::symbol("?|")).__value.integer;

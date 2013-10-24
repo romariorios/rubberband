@@ -19,7 +19,8 @@ TEST_CONDITION(\
 
 TESTS_INIT()
     TEST_CONDITION(
-        rbb::number(15).__value.type & rbb::value_t::number_t,
+        rbb::number(15).__value.type == rbb::value_t::integer_t ||
+        rbb::number(15).__value.type == rbb::value_t::floating_t,
         puts("rbb::number doesn't generate a number"))
     TEST_CONDITION(
         rbb::number(15).__value.type == rbb::value_t::integer_t,

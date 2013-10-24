@@ -63,17 +63,9 @@ static bool is_numeric(const value_t &val)
            val.type == value_t::floating_t;
 }
 
-static bool is_atom(const value_t &val)
-{
-    return val.type == value_t::empty_t   ||
-           is_numeric(val)                ||
-           val.type == value_t::boolean_t ||
-           val.type == value_t::symbol_t   ;
-}
-
 object::~object()
 {
-    if (!is_atom(__value) && deref() == 0)
+    if (deref() == 0)
         destroy();
 }
 
@@ -107,17 +99,22 @@ object object::send_msg(const object &msg)
 
 void object::destroy()
 {
-    delete __value.data;
+    if (__value.type == value_t::data_t)
+        delete __value.data;
 }
 
 void object::ref()
 {
-    ++__value.data->refc;
+    if (__value.type == value_t::data_t)
+        ++__value.data->refc;
 }
 
 int object::deref()
 {
-    return --__value.data->refc;
+    if (__value.type == value_t::data_t)
+        return --__value.data->refc;
+    
+    return 1;
 }
 
 // empty: Empty object
@@ -130,6 +127,7 @@ SEND_MSG(empty)
         return empty();
     
     object cmp;
+    cmp.__value.type = value_t::no_data_t;
     
     if (msg == symbol("=="))
         cmp.__send_msg = empty_cmp_eq_send_msg;
@@ -166,7 +164,7 @@ static object num_operation(const object &thisobj, const object &msg,
                             object (*int_operation)(long, long),
                             object (*float_operation)(double, double))
 {
-    if (!thisobj.__value.type & value_t::number_t)
+    if (!is_numeric(thisobj.__value))
         return empty();
 
     if (thisobj.__value.type == value_t::integer_t &&
@@ -211,6 +209,7 @@ SEND_MSG(number)
         return empty();
     
     object comp;
+    comp.__value.type = value_t::no_data_t;
     
     if (msg == symbol("=="))
         comp.__send_msg = num_op_eq_send_msg;
@@ -290,6 +289,7 @@ SEND_MSG(symbol)
     
     object cmp_op;
     cmp_op.__value.symbol = thisptr->__value.symbol;
+    cmp_op.__value.type = value_t::no_data_t;
     
     if (msg.__value.symbol == symbol_node::retrieve("=="))
         cmp_op.__send_msg = symbol_comp_eq_send_msg;
@@ -339,7 +339,7 @@ SEND_MSG(boolean)
     
     object comp_block;
     comp_block.__send_msg = boolean_comp_send_msg;
-    comp_block.__value.type = value_t::external_obj_t;
+    comp_block.__value.type = value_t::no_data_t;
     
     if (msg.__value.symbol == symbol("==").__value.symbol) {
         comp_block.__value.boolean = thisptr->__value.boolean;
@@ -395,7 +395,7 @@ SEND_MSG(list);
 static object create_list_object(list_data *d)
 {
     object l;
-    l.__value.type = value_t::list_t;
+    l.__value.type = value_t::data_t;
     l.__value.data = d;
     l.__send_msg = list_send_msg;
     
@@ -404,11 +404,14 @@ static object create_list_object(list_data *d)
 
 SEND_MSG(list_concatenation)
 {
-    if (msg.__value.type != value_t::list_t)
+    if (msg.__value.type != value_t::data_t)
         return empty();
     
     list_data *d = static_cast<list_data *>(thisptr->__value.data);
     list_data *msg_d = static_cast<list_data *>(msg.__value.data);
+    
+    if (!msg_d)
+        return empty();
     
     list_data *new_d = new list_data(d->size + msg_d->size);
     
@@ -425,13 +428,13 @@ static int get_index_from_obj(const object &obj);
 
 SEND_MSG(list_slicing)
 {
-    if (msg.__value.type != value_t::list_t)
+    if (msg.__value.type != value_t::data_t)
         return empty();
     
     list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
     list_data *msg_d = reinterpret_cast<list_data *>(msg.__value.data);
     
-    if (msg_d->size < 2)
+    if (!msg_d || msg_d->size < 2)
         return empty();
     
     int pos = get_index_from_obj(msg_d->arr[0]);
@@ -479,7 +482,7 @@ SEND_MSG(list)
             return rbb::number(d->size);
         
         object symb_ret;
-        symb_ret.__value.type = value_t::block_t;
+        symb_ret.__value.type = value_t::no_data_t;
         symb_ret.__value.data = d;
         
         if (msg == symbol("=="))
@@ -492,9 +495,9 @@ SEND_MSG(list)
             symb_ret.__send_msg = list_slicing_send_msg;
         
         return symb_ret;
-    } else if (msg.__value.type == value_t::list_t) {
+    } else if (msg.__value.type == value_t::data_t) {
         list_data *msg_d = static_cast<list_data *>(msg.__value.data);
-        if (msg_d->size < 2)
+        if (!msg_d || msg_d->size < 2)
             return empty();
         
         int msg_ind = get_index_from_obj(msg_d->arr[0]);
