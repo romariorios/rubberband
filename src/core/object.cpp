@@ -17,6 +17,7 @@
 
 #include "object.hpp"
 
+#include "splay_tree.hpp"
 #include "symbol.hpp"
 
 #include <cmath>
@@ -589,4 +590,28 @@ object rbb::list(const object obj_array[], int size)
 
 // TODO block
 
+// Generic object: Basically, a map from symbols to objects
+struct symbol_object_pair
+{
+    symbol_node *sym;
+    object obj;
+};
 
+class symbol_object_tree : public splay_tree<symbol_node *, symbol_object_pair>
+{
+public:
+    symbol_object_tree() {}
+    
+protected:
+    symbol_node *key_from_node(node *n) const { return n->item.sym; }
+};
+
+SEND_MSG(generic_object)
+{
+    
+}
+
+object rbb::generic_object(const object symbol_array[], const object obj_array[], int size)
+{
+    
+}
