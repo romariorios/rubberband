@@ -535,6 +535,11 @@ object rbb::list(const object obj_array[], int size)
 // Generic object: Basically, a map from symbols to objects
 struct symbol_object_pair
 {
+    symbol_object_pair(symbol_node *sym, const object &obj) :
+        sym(sym),
+        obj(obj)
+    {}
+    
     symbol_node *sym;
     object obj;
 };
@@ -548,12 +553,33 @@ protected:
     symbol_node *key_from_node(node *n) const { return n->item.sym; }
 };
 
+class generic_object_data : public shared_data_t
+{
+public:
+    symbol_object_tree objtree;
+};
+
 SEND_MSG(generic_object)
 {
-    
+    return empty();
 }
 
 object rbb::generic_object(const object symbol_array[], const object obj_array[], int size)
 {
+    generic_object_data *d = new generic_object_data;
     
+    for (int i = 0; i < size; ++i) {
+        if (symbol_array[i].__value.type != value_t::symbol_t)
+            continue;
+        
+        symbol_node *sym = symbol_array[i].__value.symbol;
+        d->objtree.insert(sym, symbol_object_pair(sym, obj_array[i]));
+    }
+    
+    object gen_obj;
+    gen_obj.__value.type = value_t::data_t;
+    gen_obj.__value.data = d;
+    gen_obj.__send_msg = generic_object_send_msg;
+    
+    return gen_obj;
 }
