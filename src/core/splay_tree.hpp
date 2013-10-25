@@ -20,6 +20,64 @@
 
 namespace rbb
 {
+    
+template <class T>
+class linked_list
+{
+public:
+    linked_list(const T &val) :
+        value(val),
+        next(0)
+    {}
+    ~linked_list();
+    
+    int count() const;
+    linked_list *end() const;
+    linked_list *append(linked_list *other); // Returns tail
+    
+    T value;
+    linked_list *next;
+};
+
+template <class T>
+linked_list<T>::~linked_list()
+{
+    if (next)
+        delete next;
+}
+
+template <class T>
+int linked_list<T>::count() const
+{
+    if (!next)
+        return 1;
+    
+    return 1 + next->count();
+}
+
+template <class T>
+linked_list<T> *linked_list<T>::end() const
+{
+    if (!next)
+        return 0;
+    
+    linked_list *cur = next;
+    for (; cur->next; cur = cur->next);
+    
+    return cur;
+}
+
+template <class T>
+linked_list<T> *linked_list<T>::append(linked_list* other)
+{
+    linked_list<T> *tail = end();
+    if (!tail)
+        tail = this;
+    
+    tail->next = other;
+    
+    return other->end();
+}
 
 template <class Key, class T>
 class splay_tree
@@ -31,6 +89,7 @@ public:
     T at(const Key &k) const;
     T at(const Key &k);
     void insert(const Key &k, const T &item);
+    linked_list<Key> *keys() const;
     
     T insert_if_not_found(const Key &k, const T& item);
     
@@ -62,6 +121,7 @@ private:
     
     splay_tree<Key, T>::prev_and_cur find(const Key& k) const;
     void ins(const Key& k, prev_and_cur p, const T& item);
+    linked_list<Key> **keys_for_subtree(node *tree) const;
     void rotate_left(node *x);
     void rotate_right(node *x);
     void splay(node *x);
@@ -103,6 +163,21 @@ void splay_tree<Key, T>::insert(const Key& k, const T& item)
 {
     splay_tree::prev_and_cur f = find(k);
     ins(k, f, item);
+}
+
+template <class Key, class T>
+linked_list<Key> *splay_tree<Key, T>::keys() const
+{
+    if (!p_root) {
+        return 0;
+    }
+    
+    linked_list<Key> **keys = keys_for_subtree(p_root);
+    linked_list<Key> *k = keys[0];
+    
+    delete keys;
+    
+    return k;
 }
 
 // Returns the found object if it finds something or item if it doesn't
@@ -158,6 +233,32 @@ void splay_tree<Key, T>::ins(const Key &k, prev_and_cur p, const T& item)
         p.prev->right = n;
     
     splay(n);
+}
+
+template <class Key, class T>
+linked_list<Key> **splay_tree<Key, T>::keys_for_subtree(splay_tree<Key, T>::node *tree) const
+{
+    linked_list<Key> **keys = new linked_list<Key> *[2];
+    keys[0] = new linked_list<Key>(key_from_node(tree));
+    keys[1] = keys[0];
+    
+    if (tree->left) {
+        linked_list<Key> *left_keys = keys[1]->append(keys_for_subtree(tree->left)[0]);
+        if (keys[0] != keys[1]) {
+            delete keys[1];
+            keys[1] = left_keys;
+        }
+    }
+
+    if (tree->right) {
+        linked_list<Key> *right_keys = keys[1]->append(keys_for_subtree(tree->right)[0]);
+        if (keys[0] != keys[1]) {
+            delete keys[1];
+            keys[1] = right_keys;
+        }
+    }
+    
+    return keys;
 }
 
 template <class Key, class T>
