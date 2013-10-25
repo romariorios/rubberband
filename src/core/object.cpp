@@ -570,7 +570,29 @@ SEND_MSG(generic_object)
             answer.__send_msg = data_comparison_eq_send_msg;
         else if (msg == rbb::symbol("!="))
             answer.__send_msg = data_comparison_ne_send_msg;
-        else {
+        else if (msg == rbb::symbol("?:")) {
+            generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
+            
+            linked_list<symbol_node *> *fields = d->objtree.keys();
+            linked_list<symbol_node *> *old_fields = fields;
+            int size = fields->count();
+            object *l_el = new object[size];
+            
+            for (int i = 0; i < size; ++i) {
+                object sym;
+                sym.__value.type = value_t::symbol_t;
+                sym.__value.symbol = fields->value;
+                
+                l_el[i] = sym;
+                
+                linked_list<symbol_node *> *old_fields = fields;
+                fields = fields->next;
+            }
+            
+            delete old_fields;
+            
+            return list(l_el, size);
+        } else {
             generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
             
             const symbol_object_pair &pair = d->objtree.at(msg.__value.symbol);
