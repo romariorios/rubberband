@@ -600,6 +600,21 @@ SEND_MSG(generic_object)
         }
             
         return answer;
+    } else if (msg.__value.type == value_t::data_t) {
+        generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
+        generic_object_data *msg_d =
+            static_cast<generic_object_data *>(msg.__value.data);
+        if (!msg_d)
+            return empty();
+        
+        linked_list<symbol_node *> *msg_fields = msg_d->objtree.keys();
+        linked_list<symbol_node *> *msg_fields_head = msg_fields;
+        
+        for (; msg_fields; msg_fields = msg_fields->next) {
+            d->objtree.insert(msg_fields->value, msg_d->objtree.at(msg_fields->value));
+        }
+        
+        delete msg_fields_head;
     }
     
     return empty();
