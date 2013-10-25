@@ -1,5 +1,29 @@
 #include "tests_common.hpp"
 
+bool list_contains(rbb::object l, rbb::object obj)
+{
+    int size = l.send_msg(rbb::symbol("?|")).__value.integer;
+    
+    for (int i = 0; i < size; ++i) {
+        if (l.send_msg(rbb::number(i)) == obj)
+            return true;
+    }
+    
+    return false;
+}
+
+bool lists_have_same_elements(rbb::object l1, rbb::object l2)
+{
+    int size = l1.send_msg(rbb::symbol("?|")).__value.integer;
+    
+    for (int i = 0; i < size; ++i) {
+        if (list_contains(l2, l1.send_msg(rbb::number(i))))
+            return true;
+    }
+    
+    return false;
+}
+
 TESTS_INIT()
     rbb::object symbols[] = {rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c")};
     rbb::object objects[] = {rbb::number(100), rbb::number(200), rbb::number(300)};
@@ -27,4 +51,10 @@ TESTS_INIT()
     TEST_CONDITION(
         g_object.send_msg(rbb::number(100)) == rbb::empty(),
         puts("Generic object should answer empty for invalid field names (number 100)"))
+    
+    rbb::object fields = rbb::list(symbols, 3);
+    
+    TEST_CONDITION(
+        lists_have_same_elements(g_object.send_msg(rbb::symbol("?:")), fields),
+        puts("The object doesn't inform its fields"))
 TESTS_END()
