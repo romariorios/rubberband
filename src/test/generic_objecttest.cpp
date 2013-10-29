@@ -104,7 +104,7 @@ TESTS_INIT()
     rbb::object objects4[] = {rbb::boolean(true), rbb::boolean(false)};
     
     rbb::object g_object4 = rbb::generic_object(fields4, objects4, 2);
-    rbb::object g_object5 = g_object2.send_msg(rbb::symbol("+")).send_msg(g_object4);
+    rbb::object g_object5 = g_object.send_msg(rbb::symbol("+")).send_msg(g_object4);
     
     rbb::object fields_result_a2[] = {
         rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c"),
@@ -115,5 +115,5 @@ TESTS_INIT()
     
     TEST_CONDITION(
         lists_have_same_elements(result2, g_object5.send_msg(rbb::symbol("?:"))),
-        puts("Concatenation doesn't work"))
+        puts("Merging doesn't work"))
 TESTS_END()
