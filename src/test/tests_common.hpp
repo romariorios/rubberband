@@ -14,6 +14,7 @@ int main() {\
     ++tests;\
     if (!(condition)) {\
         ++errors;\
+        printf("Test %d: ", tests);\
         message;\
     }
 
