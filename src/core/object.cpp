@@ -17,7 +17,7 @@
 
 #include "object.hpp"
 
-#include "splay_tree.hpp"
+#include "data_templates.hpp"
 #include "symbol.hpp"
 
 #include <cmath>

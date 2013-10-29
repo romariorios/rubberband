@@ -18,7 +18,7 @@
 #ifndef SYMBOL_HPP
 #define SYMBOL_HPP
 
-#include "splay_tree.hpp"
+#include "data_templates.hpp"
 
 namespace rbb
 {
