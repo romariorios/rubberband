@@ -100,5 +100,20 @@ TESTS_INIT()
         lists_have_same_elements(g_object.send_msg(rbb::symbol("d")), rbb::list(objects2, 3)),
         puts("Fields are not being properly replaced"))
     
+    rbb::object fields4[] = {rbb::symbol("g"), rbb::symbol("h")};
+    rbb::object objects4[] = {rbb::boolean(true), rbb::boolean(false)};
     
+    rbb::object g_object4 = rbb::generic_object(fields4, objects4, 2);
+    rbb::object g_object5 = g_object2.send_msg(rbb::symbol("+")).send_msg(g_object4);
+    
+    rbb::object fields_result_a2[] = {
+        rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c"),
+        rbb::symbol("d"), rbb::symbol("e"), rbb::symbol("f"),
+        rbb::symbol("g"), rbb::symbol("h")
+    };
+    rbb::object result2 = rbb::list(fields_result_a2, 8);
+    
+    TEST_CONDITION(
+        lists_have_same_elements(result2, g_object5.send_msg(rbb::symbol("?:"))),
+        puts("Concatenation doesn't work"))
 TESTS_END()
