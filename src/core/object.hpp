@@ -84,9 +84,136 @@ object boolean(bool val);
 
 object list(const object obj_array[], int size);
 
-// TODO block
-
 object generic_object(const object symbol_array[], const object obj_array[], int size);
+
+class expr
+{
+public:
+    expr();
+    virtual ~expr() {}
+    
+    virtual void set_symbol_table(const object &) {}
+    virtual void set_arg(const object &) {}
+    virtual object eval() = 0;
+};
+
+class context_dependent_expr : public expr
+{
+public:
+    context_dependent_expr() {}
+    
+    virtual void set_symbol_table(const object &sym_table) { _sym_table = sym_table; }
+    virtual void set_arg(const object &arg) { _arg = arg; }
+    
+    object _sym_table;
+    object _arg;
+};
+
+class block_statement_private;
+class block_statement : public context_dependent_expr
+{
+public:
+    block_statement();
+    ~block_statement();
+    void add_expr(expr *e);
+    object eval();
+    
+private:
+    block_statement_private *_p;
+};
+
+namespace literal
+{
+    class boolean : public expr
+    {
+    public:
+        inline boolean(bool val) : _val(val) {}
+        inline object eval() { return rbb::boolean(_val); }
+        
+    private:
+        bool _val;
+    };
+    
+    class empty : public expr
+    {
+    public:
+        empty() {}
+        object eval() { return rbb::empty(); }
+    };
+    
+    class number : public expr
+    {
+    public:
+        inline number(double val) : _val(val) {}
+        inline object eval() { return rbb::number(_val); }
+        
+    private:
+        double _val;
+    };
+    
+    class symbol : public expr
+    {
+    public:
+        symbol(const char *str);
+        object eval();
+        
+    private:
+        symbol_node *_sym;
+    };
+    
+    class list : public context_dependent_expr
+    {
+    public:
+        list(const expr *obj_array[], int size);
+        object eval();
+        
+    private:
+        const expr *_obj_array;
+        int _size;
+    };
+    
+    class generic_object : public context_dependent_expr
+    {
+    public:
+        generic_object(const expr *symbol_array[], const expr *obj_array[], int size);
+        object eval();
+        
+    private:
+        const expr **_symbol_array;
+        const expr **_obj_array;
+        int _size;
+    };
+    
+    class symbol_table : public context_dependent_expr
+    {
+    public:
+        inline symbol_table() {}
+        inline object eval() { return _sym_table; }
+    };
+    
+    class block_arg : public context_dependent_expr
+    {
+    public:
+        inline block_arg() {}
+        inline object eval() { return _arg; }
+    };
+    
+    class block_private;
+    class block : public expr // blocks don't depend on an external context
+    {
+    public:
+        block();
+        ~block();
+        void add_statement(block_statement *stm);
+        void set_return_expression(expr *expr);
+        void set_symbol_table(const object &sym_table);
+        void set_arg(const object &arg);
+        object eval();
+        
+    private:
+        block_private *_p;
+    };
+}
 
 }
 
