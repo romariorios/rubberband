@@ -537,8 +537,6 @@ object rbb::list(const object obj_array[], int size)
     return create_list_object(d);
 }
 
-// TODO block
-
 // Generic object: Basically, a map from symbols to objects
 struct symbol_object_pair
 {
