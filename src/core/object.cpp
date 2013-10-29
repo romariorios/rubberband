@@ -117,6 +117,16 @@ int object::deref()
     return 1;
 }
 
+class object_data : public shared_data_t
+{
+public:
+    object_data(const object &obj) :
+        obj(obj)
+    {}
+    
+    object obj;
+};
+
 // empty: Empty object
 SEND_MSG(empty_cmp_eq) { return boolean(msg.__value.type == value_t::empty_t); }
 SEND_MSG(empty_cmp_ne) { return boolean(msg.__value.type != value_t::empty_t); }
@@ -149,8 +159,6 @@ object rbb::empty()
 }
 
 // number: Numeric object
-// TODO make comparison and arithmetic objects store their answerer value in data instead of
-// integer or floating
 double rbb::number_to_double(const object &num)
 {
     if (!is_numeric(num.__value))
@@ -164,16 +172,18 @@ static object num_operation(const object &thisobj, const object &msg,
                             object (*int_operation)(long, long),
                             object (*float_operation)(double, double))
 {
-    if (!is_numeric(thisobj.__value))
+    object obj = static_cast<object_data *>(thisobj.__value.data)->obj;
+    
+    if (!is_numeric(obj.__value))
         return empty();
 
-    if (thisobj.__value.type == value_t::integer_t &&
+    if (obj.__value.type == value_t::integer_t &&
         msg.__value.type == value_t::integer_t
     ) {
-        return int_operation(thisobj.__value.integer, msg.__value.integer);
+        return int_operation(obj.__value.integer, msg.__value.integer);
     }
 
-    double this_val = number_to_double(thisobj);
+    double this_val = number_to_double(obj);
     double msg_val = number_to_double(msg);
 
     return float_operation(this_val, msg_val);
@@ -209,7 +219,6 @@ SEND_MSG(number)
         return empty();
     
     object comp;
-    comp.__value.type = value_t::no_data_t;
     
     if (msg == symbol("=="))
         comp.__send_msg = num_op_eq_send_msg;
@@ -234,17 +243,8 @@ SEND_MSG(number)
     else
         return empty();
     
-    comp.__value.type = thisptr->__value.type;
-    switch (thisptr->__value.type) {
-    case value_t::integer_t:
-        comp.__value.integer = thisptr->__value.integer;
-        break;
-    case value_t::floating_t:
-        comp.__value.floating = thisptr->__value.floating;
-        break;
-    default:
-        return empty();
-    }
+    comp.__value.type = value_t::data_t;
+    comp.__value.data = new object_data(*thisptr);
     
     return comp;
 }
@@ -266,21 +266,18 @@ object rbb::number(double val)
 }
 
 // symbol: Symbol object
-SEND_MSG(symbol_comp_eq)
+static object symbol_comp_send_msg(object *thisptr, const object &msg, bool eq)
 {
     if (msg.__value.type != value_t::symbol_t)
         return empty();
     
-    return thisptr->__value.symbol == msg.__value.symbol? boolean(true) : boolean(false);
+    return static_cast<object_data *>(thisptr->__value.data)->obj == msg?
+        boolean(eq) : boolean(!eq);
 }
 
-SEND_MSG(symbol_comp_ne)
-{
-    if (msg.__value.type != value_t::symbol_t)
-        return empty();
-    
-    return thisptr->__value.symbol != msg.__value.symbol? boolean(true) : boolean(false);
-}
+SEND_MSG(symbol_comp_eq) { return symbol_comp_send_msg(thisptr, msg, true); }
+
+SEND_MSG(symbol_comp_ne) { return symbol_comp_send_msg(thisptr, msg, false); }
 
 SEND_MSG(symbol)
 {
@@ -288,8 +285,8 @@ SEND_MSG(symbol)
         return empty();
     
     object cmp_op;
-    cmp_op.__value.symbol = thisptr->__value.symbol;
-    cmp_op.__value.type = value_t::no_data_t;
+    cmp_op.__value.data = new object_data(*thisptr);
+    cmp_op.__value.type = value_t::data_t;
     
     if (msg.__value.symbol == symbol_node::retrieve("=="))
         cmp_op.__send_msg = symbol_comp_eq_send_msg;
@@ -365,11 +362,19 @@ object rbb::boolean(bool val)
 }
 
 // Comparison for any other objects
-SEND_MSG(data_comparison_eq) { return rbb::boolean(thisptr->__value.data == msg.__value.data); }
-// thisptr's data is handled in the answerer
+static object data_comparison_send_msg(object *thisptr, const object &msg, bool eq)
+{
+    object_data *d = static_cast<object_data *>(thisptr->__value.data);
+    
+    if (!d)
+        return empty();
+    
+    return rbb::boolean((d->obj == msg) == eq);
+}
 
-SEND_MSG(data_comparison_ne) { return rbb::boolean(thisptr->__value.data != msg.__value.data); }
-// thisptr's data is handled in the answerer
+SEND_MSG(data_comparison_eq) { return data_comparison_send_msg(thisptr, msg, true); }
+
+SEND_MSG(data_comparison_ne) { return data_comparison_send_msg(thisptr, msg, false); }
 
 // list: Array of objects
 class list_data : public shared_data_t
@@ -407,7 +412,8 @@ SEND_MSG(list_concatenation)
     if (msg.__value.type != value_t::data_t)
         return empty();
     
-    list_data *d = static_cast<list_data *>(thisptr->__value.data);
+    object d_obj = static_cast<object_data *>(thisptr->__value.data)->obj;
+    list_data *d = static_cast<list_data *>(d_obj.__value.data);
     list_data *msg_d = static_cast<list_data *>(msg.__value.data);
     
     if (!msg_d)
@@ -431,8 +437,9 @@ SEND_MSG(list_slicing)
     if (msg.__value.type != value_t::data_t)
         return empty();
     
-    list_data *d = reinterpret_cast<list_data *>(thisptr->__value.data);
-    list_data *msg_d = reinterpret_cast<list_data *>(msg.__value.data);
+    object d_obj = static_cast<object_data *>(thisptr->__value.data)->obj;
+    list_data *d = static_cast<list_data *>(d_obj.__value.data);
+    list_data *msg_d = static_cast<list_data *>(msg.__value.data);
     
     if (!msg_d || msg_d->size < 2)
         return empty();
@@ -482,8 +489,8 @@ SEND_MSG(list)
             return rbb::number(d->size);
         
         object symb_ret;
-        symb_ret.__value.type = value_t::no_data_t;
-        symb_ret.__value.data = d;
+        symb_ret.__value.type = value_t::data_t;
+        symb_ret.__value.data = new object_data(*thisptr);
         
         if (msg == symbol("=="))
             symb_ret.__send_msg = data_comparison_eq_send_msg;
@@ -563,8 +570,8 @@ SEND_MSG(generic_object)
 {
     if (msg.__value.type == value_t::symbol_t) {
         object answer;
-        answer.__value.type = value_t::no_data_t;
-        answer.__value.data = thisptr->__value.data;
+        answer.__value.type = value_t::data_t;
+        answer.__value.data = new object_data(*thisptr);
         
         if (msg == rbb::symbol("=="))
             answer.__send_msg = data_comparison_eq_send_msg;
