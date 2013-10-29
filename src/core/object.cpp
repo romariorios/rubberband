@@ -566,6 +566,21 @@ public:
     symbol_object_tree objtree;
 };
 
+SEND_MSG(generic_object_merge)
+{
+    if (msg.__value.type != value_t::data_t)
+        return empty();
+    
+    if (!static_cast<generic_object_data *>(msg.__value.data))
+        return empty();
+    
+    object gen_obj = rbb::generic_object(0, 0, 0);
+    gen_obj.send_msg(static_cast<object_data *>(thisptr->__value.data)->obj);
+    gen_obj.send_msg(msg);
+    
+    return gen_obj;
+}
+
 SEND_MSG(generic_object)
 {
     if (msg.__value.type == value_t::symbol_t) {
@@ -577,6 +592,8 @@ SEND_MSG(generic_object)
             answer.__send_msg = data_comparison_eq_send_msg;
         else if (msg == rbb::symbol("!="))
             answer.__send_msg = data_comparison_ne_send_msg;
+        else if (msg == rbb::symbol("+"))
+            answer.__send_msg = generic_object_merge_send_msg;
         else if (msg == rbb::symbol("?:")) {
             generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
             
