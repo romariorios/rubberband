@@ -17,6 +17,7 @@
 
 #include "object.hpp"
 
+#include "block.hpp"
 #include "data_templates.hpp"
 #include "symbol.hpp"
 
@@ -669,4 +670,51 @@ object rbb::generic_object(const object symbol_array[], const object obj_array[]
     gen_obj.__send_msg = generic_object_send_msg;
     
     return gen_obj;
+}
+
+// Block: A sequence of instructions ready to be executed
+class block_data : public shared_data_t
+{
+public:
+    block_data(literal::block *block_l) : block_l(block_l) {}
+    ~block_data()
+    {
+        delete block_l;
+    }
+    
+    literal::block *block_l;
+};
+
+SEND_MSG(block)
+{
+    object_data *o_d = static_cast<object_data *>(thisptr->__value.data);
+    object obj = o_d->obj;
+    
+    block_data *d = static_cast<block_data *>(obj.__value.data);
+    d->block_l->set_block_arg(msg);
+    
+    return d->block_l->run();
+}
+
+SEND_MSG(block_body)
+{
+    block_data *d = static_cast<block_data *>(thisptr->__value.data);
+    d->block_l->set_block_symbol_table(msg);
+    
+    object ret;
+    ret.__value.type = value_t::data_t;
+    ret.__value.data = new object_data(*thisptr);
+    ret.__send_msg = block_send_msg;
+    
+    return ret;
+}
+
+object rbb::literal::block::eval()
+{
+    object bl;
+    bl.__value.type = value_t::data_t;
+    bl.__value.data = new block_data(this);
+    bl.__send_msg = block_body_send_msg;
+    
+    return bl;
 }
