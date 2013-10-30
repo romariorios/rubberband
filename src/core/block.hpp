@@ -26,7 +26,7 @@ namespace rbb
 class expr
 {
 public:
-    expr();
+    expr() {}
     virtual ~expr() {}
     
     virtual void set_symbol_table(const object &) {}
@@ -122,6 +122,7 @@ namespace literal
     {
     public:
         inline symbol_table() {}
+        inline void set_symbol_table(const object &sym_table) { _sym_table = sym_table; }
         inline object eval() { return _sym_table; }
         
     private:
@@ -132,6 +133,7 @@ namespace literal
     {
     public:
         inline block_arg() {}
+        inline void set_arg(const object &arg) { _arg = arg; }
         inline object eval() { return _arg; }
         
     private:
