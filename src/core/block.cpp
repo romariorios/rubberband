@@ -74,11 +74,13 @@ void block_statement::add_expr(expr* e)
 
 object block_statement::eval()
 {
-    object cur_obj = empty();
+    object cur_obj = _p->expressions->value->eval();
     
-    for (linked_list<expr *> *cur_expr = _p->expressions;
+    for (linked_list<expr *> *cur_expr = _p->expressions->next;
          cur_expr; cur_expr = cur_expr->next)
-        cur_obj = cur_expr->value->eval();
+    {
+        cur_obj = cur_obj.send_msg(cur_expr->value->eval());
+    }
     
     return cur_obj;
 }
