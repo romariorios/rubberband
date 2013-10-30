@@ -77,7 +77,9 @@ linked_list<T> *linked_list<T>::append(linked_list* other)
     
     tail->next = other;
     
-    return other->end();
+    linked_list<T> *new_tail = other->end();
+    
+    return new_tail? new_tail : other;
 }
 
 template <class T>
