@@ -28,6 +28,11 @@ public:
         expressions(0),
         expressions_tail(0)
     {}
+    ~block_statement_private()
+    {
+        if (expressions)
+            delete expressions;
+    }
     
     linked_list<expr *> *expressions;
     linked_list<expr *> *expressions_tail;
@@ -39,7 +44,6 @@ block_statement::block_statement() :
 
 block_statement::~block_statement()
 {
-    delete _p->expressions;
     delete _p;
 }
 
@@ -65,8 +69,7 @@ void block_statement::add_expr(expr* e)
         return;
     }
     
-    _p->expressions_tail->next = new linked_list<expr *>(e);
-    _p->expressions_tail = _p->expressions_tail->next;
+    _p->expressions_tail = _p->expressions_tail->append(e);
 }
 
 object block_statement::eval()
@@ -78,4 +81,169 @@ object block_statement::eval()
         cur_obj = cur_expr->value->eval();
     
     return cur_obj;
+}
+
+literal::list::list(expr* obj_array[], int size) :
+    _obj_array(obj_array),
+    _size(size)
+{}
+
+literal::list::~list()
+{
+    for (int i = 0; i < _size; ++i)
+        delete _obj_array[i];
+}
+
+void literal::list::set_symbol_table(const object& sym_table)
+{
+    for (int i = 0; i < _size; ++i)
+        _obj_array[i]->set_symbol_table(sym_table);
+}
+
+void literal::list::set_arg(const object& arg)
+{
+    for (int i = 0; i < _size; ++i)
+        _obj_array[i]->set_symbol_table(arg);
+}
+
+object literal::list::eval()
+{
+    object arr[_size];
+    for (int i = 0; i < _size; ++i)
+        arr[i] == _obj_array[i]->eval();
+    
+    return rbb::list(arr, _size);
+}
+
+literal::generic_object::generic_object(expr* symbol_array[], expr* obj_array[], int size) :
+    _symbol_array(symbol_array),
+    _obj_array(obj_array),
+    _size(size)
+{}
+
+literal::generic_object::~generic_object()
+{
+    for (int i = 0; i < _size; ++i) {
+        delete _symbol_array[i];
+        delete _obj_array[i];
+    }
+}
+
+void literal::generic_object::set_symbol_table(const object &sym_table)
+{
+    for (int i = 0; i < _size; ++i) {
+        _symbol_array[i]->set_symbol_table(sym_table);
+        _obj_array[i]->set_symbol_table(sym_table);
+    }
+}
+
+void literal::generic_object::set_arg(const object &arg)
+{
+    for (int i = 0; i < _size; ++i) {
+        _symbol_array[i]->set_arg(arg);
+        _obj_array[i]->set_arg(arg);
+    }
+}
+
+object literal::generic_object::eval()
+{
+    object symbols[_size];
+    object objects[_size];
+    
+    for (int i = 0; i < _size; ++i) {
+        symbols[i] = _symbol_array[i]->eval();
+        objects[i] = _obj_array[i]->eval();
+    }
+    
+    return rbb::generic_object(symbols, objects, _size);
+}
+
+class rbb::literal::block_private
+{
+public:
+    block_private() :
+        statements(0),
+        statements_tail(0),
+        _return_expression(new literal::empty)
+    {}
+    
+    ~block_private()
+    {
+        if (statements)
+            delete statements;
+        
+        delete _return_expression;
+    }
+    
+    void set_return_expression(expr *ret_exp)
+    {
+        delete _return_expression;
+        _return_expression = ret_exp;
+    }
+    
+    expr *return_expression() const
+    {
+        return _return_expression;
+    }
+    
+    linked_list<block_statement *> *statements;
+    linked_list<block_statement *> *statements_tail;
+    
+private:
+    expr *_return_expression;
+};
+
+literal::block::block() :
+    _p(new block_private)
+{}
+
+literal::block::~block()
+{
+    delete _p;
+}
+
+void literal::block::add_statement(block_statement* stm)
+{
+    if (!_p->statements) {
+        _p->statements = new linked_list<block_statement *>(stm);
+        _p->statements_tail = _p->statements;
+        
+        return;
+    }
+    
+    _p->statements_tail = _p->statements_tail->append(stm);
+}
+
+void literal::block::set_return_expression(expr* expr)
+{
+    _p->set_return_expression(expr);
+}
+
+void literal::block::set_block_symbol_table(const object& sym_table)
+{
+    for (linked_list<block_statement *> *cur_stm = _p->statements;
+         cur_stm; cur_stm = cur_stm->next)
+        cur_stm->value->set_symbol_table(sym_table);
+    
+    _p->return_expression()->set_symbol_table(sym_table);
+}
+
+void literal::block::set_block_arg(const object& arg)
+{
+    for (linked_list<block_statement *> *cur_stm = _p->statements;
+         cur_stm; cur_stm = cur_stm->next)
+        cur_stm->value->set_arg(arg);
+    
+    _p->return_expression()->set_arg(arg);
+}
+
+// eval() is at object.cpp
+
+object literal::block::run()
+{
+    for (linked_list<block_statement *> *cur_stm = _p->statements;
+         cur_stm; cur_stm = cur_stm->next)
+        cur_stm->value->eval();
+    
+    return _p->return_expression()->eval();
 }

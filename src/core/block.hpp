@@ -92,25 +92,29 @@ namespace literal
     class list : public expr
     {
     public:
-        list(const expr *obj_array[], int size);
+        list(rbb::expr *obj_array[], int size);
+        ~list();
         void set_symbol_table(const object &sym_table);
         void set_arg(const object &arg);
         object eval();
         
     private:
-        const expr *_obj_array;
+        expr **_obj_array;
         int _size;
     };
     
     class generic_object : public expr
     {
     public:
-        generic_object(const expr *symbol_array[], const expr *obj_array[], int size);
+        generic_object(rbb::expr *symbol_array[], rbb::expr *obj_array[], int size);
+        ~generic_object();
+        void set_symbol_table(const object &sym_table);
+        void set_arg(const object &arg);
         object eval();
         
     private:
-        const expr **_symbol_array;
-        const expr **_obj_array;
+        expr **_symbol_array;
+        expr **_obj_array;
         int _size;
     };
     
@@ -120,7 +124,7 @@ namespace literal
         inline symbol_table() {}
         inline object eval() { return _sym_table; }
         
-    protected:
+    private:
         object _sym_table;
     };
     
@@ -130,7 +134,7 @@ namespace literal
         inline block_arg() {}
         inline object eval() { return _arg; }
         
-    protected:
+    private:
         object _arg;
     };
     
@@ -145,6 +149,7 @@ namespace literal
         void set_block_symbol_table(const object &sym_table);
         void set_block_arg(const object &arg);
         object eval();
+        object run();
         
     private:
         block_private *_p;
