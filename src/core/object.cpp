@@ -50,11 +50,20 @@ object::object() :
     __send_msg(noop_send_msg)
 {}
 
-object::object(const object &other) :
-    __value(other.__value),
-    __send_msg(other.__send_msg)
+object::object(const object &other)
 {
+    *this = other;
+}
+
+object& object::operator=(const object& other)
+{
+    this->~object();
+    
+    __value = other.__value;
+    __send_msg = other.__send_msg;
     ref();
+    
+    return *this;
 }
 
 static bool is_numeric(const value_t &val)
