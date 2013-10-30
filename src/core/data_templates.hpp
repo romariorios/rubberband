@@ -34,6 +34,7 @@ public:
     int count() const;
     linked_list *end() const;
     linked_list *append(linked_list *other); // Returns tail
+    linked_list *append(const T &val);
     
     T value;
     linked_list *next;
@@ -77,6 +78,12 @@ linked_list<T> *linked_list<T>::append(linked_list* other)
     tail->next = other;
     
     return other->end();
+}
+
+template <class T>
+linked_list<T> *linked_list<T>::append(const T &val)
+{
+    return append(new linked_list<T>(val));
 }
 
 template <class Key, class T>
