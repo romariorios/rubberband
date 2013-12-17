@@ -15,11 +15,11 @@ Rubberband plan:
          Answer:  False if both Booleans are equal, true otherwise
      ° ? (Symbol)
        Answer:  Block
-         Expects: Block "a"
-         Answer:  Block
-           Expects: Block "b"
+         Expects: An Object which will serve as symbol table for whatever block that runs
+         Answer: Block
+           Expects: List with Block "a" and Block "b"
            Does:    Runs "a" if the Boolean is true; runs "b" if the Boolean is false
-           Answer:  Empty
+           Answer:  The answer of whatever block it ran
    * Empty
      Lexemes: [\[][\]]
      Expected messages:
