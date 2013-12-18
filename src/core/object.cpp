@@ -339,6 +339,71 @@ SEND_MSG(boolean_comp)
     return boolean(true);
 }
 
+class list_data : public shared_data_t
+{
+public:
+    list_data(const int size) :
+        size(size)
+    {
+        arr = new object[size];
+    }
+    
+    ~list_data()
+    {
+        delete[] arr;
+    }
+    
+    object *arr;
+    int size;
+};
+
+class boolean_decision_data : public shared_data_t
+{
+public:
+    boolean_decision_data(const object &symt, const object &bool_obj) :
+        symbol_table(symt),
+        boolean_obj(bool_obj)
+    {}
+    
+    object symbol_table;
+    object boolean_obj;
+};
+
+SEND_MSG(boolean_decision_exec)
+{
+    if (msg.__value.type != value_t::data_t)
+        return empty();
+    
+    list_data *l = static_cast<list_data *>(msg.__value.data);
+    if (!l)
+        return empty();
+    
+    if (l->size != 2 && l->size != 1)
+        return empty();
+    
+    boolean_decision_data *d = static_cast<boolean_decision_data *>(thisptr->__value.data);
+    if (!d)
+        return empty();
+    
+    return d->boolean_obj.__value.boolean?
+        l->arr[0].send_msg(d->symbol_table).send_msg(empty()) :
+        l->arr[1].send_msg(d->symbol_table).send_msg(empty());
+}
+
+SEND_MSG(boolean_get_symbol_table)
+{
+    object_data *d = static_cast<object_data *>(thisptr->__value.data);
+    if (!d)
+        return empty();
+    
+    object ret;
+    ret.__value.type = value_t::data_t;
+    ret.__value.data = new boolean_decision_data(msg, d->obj);
+    ret.__send_msg = boolean_decision_exec_send_msg;
+    
+    return ret;
+}
+
 SEND_MSG(boolean)
 {
     if (msg.__value.type != value_t::symbol_t)
@@ -351,11 +416,16 @@ SEND_MSG(boolean)
     if (msg.__value.symbol == symbol("==").__value.symbol) {
         comp_block.__value.boolean = thisptr->__value.boolean;
         return comp_block;
-    }
-    
-    if (msg.__value.symbol == symbol("!=").__value.symbol) {
+    } else if (msg.__value.symbol == symbol("!=").__value.symbol) {
         comp_block.__value.boolean = !thisptr->__value.boolean;
         return comp_block;
+    } else if (msg == symbol("?")) {
+        object boolean_decision;
+        boolean_decision.__value.type = value_t::data_t;
+        boolean_decision.__value.data = new object_data(*thisptr);
+        boolean_decision.__send_msg = boolean_get_symbol_table_send_msg;
+        
+        return boolean_decision;
     }
     
     return empty();
@@ -387,24 +457,6 @@ SEND_MSG(data_comparison_eq) { return data_comparison_send_msg(thisptr, msg, tru
 SEND_MSG(data_comparison_ne) { return data_comparison_send_msg(thisptr, msg, false); }
 
 // list: Array of objects
-class list_data : public shared_data_t
-{
-public:
-    list_data(const int size) :
-        size(size)
-    {
-        arr = new object[size];
-    }
-    
-    ~list_data()
-    {
-        delete[] arr;
-    }
-    
-    object *arr;
-    int size;
-};
-
 SEND_MSG(list);
 
 static object create_list_object(list_data *d)
