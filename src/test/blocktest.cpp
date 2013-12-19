@@ -102,6 +102,6 @@ TESTS_INIT()
     rbb::object block5 = bl5->eval();
     
     TEST_CONDITION(
-        block5.send_msg(rbb::empty()) == rbb::number(10),
+        block5.send_msg(rbb::generic_object(0, 0, 0)).send_msg(rbb::empty()) == rbb::number(10),
         puts("{! 10 } doesn't run"))
 TESTS_END()
