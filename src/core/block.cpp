@@ -112,7 +112,7 @@ object literal::list::eval()
 {
     object *arr = new object[_size];
     for (int i = 0; i < _size; ++i)
-        arr[i] == _obj_array[i]->eval();
+        arr[i] = _obj_array[i]->eval();
     
     object l = rbb::list(arr, _size);
     
