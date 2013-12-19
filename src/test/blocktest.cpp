@@ -95,7 +95,7 @@ TESTS_INIT()
     
     TEST_CONDITION(
         rbb::number(9) == block4.send_msg(rbb::number(3)),
-        puts("A more complex block doesn't run."));
+        puts("{! $ > 5? $ [| { ! ~ * 2 }, { ! ~ * ~ }] } doesn't run."));
     
     rbb::literal::block *bl5 = new rbb::literal::block;
     bl5->set_return_expression(new rbb::literal::number(10));
