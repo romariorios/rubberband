@@ -13,6 +13,14 @@ Rubberband plan:
        Answer:  Block
          Expects: Boolean "a"
          Answer:  False if both Booleans are equal, true otherwise
+     ° \/ (Symbol)
+       Answer: Block
+         Expects: Boolean "a"
+         Answer:  ORs the two booleans
+     ° /\ (Symbol)
+       Answer: Block
+         Expects: Boolean "a"
+         Answer:  ANDs the two booleans
      ° ? (Symbol)
        Answer:  Block
          Expects: An Object which will serve as symbol table for whatever block that runs
