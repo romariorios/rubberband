@@ -110,11 +110,14 @@ void literal::list::set_arg(const object& arg)
 
 object literal::list::eval()
 {
-    object arr[_size];
+    object *arr = new object[_size];
     for (int i = 0; i < _size; ++i)
         arr[i] == _obj_array[i]->eval();
     
-    return rbb::list(arr, _size);
+    object l = rbb::list(arr, _size);
+    
+    delete[] arr;
+    return l;
 }
 
 literal::generic_object::generic_object(expr* symbol_array[], expr* obj_array[], int size) :
@@ -149,15 +152,19 @@ void literal::generic_object::set_arg(const object &arg)
 
 object literal::generic_object::eval()
 {
-    object symbols[_size];
-    object objects[_size];
+    object *symbols = new object[_size];
+    object *objects = new object[_size];
     
     for (int i = 0; i < _size; ++i) {
         symbols[i] = _symbol_array[i]->eval();
         objects[i] = _obj_array[i]->eval();
     }
     
-    return rbb::generic_object(symbols, objects, _size);
+    object e = rbb::generic_object(symbols, objects, _size);
+    
+    delete[] symbols;
+    delete[] objects;
+    return e;
 }
 
 class rbb::literal::block_private
