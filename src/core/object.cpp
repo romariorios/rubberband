@@ -404,6 +404,22 @@ SEND_MSG(boolean_get_symbol_table)
     return ret;
 }
 
+#define BOOLEAN_DO(op, sym)\
+SEND_MSG(boolean_do_##op)\
+{\
+    if (msg.__value.type != value_t::boolean_t)\
+        return empty();\
+\
+    object_data *d = static_cast<object_data *>(thisptr->__value.data);\
+    if (!d)\
+        return empty();\
+\
+    return rbb::boolean(d->obj.__value.boolean sym msg.__value.boolean);\
+}
+
+BOOLEAN_DO(AND, &&)
+BOOLEAN_DO(OR, ||)
+
 SEND_MSG(boolean)
 {
     if (msg.__value.type != value_t::symbol_t)
@@ -419,6 +435,20 @@ SEND_MSG(boolean)
     } else if (msg.__value.symbol == symbol("!=").__value.symbol) {
         comp_block.__value.boolean = !thisptr->__value.boolean;
         return comp_block;
+    } else if (msg == symbol("/\\")) {
+        object do_AND;
+        do_AND.__value.type = value_t::data_t;
+        do_AND.__value.data = new object_data(*thisptr);
+        do_AND.__send_msg = boolean_do_AND_send_msg;
+        
+        return do_AND;
+    } else if (msg == symbol("\\/")) {
+        object do_OR;
+        do_OR.__value.type = value_t::data_t;
+        do_OR.__value.data = new object_data(*thisptr);
+        do_OR.__send_msg = boolean_do_OR_send_msg;
+        
+        return do_OR;
     } else if (msg == symbol("?")) {
         object boolean_decision;
         boolean_decision.__value.type = value_t::data_t;
