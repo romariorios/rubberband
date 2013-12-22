@@ -20,6 +20,32 @@ TESTS_INIT()
     TEST_OPERATOR_EQ(rbb::empty(), true_obj)
     TEST_OPERATOR_EQ(rbb::empty(), false_obj)
     
+    TEST_CONDITION(
+        true_obj.send_msg(rbb::symbol("/\\")).send_msg(true_obj) == true_obj,
+        puts("AND  | T| T|  error"))
+    TEST_CONDITION(
+        true_obj.send_msg(rbb::symbol("/\\")).send_msg(false_obj) == false_obj,
+        puts("AND  | T| F|  error"))
+    TEST_CONDITION(
+        false_obj.send_msg(rbb::symbol("/\\")).send_msg(true_obj) == false_obj,
+        puts("AND  | F| T|  error"))
+    TEST_CONDITION(
+        false_obj.send_msg(rbb::symbol("/\\")).send_msg(false_obj) == false_obj,
+        puts("AND  | F| F|  error"))
+    
+    TEST_CONDITION(
+        true_obj.send_msg(rbb::symbol("\\/")).send_msg(true_obj) == true_obj,
+        puts("OR   | T| T|  error"))
+    TEST_CONDITION(
+        true_obj.send_msg(rbb::symbol("\\/")).send_msg(false_obj) == true_obj,
+        puts("OR   | T| F|  error"))
+    TEST_CONDITION(
+        false_obj.send_msg(rbb::symbol("\\/")).send_msg(true_obj) == true_obj,
+        puts("OR   | F| T|  error"))
+    TEST_CONDITION(
+        false_obj.send_msg(rbb::symbol("\\/")).send_msg(false_obj) == false_obj,
+        puts("OR   | F| F|  error"))
+    
     // [true]? [:] [| {! 3 }, {! 5 }]
     rbb::literal::block *bl_true = new rbb::literal::block;
     bl_true->set_return_expression(new rbb::literal::number(3));
