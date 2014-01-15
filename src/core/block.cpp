@@ -47,11 +47,11 @@ block_statement::~block_statement()
     delete _p;
 }
 
-void block_statement::set_symbol_table(const object& sym_table)
+void block_statement::set_context(const object& context)
 {
     for (linked_list<expr *> *cur_expr = _p->expressions;
          cur_expr; cur_expr = cur_expr->next)
-        cur_expr->value->set_symbol_table(sym_table);
+        cur_expr->value->set_context(context);
 }
 
 void block_statement::set_arg(const object& arg)
@@ -96,16 +96,16 @@ literal::array::~array()
         delete _obj_array[i];
 }
 
-void literal::array::set_symbol_table(const object& sym_table)
+void literal::array::set_context(const object& context)
 {
     for (int i = 0; i < _size; ++i)
-        _obj_array[i]->set_symbol_table(sym_table);
+        _obj_array[i]->set_context(context);
 }
 
 void literal::array::set_arg(const object& arg)
 {
     for (int i = 0; i < _size; ++i)
-        _obj_array[i]->set_symbol_table(arg);
+        _obj_array[i]->set_context(arg);
 }
 
 object literal::array::eval()
@@ -134,11 +134,11 @@ literal::table::~table()
     }
 }
 
-void literal::table::set_symbol_table(const object &sym_table)
+void literal::table::set_context(const object &context)
 {
     for (int i = 0; i < _size; ++i) {
-        _symbol_array[i]->set_symbol_table(sym_table);
-        _obj_array[i]->set_symbol_table(sym_table);
+        _symbol_array[i]->set_context(context);
+        _obj_array[i]->set_context(context);
     }
 }
 
@@ -228,13 +228,13 @@ void literal::block::set_return_expression(expr* expr)
     _p->set_return_expression(expr);
 }
 
-void literal::block::set_block_symbol_table(const object& sym_table)
+void literal::block::set_block_context(const object& context)
 {
     for (linked_list<block_statement *> *cur_stm = _p->statements;
          cur_stm; cur_stm = cur_stm->next)
-        cur_stm->value->set_symbol_table(sym_table);
+        cur_stm->value->set_context(context);
     
-    _p->return_expression()->set_symbol_table(sym_table);
+    _p->return_expression()->set_context(context);
 }
 
 void literal::block::set_block_arg(const object& arg)

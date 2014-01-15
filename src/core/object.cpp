@@ -361,11 +361,11 @@ class boolean_decision_data : public shared_data_t
 {
 public:
     boolean_decision_data(const object &symt, const object &bool_obj) :
-        symbol_table(symt),
+        context(symt),
         boolean_obj(bool_obj)
     {}
     
-    object symbol_table;
+    object context;
     object boolean_obj;
 };
 
@@ -386,11 +386,11 @@ SEND_MSG(boolean_decision_exec)
         return empty();
     
     return d->boolean_obj.__value.boolean?
-        l->arr[0].send_msg(d->symbol_table).send_msg(empty()) :
-        l->arr[1].send_msg(d->symbol_table).send_msg(empty());
+        l->arr[0].send_msg(d->context).send_msg(empty()) :
+        l->arr[1].send_msg(d->context).send_msg(empty());
 }
 
-SEND_MSG(boolean_get_symbol_table)
+SEND_MSG(boolean_get_context)
 {
     object_data *d = static_cast<object_data *>(thisptr->__value.data);
     if (!d)
@@ -453,7 +453,7 @@ SEND_MSG(boolean)
         object boolean_decision;
         boolean_decision.__value.type = value_t::data_t;
         boolean_decision.__value.data = new object_data(*thisptr);
-        boolean_decision.__send_msg = boolean_get_symbol_table_send_msg;
+        boolean_decision.__send_msg = boolean_get_context_send_msg;
         
         return boolean_decision;
     }
@@ -781,7 +781,7 @@ SEND_MSG(block)
 SEND_MSG(block_body)
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data);
-    d->block_l->set_block_symbol_table(msg);
+    d->block_l->set_block_context(msg);
     
     object ret;
     ret.__value.type = value_t::data_t;

@@ -7,26 +7,26 @@ TESTS_INIT()
     
     // { ~[: x = $] ! ~x * (~x) }
     rbb::block_statement *stm1 = new rbb::block_statement;
-    stm1->add_expr(new rbb::literal::symbol_table);
+    stm1->add_expr(new rbb::literal::context);
     rbb::expr *symbols[] = { new rbb::literal::symbol("x") };
     rbb::expr *objects[] = { new rbb::literal::block_arg };
     stm1->add_expr(new rbb::literal::table(symbols, objects, 1));
     bl->add_statement(stm1);
     
     rbb::block_statement *ret_expr = new rbb::block_statement;
-    ret_expr->add_expr(new rbb::literal::symbol_table);
+    ret_expr->add_expr(new rbb::literal::context);
     ret_expr->add_expr(new rbb::literal::symbol("x"));
     ret_expr->add_expr(new rbb::literal::symbol("*"));
     rbb::block_statement *expr = new rbb::block_statement;
-    expr->add_expr(new rbb::literal::symbol_table);
+    expr->add_expr(new rbb::literal::context);
     expr->add_expr(new rbb::literal::symbol("x"));
     ret_expr->add_expr(expr);
     bl->set_return_expression(ret_expr);
     
-    rbb::object sym_table = rbb::table(0, 0, 0);
+    rbb::object context = rbb::table(0, 0, 0);
     
     rbb::object block_body = bl->eval();
-    rbb::object block = block_body.send_msg(sym_table);
+    rbb::object block = block_body.send_msg(context);
     rbb::object result = block.send_msg(rbb::number(6));
     
     TEST_CONDITION(result == rbb::number(36), puts("Block isn't computing 6 squared"))
@@ -69,7 +69,7 @@ TESTS_INIT()
     rbb::block_statement *true_expr = new rbb::block_statement;
     rbb::literal::block *true_bl = new rbb::literal::block;
     rbb::block_statement *true_ret = new rbb::block_statement;
-    true_ret->add_expr(new rbb::literal::symbol_table);
+    true_ret->add_expr(new rbb::literal::context);
     true_ret->add_expr(new rbb::literal::symbol("*"));
     true_ret->add_expr(new rbb::literal::number(2));
     true_bl->set_return_expression(true_ret);
@@ -78,9 +78,9 @@ TESTS_INIT()
     rbb::block_statement *false_expr = new rbb::block_statement;
     rbb::literal::block *false_bl = new rbb::literal::block;
     rbb::block_statement *false_ret = new rbb::block_statement;
-    false_ret->add_expr(new rbb::literal::symbol_table);
+    false_ret->add_expr(new rbb::literal::context);
     false_ret->add_expr(new rbb::literal::symbol("*"));
-    false_ret->add_expr(new rbb::literal::symbol_table);
+    false_ret->add_expr(new rbb::literal::context);
     false_bl->set_return_expression(false_ret);
     false_expr->add_expr(false_bl);
     

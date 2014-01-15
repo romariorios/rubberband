@@ -29,7 +29,7 @@ public:
     expr() {}
     virtual ~expr() {}
     
-    virtual void set_symbol_table(const object &) {}
+    virtual void set_context(const object &) {}
     virtual void set_arg(const object &) {}
     virtual object eval() = 0;
 };
@@ -40,7 +40,7 @@ class block_statement : public expr
 public:
     block_statement();
     ~block_statement();
-    void set_symbol_table(const object &sym_table);
+    void set_context(const object &context);
     void set_arg(const object &arg);
     void add_expr(expr *e);
     object eval();
@@ -94,7 +94,7 @@ namespace literal
     public:
         array(rbb::expr *obj_array[], int size);
         ~array();
-        void set_symbol_table(const object &sym_table);
+        void set_context(const object &context);
         void set_arg(const object &arg);
         object eval();
         
@@ -108,7 +108,7 @@ namespace literal
     public:
         table(rbb::expr *symbol_array[], rbb::expr *obj_array[], int size);
         ~table();
-        void set_symbol_table(const object &sym_table);
+        void set_context(const object &context);
         void set_arg(const object &arg);
         object eval();
         
@@ -118,15 +118,15 @@ namespace literal
         int _size;
     };
     
-    class symbol_table : public expr
+    class context : public expr
     {
     public:
-        inline symbol_table() {}
-        inline void set_symbol_table(const object &sym_table) { _sym_table = sym_table; }
-        inline object eval() { return _sym_table; }
+        inline context() {}
+        inline void set_context(const object &context) { _context = context; }
+        inline object eval() { return _context; }
         
     private:
-        object _sym_table;
+        object _context;
     };
     
     class block_arg : public expr
@@ -148,7 +148,7 @@ namespace literal
         ~block();
         void add_statement(block_statement *stm);
         void set_return_expression(expr *expr);
-        void set_block_symbol_table(const object &sym_table);
+        void set_block_context(const object &context);
         void set_block_arg(const object &arg);
         object eval();
         object run();
