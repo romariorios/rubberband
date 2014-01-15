@@ -116,4 +116,18 @@ TESTS_INIT()
     TEST_CONDITION(
         arrays_have_same_elements(result2, g_object5.send_msg(rbb::symbol("?:"))),
         puts("Merging doesn't work"))
+
+    rbb::object symbs1[] = { rbb::symbol("hahaha") };
+    rbb::object objs1[] = { rbb::number(15) };
+    rbb::object tabl1 = rbb::table(symbs1, objs1, 1);
+
+    rbb::object symbs2[] = { rbb::symbol("hehehe") };
+    rbb::object objs2[] = { rbb::number(30) };
+    rbb::object tabl2 = rbb::table(symbs2, objs2, 1);
+
+    rbb::object tabl3 = tabl1.send_msg(tabl2);
+
+    TEST_CONDITION(
+        tabl1 == tabl3,
+        puts("Object merging doesn't return self"))
 TESTS_END()
