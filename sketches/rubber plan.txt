@@ -1,9 +1,22 @@
 Rubberband plan:
  - Gather all the sketches together in this list
  - Define each base object and all the messages they will respond to
+   Definitions
+   * Boolean: A truth value
+   * Empty: The void
+   * Number: A numeric value
+   * Symbol: A generic symbol, without any arithmetic properties, order or size
+   * Array: An ordered, fixed-size, mutable set of elements
+   * Table: A table which maps from symbols to any other objects
+   * Block: An object which receives a message, processes it over a given context, and returns
+            another objects
+     Defintions inside a block:
+     ° $ (message): The message received by the block
+     ° ~ (context): The context the block runs on. Usually, it's a symbol table
+     ° @ (self-reference): A reference to the block itself
+   Messages
    (Note: if an object receives an unexpected message, it answers Empty and does nothing)
    * Boolean
-     Lexemes: [true] | [false] (TODO change to generic symbols)
      Expected messages:
      ° == (Symbol)
        Answer:  Block
@@ -21,15 +34,14 @@ Rubberband plan:
        Answer: Block
          Expects: Boolean "a"
          Answer:  ANDs the two booleans
+     ° >< (Symbol)
+       Answer: The negation of this boolean (NOT)
      ° ? (Symbol)
        Answer:  Block
-         Expects: An Object which will serve as symbol table for whatever block that runs
-         Answer: Block
-           Expects: List with Block "a" and Block "b"
-           Does:    Runs "a" if the Boolean is true; runs "b" if the Boolean is false
-           Answer:  The answer of whatever block it ran
+         Expects: Array with Block "a" and Block "b"
+         Does:    Runs "a" if the Boolean is true; runs "b" if the Boolean is false
+         Answer:  The answer of whatever block it ran
    * Empty
-     Lexemes: [\[][\]]
      Expected messages:
      ° == (Symbol)
        Answer:  Block
@@ -40,7 +52,6 @@ Rubberband plan:
          Expects: Object
          Answer:  False if the Object is Empty, true otherwise
    * Number
-     Lexemes: [0-9]+ ([\.][0-9]+)?
      Expected messages:
      ° == (Symbol)
        Answer:  Block
@@ -83,7 +94,6 @@ Rubberband plan:
          Expects: Number "a"
          Answer:  The Number divided by "a"
    * Symbol
-     Lexemes: [a-zA-Z_] [a-zA-Z0-9_]* | ([=] | [!]) [=] | ([<] | [>]) [=]? | [+] | [\-] | [*] | [/] | [?][|]?
      Expected messages:
      ° == (Symbol)
        Answer:  Block
@@ -93,65 +103,59 @@ Rubberband plan:
        Answer:  Block
          Expects: Symbol "a"
          Answer:  False if the Symbol is equal to "a", true other wise
-   * List
-     Syntax: [\[] {Object}? [|] (({Object} [\,])* {Object})? [\]]
+   * Array
      Expected messages:
      ° == (Symbol)
        Answer: Block
          Expects: Object
-         Answer: True if the Object is this List. False otherwise
+         Answer: True if the Object is this Array. False otherwise
      ° != (Symbol)
        Answer: Block
          Expects: Object
-         Answer: False if the Object is this List. True otherwise
+         Answer: False if the Object is this Array. True otherwise
      ° Number
        Answer: The Object at the position of the number. Empty if there's no number in that position
-     ° List "a"
+     ° Array "a"
        Does: Makes this list's position defined at "a"'s first element point to the object at "a"'s second position
        Answer: Empty
      ° ?| (Symbol)
        Answer: The list length (a Number)
      ° + (Symbol)
        Answer: Block
-         Expects: List "a"
-         Answer: This List and List "a" concatenated
+         Expects: Array "a"
+         Answer: This Array and Array "a" concatenated
      ° / (Symbol)
        Answer: Block
-         Expects: List "a"
+         Expects: Array "a"
          Answer: Slice the amount of elements indicated by "a"'s second element starting from the position indicated by "a"'s first element
-   * Block
-     Syntax: [\{] ({Msgchain} ({Separator} {Msgchain})*)? ([!] {Msgchain}?)? [\}]
+   * Contextless Block
      Expected messages:
-     ° Generic object
-       Answer: Block "a"
+     ° The context (Object)
+       Answer: Block
          Expects: Object
          Does: Passes the Object as the argument ($) of this block and executes it
-         Answer: The Object that results from the Msgchain after the exclamation mark
-   * Generic object
-     Syntax: [\[] [\:](({Object} [=] {Object} [\,])* {Object} [=] {Object})? [\]]
+         Answer: The Object that results from the expression after the exclamation mark
+   * Table
      Expected messages:
      ° == (Symbol)
        Answer: Block
          Expects: Object
-         Answer: True if the Object is this Generic object. False otherwise
+         Answer: True if the Object is this Table. False otherwise
      ° != (Symbol)
        Answer: Block
          Expects: Object
-         Answer: False if the Object is this Generic object. True otherwise
+         Answer: False if the Object is this Table. True otherwise
      ° + (Symbol)
        Answer: Block
-         Expects: Generic object "a"
-         Answer: This Generic object and "a" concatenated
+         Expects: Table "a"
+         Answer: This Table and "a" concatenated
      ° ?: (Symbol)
-       Answer: List containing the symbols to which this Generic object responds
+       Answer: Array containing the symbols to which this Table responds
      ° Symbol
        Answer: If it isn't any of the symbols above, the Object to which this Symbol points
-     ° Generic object "a"
-       Does: Unites "a" into this Generic object
-       Answer: Empty
-   * External object
-     Syntax: [\[] [\^]{Symbol} [\]]
-     Expected messages: All defined in the object
+     ° Table "a"
+       Does: Unites "a" into this Table
+       Answer: This Table
  - Define the language syntax
    * Grammar
      start -> object
@@ -181,11 +185,13 @@ Rubberband plan:
      Empty: The void. Answers itself to any message.
      Number: A number. Implements arithmetic stuff.
      Symbol: It's used as a label of objects.
-     List: [size| element1, element2, element3, ...]
-     ° Creates a list of size "size" with the defined objects as elements. If a size isn't specified, the list will be the size of the amount of elements.
+     Array: |size|[ element1, element2, element3, ...] or
+            |[ element1, element2, element3, ...]
+            | element1, element2, element3, ... (can't define the size using abbreviated syntax)
+     ° Creates an array of size "size" with the defined objects as elements. If a size isn't specified, the list will be the size of the amount of elements.
        If size is smaller than the amount of elements passed, the last elements which don't fit the list will simply be ignored. If size is bigger than the
        amount of elements passed, the remaining spaces remain empty in the list. Trying to get an out-of-range element will return empty. Note that the size
-       of a list cannot change during its lifetime; trying to make an out-of-bounds position point to any object will have no effect. Also, the length of
+       of an array cannot change during its lifetime; trying to make an out-of-bounds position point to any object will have no effect. Also, the length of
        a list is the length with which it was created, not the amount of non-empty elements it contains. Apart from that, every list is mutable -- in the
        sense that the user can change its elements.
      Block: { ~object1 $ msg1; ~object2 $ msg2; ... ! ~answer } or
@@ -194,16 +200,14 @@ Rubberband plan:
        ...
        ! answer }
      ° Creates a block of code that executes the passed statements and, then, returns the object defined after the exclamation mark. Inside a block, there
-       are two special objects: ~ and $. ~ is meant to be the block's symbol table, where the variables are stored to and retrieved from. It's undefined until
-       a message is sent to this object. When this object receives a message, it sets that message as the ~ of this block and returns it. This returned
-       object is the true executable block. Any message it receives is passed inside the block as the $ upon execution. Worth noting is that, although ~
-       is meant to be a generic object, you can pass any object to it if you want (even an empty one). Every block is mutable.
-     Generic object: [: msg1 = obj1, msg2 = obj2, ...]
+       are three special objects: ~, $, and @. ~ is meant to be the block's context, where the variables are stored to and retrieved from. The block is
+       contextless initially, and it expects its context as the first message, returning itself under the passed context. This returned block, then,
+       passes the messages it receives inside itself as the $ upon execution. Worth noting is that, although ~ is meant to be a table, you can pass any
+       object to it if you want (even an empty one). Finally, the @ object is simply a self-reference without a defined context. Every block is mutable.
+     Table: :[ msg1 => obj1, msg2 => obj2, ...] or
+            : msg1 => obj1, msg2 => obj2, ...
      ° Maps symbols to objects. There are no guarantees of the order of the symbols. Note that pointing a symbol which is already used by the object (like :?)
        has no effect.
-     External object: [^external]
-     ° Loads an object defined outside the context of the current program. The way the object is constructed (and brought into the current context) is up to
-       the interpreter, which may look for files inside a predefined directory.
  - Define the source code dir structure
    /
    /LICENSE -- License
@@ -213,3 +217,7 @@ Rubberband plan:
    /src/core/objects.{h|c}pp -- The base objects defined above
    /src/interpreter -- Files for the interpreter
  - Starting coding the base objects (Yay!)
+   * Done
+ - Write a preliminary version of the interpreter
+   * Only basic objects available (Boolean, Empty, Number, Symbol, Block)
+ - Review sketches and update this plan accordingly
