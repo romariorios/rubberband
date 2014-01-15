@@ -449,6 +449,8 @@ SEND_MSG(boolean)
         do_OR.__send_msg = boolean_do_OR_send_msg;
         
         return do_OR;
+    } else if (msg == symbol("><")) {
+        return boolean(!thisptr->__value.boolean);
     } else if (msg == symbol("?")) {
         object boolean_decision;
         boolean_decision.__value.type = value_t::data_t;
