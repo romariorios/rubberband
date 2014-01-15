@@ -56,18 +56,18 @@ TESTS_INIT()
     rbb::object block_false = bl_false->eval();
     
     rbb::object arr[] = { block_true, block_false };
-    rbb::object list = rbb::list(arr, 2);
+    rbb::object array = rbb::array(arr, 2);
     
     TEST_CONDITION(
         rbb::boolean(true)
             .send_msg(rbb::symbol("?"))
             .send_msg(rbb::generic_object(0, 0, 0))
-            .send_msg(list) == rbb::number(3),
+            .send_msg(array) == rbb::number(3),
         puts("Flow control isn't working."))
     TEST_CONDITION(
         rbb::boolean(false)
             .send_msg(rbb::symbol("?"))
             .send_msg(rbb::generic_object(0, 0, 0))
-            .send_msg(list) == rbb::number(5),
+            .send_msg(array) == rbb::number(5),
         puts("Flow control isn't working."))
 TESTS_END()

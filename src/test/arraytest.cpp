@@ -1,6 +1,6 @@
 #include "tests_common.hpp"
 
-bool cmp_list(rbb::object &l1, rbb::object &l2)
+bool cmp_array(rbb::object &l1, rbb::object &l2)
 {
     if (l1.__value.type != rbb::value_t::data_t ||
         l2.__value.type != rbb::value_t::data_t)
@@ -26,14 +26,14 @@ bool cmp_list(rbb::object &l1, rbb::object &l2)
 
 TESTS_INIT()
     rbb::object numbers[] = {rbb::number(1), rbb::number(4), rbb::number(9)};
-    rbb::object l = rbb::list(numbers, 3);
+    rbb::object l = rbb::array(numbers, 3);
 
     TEST_CONDITION(
         l.send_msg(rbb::symbol("==")).send_msg(l) == rbb::boolean(true),
-        puts("A list doesn't equal itself"))
+        puts("An aray doesn't equal itself"))
     TEST_CONDITION(
         l.send_msg(rbb::symbol("!=")).send_msg(l) == rbb::boolean(false),
-        puts("A list differs from itself"))
+        puts("An array differs from itself"))
     
     rbb::object l_ = l;
     
@@ -44,47 +44,47 @@ TESTS_INIT()
     
     TEST_CONDITION(
         l.send_msg(rbb::symbol("?|")) == rbb::number(3),
-        puts("The list doesn't correctly report its size"))
+        puts("The array doesn't correctly report its size"))
     TEST_CONDITION(
         l.send_msg(rbb::number(0)) == rbb::number(1),
-        puts("The list doesn't return its elements"))
+        puts("The array doesn't return its elements"))
     TEST_CONDITION(
         l.send_msg(rbb::number(1)) == rbb::number(4),
-        puts("The list doesn't return its elements"))
+        puts("The array doesn't return its elements"))
     TEST_CONDITION(
         l.send_msg(rbb::number(3)) == rbb::empty(),
-        puts("The list isn't handling out-of-bounds well"))
+        puts("The array isn't handling out-of-bounds well"))
     
-    rbb::object ch_0_arr[] = { rbb::number(0), rbb::symbol("number_list") };
-    rbb::object ch_0 = rbb::list(ch_0_arr, 2);
+    rbb::object ch_0_arr[] = { rbb::number(0), rbb::symbol("number_array") };
+    rbb::object ch_0 = rbb::array(ch_0_arr, 2);
     
     l.send_msg(ch_0);
     
     TEST_CONDITION(
-        l.send_msg(rbb::number(0)) == rbb::symbol("number_list"),
+        l.send_msg(rbb::number(0)) == rbb::symbol("number_array"),
         puts("Assigning an object to a position has no effect"))
     
     rbb::object other_numbers[] = {rbb::number(2), rbb::number(3), rbb::number(5)};
-    rbb::object l2 = rbb::list(other_numbers, 3);
+    rbb::object l2 = rbb::array(other_numbers, 3);
     rbb::object l3 = l.send_msg(rbb::symbol("+")).send_msg(l2);
     
     rbb::object all_numbers[] = {
-        rbb::symbol("number_list"), rbb::number(4), rbb::number(9),
+        rbb::symbol("number_array"), rbb::number(4), rbb::number(9),
         rbb::number(2), rbb::number(3), rbb::number(5)
     };
-    rbb::object l4 = rbb::list(all_numbers, 6);
+    rbb::object l4 = rbb::array(all_numbers, 6);
     
-    TEST_CONDITION(cmp_list(l3, l4), puts("Concatenation doesn't work"));
+    TEST_CONDITION(cmp_array(l3, l4), puts("Concatenation doesn't work"));
     
     rbb::object slice_by[] = {rbb::number(1), rbb::number(3)};
-    rbb::object sb = rbb::list(slice_by, 2);
+    rbb::object sb = rbb::array(slice_by, 2);
     
     rbb::object l5 = l3.send_msg(rbb::symbol("/")).send_msg(sb);
     
-    rbb::object expected_list[] = {rbb::number(4), rbb::number(9), rbb::number(2)};
-    rbb::object el = rbb::list(expected_list, 3);
+    rbb::object expected_array[] = {rbb::number(4), rbb::number(9), rbb::number(2)};
+    rbb::object el = rbb::array(expected_array, 3);
     
-    TEST_CONDITION(cmp_list(l5, el), puts("Slicing doesn't work"))
+    TEST_CONDITION(cmp_array(l5, el), puts("Slicing doesn't work"))
     
     TEST_OPERATOR_EQ(l, l5)
     TEST_OPERATOR_EQ(l5, rbb::empty())

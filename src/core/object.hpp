@@ -83,7 +83,7 @@ object boolean(bool val);
 
 // NEVER assign pointers directly to other objects
 
-object list(const object obj_array[], int size);
+object array(const object obj_array[], int size);
 
 object generic_object(const object symbol_array[], const object obj_array[], int size);
 

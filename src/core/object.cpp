@@ -339,16 +339,16 @@ SEND_MSG(boolean_comp)
     return boolean(true);
 }
 
-class list_data : public shared_data_t
+class array_data : public shared_data_t
 {
 public:
-    list_data(const int size) :
+    array_data(const int size) :
         size(size)
     {
         arr = new object[size];
     }
     
-    ~list_data()
+    ~array_data()
     {
         delete[] arr;
     }
@@ -374,7 +374,7 @@ SEND_MSG(boolean_decision_exec)
     if (msg.__value.type != value_t::data_t)
         return empty();
     
-    list_data *l = static_cast<list_data *>(msg.__value.data);
+    array_data *l = static_cast<array_data *>(msg.__value.data);
     if (!l)
         return empty();
     
@@ -486,32 +486,32 @@ SEND_MSG(data_comparison_eq) { return data_comparison_send_msg(thisptr, msg, tru
 
 SEND_MSG(data_comparison_ne) { return data_comparison_send_msg(thisptr, msg, false); }
 
-// list: Array of objects
-SEND_MSG(list);
+// array: Array of objects
+SEND_MSG(array);
 
-static object create_list_object(list_data *d)
+static object create_array_object(array_data *d)
 {
     object l;
     l.__value.type = value_t::data_t;
     l.__value.data = d;
-    l.__send_msg = list_send_msg;
+    l.__send_msg = array_send_msg;
     
     return l;
 }
 
-SEND_MSG(list_concatenation)
+SEND_MSG(array_concatenation)
 {
     if (msg.__value.type != value_t::data_t)
         return empty();
     
     object d_obj = static_cast<object_data *>(thisptr->__value.data)->obj;
-    list_data *d = static_cast<list_data *>(d_obj.__value.data);
-    list_data *msg_d = static_cast<list_data *>(msg.__value.data);
+    array_data *d = static_cast<array_data *>(d_obj.__value.data);
+    array_data *msg_d = static_cast<array_data *>(msg.__value.data);
     
     if (!msg_d)
         return empty();
     
-    list_data *new_d = new list_data(d->size + msg_d->size);
+    array_data *new_d = new array_data(d->size + msg_d->size);
     
     for (int i = 0; i < d->size; ++i)
         new_d->arr[i] = d->arr[i];
@@ -519,19 +519,19 @@ SEND_MSG(list_concatenation)
     for (int i = d->size, j = 0; j < msg_d->size; ++i, ++j)
         new_d->arr[i] = msg_d->arr[j];
     
-    return create_list_object(new_d);
+    return create_array_object(new_d);
 }
 
 static int get_index_from_obj(const object &obj);
 
-SEND_MSG(list_slicing)
+SEND_MSG(array_slicing)
 {
     if (msg.__value.type != value_t::data_t)
         return empty();
     
     object d_obj = static_cast<object_data *>(thisptr->__value.data)->obj;
-    list_data *d = static_cast<list_data *>(d_obj.__value.data);
-    list_data *msg_d = static_cast<list_data *>(msg.__value.data);
+    array_data *d = static_cast<array_data *>(d_obj.__value.data);
+    array_data *msg_d = static_cast<array_data *>(msg.__value.data);
     
     if (!msg_d || msg_d->size < 2)
         return empty();
@@ -547,12 +547,12 @@ SEND_MSG(list_slicing)
     if (pos + size > this_len)
         return empty();
     
-    list_data *new_d = new list_data(size);
+    array_data *new_d = new array_data(size);
     
     for (int i = 0, j = pos; i < size; ++i, ++j)
         new_d->arr[i] = d->arr[j];
     
-    return create_list_object(new_d);
+    return create_array_object(new_d);
 }
 
 static int get_index_from_obj(const object &obj)
@@ -567,14 +567,14 @@ static int get_index_from_obj(const object &obj)
     return obj.__value.integer;
 }
 
-static bool in_bounds(list_data *d, int i)
+static bool in_bounds(array_data *d, int i)
 {
     return i >= 0 && i < d->size;
 }
 
-SEND_MSG(list)
+SEND_MSG(array)
 {
-    list_data *d = static_cast<list_data *>(thisptr->__value.data);
+    array_data *d = static_cast<array_data *>(thisptr->__value.data);
     
     if (msg.__value.type == value_t::symbol_t) {
         if (msg == symbol("?|"))
@@ -589,13 +589,13 @@ SEND_MSG(list)
         if (msg == symbol("!="))
             symb_ret.__send_msg = data_comparison_ne_send_msg;
         if (msg == symbol("+"))
-            symb_ret.__send_msg = list_concatenation_send_msg;
+            symb_ret.__send_msg = array_concatenation_send_msg;
         if (msg == symbol("/"))
-            symb_ret.__send_msg = list_slicing_send_msg;
+            symb_ret.__send_msg = array_slicing_send_msg;
         
         return symb_ret;
     } else if (msg.__value.type == value_t::data_t) {
-        list_data *msg_d = static_cast<list_data *>(msg.__value.data);
+        array_data *msg_d = static_cast<array_data *>(msg.__value.data);
         if (!msg_d || msg_d->size < 2)
             return empty();
         
@@ -619,14 +619,14 @@ SEND_MSG(list)
     return d->arr[ind];
 }
 
-object rbb::list(const object obj_array[], int size)
+object rbb::array(const object obj_array[], int size)
 {
-    list_data *d = new list_data(size);
+    array_data *d = new array_data(size);
     
     for (int i = 0; i < size; ++i)
         d->arr[i] = obj_array[i];
     
-    return create_list_object(d);
+    return create_array_object(d);
 }
 
 // Generic object: Basically, a map from symbols to objects
@@ -705,7 +705,7 @@ SEND_MSG(generic_object)
             
             delete old_fields;
             
-            return list(l_el, size);
+            return array(l_el, size);
         } else {
             generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
             

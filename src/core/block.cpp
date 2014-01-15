@@ -85,36 +85,36 @@ object block_statement::eval()
     return cur_obj;
 }
 
-literal::list::list(expr* obj_array[], int size) :
+literal::array::array(expr* obj_array[], int size) :
     _obj_array(obj_array),
     _size(size)
 {}
 
-literal::list::~list()
+literal::array::~array()
 {
     for (int i = 0; i < _size; ++i)
         delete _obj_array[i];
 }
 
-void literal::list::set_symbol_table(const object& sym_table)
+void literal::array::set_symbol_table(const object& sym_table)
 {
     for (int i = 0; i < _size; ++i)
         _obj_array[i]->set_symbol_table(sym_table);
 }
 
-void literal::list::set_arg(const object& arg)
+void literal::array::set_arg(const object& arg)
 {
     for (int i = 0; i < _size; ++i)
         _obj_array[i]->set_symbol_table(arg);
 }
 
-object literal::list::eval()
+object literal::array::eval()
 {
     object *arr = new object[_size];
     for (int i = 0; i < _size; ++i)
         arr[i] = _obj_array[i]->eval();
     
-    object l = rbb::list(arr, _size);
+    object l = rbb::array(arr, _size);
     
     delete[] arr;
     return l;

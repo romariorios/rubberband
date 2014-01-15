@@ -89,11 +89,11 @@ namespace literal
         object _sym;
     };
     
-    class list : public expr
+    class array : public expr
     {
     public:
-        list(rbb::expr *obj_array[], int size);
-        ~list();
+        array(rbb::expr *obj_array[], int size);
+        ~array();
         void set_symbol_table(const object &sym_table);
         void set_arg(const object &arg);
         object eval();

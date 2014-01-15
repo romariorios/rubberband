@@ -1,6 +1,6 @@
 #include "tests_common.hpp"
 
-bool list_contains(rbb::object l, rbb::object obj)
+bool array_contains(rbb::object l, rbb::object obj)
 {
     int size = l.send_msg(rbb::symbol("?|")).__value.integer;
     
@@ -12,7 +12,7 @@ bool list_contains(rbb::object l, rbb::object obj)
     return false;
 }
 
-bool lists_have_same_elements(rbb::object l1, rbb::object l2)
+bool arrays_have_same_elements(rbb::object l1, rbb::object l2)
 {
     int size1 = l1.send_msg(rbb::symbol("?|")).__value.integer;
     int size2 = l2.send_msg(rbb::symbol("?|")).__value.integer;
@@ -21,7 +21,7 @@ bool lists_have_same_elements(rbb::object l1, rbb::object l2)
         return false;
     
     for (int i = 0; i < size1; ++i) {
-        if (list_contains(l2, l1.send_msg(rbb::number(i))))
+        if (array_contains(l2, l1.send_msg(rbb::number(i))))
             return true;
     }
     
@@ -32,9 +32,9 @@ bool merging_works(rbb::object go1, rbb::object go2, rbb::object *result, int re
 {
     go1.send_msg(go2);
     
-    rbb::object result_list = rbb::list(result, resultsize);
+    rbb::object result_array = rbb::array(result, resultsize);
     
-    return lists_have_same_elements(go1.send_msg(rbb::symbol("?:")), result_list);
+    return arrays_have_same_elements(go1.send_msg(rbb::symbol("?:")), result_array);
 }
 
 TESTS_INIT()
@@ -65,10 +65,10 @@ TESTS_INIT()
         g_object.send_msg(rbb::number(100)) == rbb::empty(),
         puts("Generic object should answer empty for invalid field names (number 100)"))
     
-    rbb::object fields = rbb::list(symbols, 3);
+    rbb::object fields = rbb::array(symbols, 3);
     
     TEST_CONDITION(
-        lists_have_same_elements(g_object.send_msg(rbb::symbol("?:")), fields),
+        arrays_have_same_elements(g_object.send_msg(rbb::symbol("?:")), fields),
         puts("The object doesn't inform its fields"))
     
     rbb::object fields2[] = {rbb::symbol("d"), rbb::symbol("e"), rbb::symbol("f")};
@@ -86,7 +86,7 @@ TESTS_INIT()
         puts("Merging doesn't work"))
     
     rbb::object fields3[] = {rbb::symbol("c"), rbb::symbol("d")};
-    rbb::object objects3[] = {rbb::number(150), rbb::list(objects2, 3)};
+    rbb::object objects3[] = {rbb::number(150), rbb::array(objects2, 3)};
     
     rbb::object g_object3 = rbb::generic_object(fields3, objects3, 2);
     
@@ -97,7 +97,7 @@ TESTS_INIT()
         g_object.send_msg(rbb::symbol("c")) == rbb::number(150),
         puts("Fields are not being properly replaced"))
     TEST_CONDITION(
-        lists_have_same_elements(g_object.send_msg(rbb::symbol("d")), rbb::list(objects2, 3)),
+        arrays_have_same_elements(g_object.send_msg(rbb::symbol("d")), rbb::array(objects2, 3)),
         puts("Fields are not being properly replaced"))
     
     rbb::object fields4[] = {rbb::symbol("g"), rbb::symbol("h")};
@@ -111,9 +111,9 @@ TESTS_INIT()
         rbb::symbol("d"), rbb::symbol("e"), rbb::symbol("f"),
         rbb::symbol("g"), rbb::symbol("h")
     };
-    rbb::object result2 = rbb::list(fields_result_a2, 8);
+    rbb::object result2 = rbb::array(fields_result_a2, 8);
     
     TEST_CONDITION(
-        lists_have_same_elements(result2, g_object5.send_msg(rbb::symbol("?:"))),
+        arrays_have_same_elements(result2, g_object5.send_msg(rbb::symbol("?:"))),
         puts("Merging doesn't work"))
 TESTS_END()

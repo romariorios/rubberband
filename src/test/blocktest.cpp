@@ -84,9 +84,9 @@ TESTS_INIT()
     false_bl->set_return_expression(false_ret);
     false_expr->add_expr(false_bl);
     
-    rbb::expr *decision_list[] = { true_expr, false_expr };
-    rbb::literal::list *d_list = new rbb::literal::list(decision_list, 2);
-    ret_expr4->add_expr(d_list);
+    rbb::expr *decision_array[] = { true_expr, false_expr };
+    rbb::literal::array *d_array = new rbb::literal::array(decision_array, 2);
+    ret_expr4->add_expr(d_array);
     
     bl4->set_return_expression(ret_expr4);
     
