@@ -731,6 +731,8 @@ SEND_MSG(table)
         }
         
         delete msg_fields_head;
+
+        return *thisptr;
     }
     
     return empty();
