@@ -1,0 +1,280 @@
+# Merging ~ in $
+# Self-ref is @ (Ha! Not necessary this time)
+{
+$[: fib = {!
+    $fib_ ([:
+        i = 2,
+        fnumbers = [| 0, 1, 1],
+        fib_ = $fib_
+    ] + $)
+}]
+
+$[: fib_ = {
+    $n < 2? $ [|{
+        $[:ret = $fnumbers ($n)]
+    }, {
+        $i < ($n)? $ [|{
+            $[:i = i + 1]
+            $fnumbers[|0, $fnumbers 1]
+            $fnumbers[|1, $fnumbers 2]
+            $fnumbers[|2, $fnumbers 0 + ($fnumbers 1)]
+            $[:ret = $fib_$]
+        }, {
+            $[:ret = $fnumbers 2]
+        }]
+    }]
+    ! $ret
+}]
+
+$[^io]
+$print ($fib (($ARGS 0) + $)) # This is completely unreadable
+}
+
+# Works weirdly
+# Removing the symbol table makes the block contextless, making it
+# impossible to, for example, use any external methods or anything
+# other than the builtin objects and whatever is passed as an
+# argument. Basically, a block would have to receive its symbol table
+# in every single call; that would be inconsistent with the behavior
+# of builtin objects (?)
+
+# With no merge
+{
+~[: fib = {!
+    ~fib_ [:
+        i = 2,
+        fnumbers = [| 0, 1, 1],
+        fib_ = ~fib_,
+        n = $
+    ] []
+}]
+
+~[: fib_ = {
+    ~n < 2? ~ [|{
+        ~[:ret = ~fnumbers (~n)]
+    }, {
+        ~i < (~n)? ~ [|{
+            ~[:i = i + 1]
+            ~fnumbers[|0, ~fnumbers 1]
+            ~fnumbers[|1, ~fnumbers 2]
+            ~fnumbers[|2, ~fnumbers 0 + (~fnumbers 1)]
+            ~[:ret = ~fib_~[]]
+        }, {
+            ~[:ret = ~fnumbers 2]
+        }]
+    }]
+    ! ~ret
+}]
+
+~[^io]
+~print (~fib ($1))
+}
+
+{
+# Curry functions handling
+~:[uncurry = {
+    ~args[|~i - 1, $]
+
+    !~i < (~argc)? ~ [|{
+        !@(:[i = i + 1] + ~)
+    }, {
+        !~fun(:[args = ~args] + ~symt)[]
+    }]
+}]
+
+~:[fun = {
+    ~symt == []? ~ [|{
+        ~:[symt = :[]]]
+    }]
+
+    !~uncurry:args = |(~argc)[], i = 1, argc = ~argc, symt = ~symt, ~fun = $
+}]
+
+# While definition
+~:while = ~fun:[argc = 3] {
+    ~args 1(~args 0)[]? (~ + :[while => @]) [|{
+        ~args 2(~args 0)[]
+        @~[]
+    }]
+}:[]
+
+# While usage
+~:i = 0
+~:v = |(20)[]
+~while~ {! ~i < 20 } {
+    ~v|~i, ~i * (~i)
+}
+
+# Fibonacci with while
+~:fib = {
+    ~:fibnums = |(3)[0, 1], n = $
+
+    !~n < 2? ~ |{
+        !~fibnums (~n)
+    }, {
+        ~:i = 2
+
+        ~while~ {! ~i <= (~n) } {
+            ~fibnums|0, ~fibnums 1
+            ~fibnums|1, ~fibnums 2
+            ~fibnums|2, ~fibnums 0 + (~fibnums 1)
+            ~:i = i + 1
+        }
+
+        !~fibnums 2
+    }
+}~
+
+# Classes
+~[:__classes = :[]]]
+
+
+}
+
+# Different attempt at syntax
+# :(), |(), etc., instead of [:], [|]
+{
+
+~:(fib = {
+    ~:(fibnums = |3(0, 1), n = $)
+
+    ~n < 2? ~ |({
+        ~:(ret = ~fibnums (~n))
+    }, {
+        ~:(i = 2)
+
+        # Pretend "while" is defined
+        ~while~ {! ~i <= (~n) } {
+            ~fibnums|(0, ~fibnums 1)
+            ~fibnums|(1, ~fibnums 2)
+            ~fibnums|(2, ~fibnums 0 + (~fibnums 1))
+            ~:(i = i + 1)
+        }
+
+        ~:(ret = ~fibnums 2)
+    })
+
+    !~ret
+})
+
+# Illustrating all regarded line breaks with ;
+~:fib = {
+    ~:fibnums = |3|(0, 1), n = $;
+
+    ~n < 2? ~ |{
+        ~:ret = ~fibnums (~n)
+    }, {
+        ~:i = 2;
+
+        ~while~ {! ~i <= (~n) } {
+            ~fibnums|0, ~fibnums 1;
+            ~fibnums|1, ~fibnums 2;
+            ~fibnums|2, ~fibnums 0 + (~fibnums 1);
+            ~:i = i + 1
+        };
+
+        ~:ret = ~fibnums 2
+    }
+
+    !~ret
+};
+
+# Without ;
+~:fib = {
+    ~:fibnums = |3|(0, 1), n = $
+
+    ~n < 2? ~ |{
+        ~:ret = ~fibnums (~n)
+    }, {
+        ~:i = 2
+
+        ~while~ {! ~i <= (~n) } {
+            ~fibnums|0, ~fibnums 1
+            ~fibnums|1, ~fibnums 2
+            ~fibnums|2, ~fibnums 0 + (~fibnums 1)
+            ~:i = i + 1
+        }
+
+        ~:ret = ~fibnums 2
+    }
+
+    !~ret
+}
+
+~:a = :b = :c = d   ==>  ~:(a = :(b = :(c = d)))
+~a      # == :b = :c = d
+~a b    # == :c = d
+~a b c  # == d
+
+~:a = :(b = c), d = e
+~a      # == :b = c
+~a b    # == c
+~d      # == e
+
+~:
+a
+=
+:
+(
+b
+=
+|
+c
+,
+d
+)
+,
+e
+=
+f       # All the line breaks above are ignored, since none of them is between two values (objects)
+~a      # == :b = |c, d
+~a b    # |c, d
+~a b 0  # c
+~a b 1  # d
+~e      # f
+
+# Sending message to the line above
+~variable method1 method2 method3 meth:(attrib = ~var2 many method calls, attrib2 = ~var3 even more method calls) and finally |(oh, a, list) much more method calls
+~varName method
+
+# Breaking the long line in smaller lines
+~variable method1 method2 method3 meth:(
+    attrib = ~var2 many method calls,
+    attrib2 = ~var3 even more method calls
+) and finally |(oh, a, list) much more method calls
+~varName method
+
+# Cannot put all those method calls in another line; they would just turn into a new statement
+# Solution: prepend with . to indicate an object is meant to be part of the previous statement
+# (Identation below is just meant for readability purposes. It shouldn't affect the syntax)
+
+~variable
+    .method1
+    .method2
+    .method3
+    .meth
+    .:(
+        attrib = ~var2
+            .many
+            .method
+            .calls,
+        attrib2 = ~var3
+            .even
+            .more
+            .method
+            .calls
+    )
+    .and
+    .finally
+    .|(
+        oh,
+        a,
+        list
+    )
+    .much
+    .more
+    .method
+    .calls
+~varName method
+
+}

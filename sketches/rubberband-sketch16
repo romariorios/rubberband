@@ -1,0 +1,68 @@
+~[: fib = [| 0, 1, 1, 2, 3, 5, 8, 13], sqr = [|0, 1, 4, 9, 16, 25, 36, 49], stuff = [8|]]
+~stuff[|5, ~fib 5 + (~sqr 5)]
+---
+// Line 1:
+rbb::object obj0 = rbb::number(0);
+rbb::object obj1 = rbb::number(1);
+rbb::object obj2 = rbb::number(2);
+rbb::object obj3 = rbb::number(3);
+rbb::object obj4 = rbb::number(5);
+rbb::object obj5 = rbb::number(8);
+rbb::object obj6 = rbb::number(13);
+rbb::object obj7 = rbb::number(4);
+rbb::object obj8 = rbb::number(9);
+rbb::object obj9 = rbb::number(16);
+rbb::object obj10 = rbb::number(25);
+rbb::object obj11 = rbb::number(36);
+rbb::object obj12 = rbb::number(49);
+rbb::object obj13 = rbb::list({obj0, obj1, obj1, obj2, obj3, obj4, obj5, obj6}, 8);
+rbb::object obj14 = rbb::list({obj0, obj1, obj7, obj8, obj9, obj10, obj11, obj12}, 8);
+rbb::object obj15 = rbb::empty();
+rbb::object obj16 = rbb::list({obj15, obj15, obj15, obj15, obj15, obj15, obj15, obj15}, 8);
+rbb::object obj17 = rbb::symbol("fib");
+rbb::object obj18 = rbb::symbol("sqr");
+rbb::object obj19 = rbb::symbol("stuff");
+rbb::object obj20 = rbb::generic_object({obj17, obj18, obj19}, {obj13, obj14, obj16}, 3);
+// Line 2:
+rbb::object obj21 = symbol_table.send_msg(obj19);
+rbb::object obj22 = obj21.send_msg(obj4);
+rbb::object obj23 = rbb::symbol("+");
+rbb::object obj24 = obj22::send_msg(obj23);
+rbb::object obj25 = symbol_table.send_msg(obj18);
+rbb::object obj26 = obj25.send_msg(obj4);
+rbb::object obj27 = obj23.send_msg(obj26);
+rbb::object obj28 = rbb::list({obj4, obj27});
+rbb::object obj29 = obj21.send_msg(obj28);
+---
+~fib 1 + (~fib 2) + (~(~methods 5) 3)
+
+o-o-o-o-o--o-o
+\       |    |
+/       o-o  o-o
+\            |
+/            o-o
+\
+ o-o-o-o-o--o-o
+         |    |
+         o-o  o-o
+---
+struct stm_node {
+    stm_node *next;
+    expr_node *expr_head;
+}
+
+struct expr_node {
+    object o;
+    expr_node *next;
+    expr_node *down;
+}
+
+symbol_table_reset();
+
+for (stm_node *cur_stm = stm_head; cur_stm; cur_stm = cur_stm->next) {
+    for (expr_node *cur_expr = cur_stm->expr_head; cur_expr; cur_expr_next) {
+    
+    }
+}
+---
+

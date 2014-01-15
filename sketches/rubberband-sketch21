@@ -1,0 +1,82 @@
+# New ? (if) syntax 
+# Combining the old curried syntax without previous defintion of symtable
+# to the new list syntax with previous defined symtable for both blocks
+# Older syntax:
+1 == 0? ({ !what }[:]) ({ !truest_truth }[:])
+
+# Old syntax (meant to avoid paretheses):
+1 == 0? [:] |{ !what }, { !truest_truth }
+
+# New syntax:
+1 == 0? |{ !what }:[], { !truest_truth }:[]
+
+# Fibonacci using new syntax:
+{
+
+~:fib => {
+    !~fib_:[
+        i => 2,
+        fnumbers => |[0, 1, 1],
+        fib_ => ~fib_,
+        n => $ ][]
+}
+
+~:fib_ => {
+    !~n < 2? |{ !~fnumbers (~n) }~, {
+        !~i < (~n)? |{
+            ~:i => ~i + 1
+            ~fnumbers|0, ~fnumbers 1
+            ~fnumbers|1, ~fnumbers 2
+            ~fnumbers|2, ~fnumbers 0 + (~fnumbers 1)
+
+            !~fib_~[]
+        }~, { !~fnumbers 2 }~
+    }~
+}
+
+~:fac => { !$ <= 0? |{ !1 }[], { !~n * (@[](~n)) }:[n => $] }
+
+}
+
+# Shorter block syntax(?)
+~:fac => !$ <= 0? |{ !1 }[], { !~n * (@[](~n)) }:[n => $]
+
+# New block syntax(?)
+{ stm1; stm2; stm3 ! ret_exp } # Old
+!{ stm1; stm2; stm3 }[ret_exp]
+![ret_expr]
+!ret_expr
+!{ stm1; stm2; stm3 }[]
+!{ stm1; stm2; stm3 }
+
+# Unification with special list syntax
+|(25)[1, 3, 4] # Old
+|{ 25 }[1, 3, 4]
+|[1, 3, 4]
+|1, 3, 4
+|{ 25 }[]
+|{ 25 }
+
+# Test
+!{
+
+~:fib =>
+    !~fib:[
+        i => 2,
+        fnumbers => |[0, 1, 1],
+        fib_ => ~fib_,
+        n => $][]
+
+~:fib_ =>
+    !~n > 2? |
+        ![~fnumbers (~n)]~,
+        !~i < (~n)? |!{
+            ~:i => ~i + 1
+            ~fnumbers|0, ~fnumbers 1
+            ~fnumbers|1, ~fnumbers 2
+            ~fnumbers|2, ~fnumbers 0 + (~fnumbers 1)
+        }
+        [~fib_~[]]~,
+            ![~fnumbers 2]~
+
+}
