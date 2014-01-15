@@ -41,7 +41,7 @@ TESTS_INIT()
     rbb::object symbols[] = {rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c")};
     rbb::object objects[] = {rbb::number(100), rbb::number(200), rbb::number(300)};
     
-    rbb::object g_object = rbb::generic_object(symbols, objects, 3);
+    rbb::object g_object = rbb::table(symbols, objects, 3);
     
     TEST_CONDITION(
         g_object.send_msg(rbb::symbol("==")).send_msg(g_object) == rbb::boolean(true),
@@ -74,7 +74,7 @@ TESTS_INIT()
     rbb::object fields2[] = {rbb::symbol("d"), rbb::symbol("e"), rbb::symbol("f")};
     rbb::object objects2[] = {rbb::number(400), rbb::number(500), rbb::number(600)};
     
-    rbb::object g_object2 = rbb::generic_object(fields2, objects2, 3);
+    rbb::object g_object2 = rbb::table(fields2, objects2, 3);
     
     rbb::object fields_result_a[] = {
         rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c"),
@@ -88,7 +88,7 @@ TESTS_INIT()
     rbb::object fields3[] = {rbb::symbol("c"), rbb::symbol("d")};
     rbb::object objects3[] = {rbb::number(150), rbb::array(objects2, 3)};
     
-    rbb::object g_object3 = rbb::generic_object(fields3, objects3, 2);
+    rbb::object g_object3 = rbb::table(fields3, objects3, 2);
     
     TEST_CONDITION(
         merging_works(g_object, g_object3, fields_result_a, 6),
@@ -103,7 +103,7 @@ TESTS_INIT()
     rbb::object fields4[] = {rbb::symbol("g"), rbb::symbol("h")};
     rbb::object objects4[] = {rbb::boolean(true), rbb::boolean(false)};
     
-    rbb::object g_object4 = rbb::generic_object(fields4, objects4, 2);
+    rbb::object g_object4 = rbb::table(fields4, objects4, 2);
     rbb::object g_object5 = g_object.send_msg(rbb::symbol("+")).send_msg(g_object4);
     
     rbb::object fields_result_a2[] = {

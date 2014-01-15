@@ -10,7 +10,7 @@ TESTS_INIT()
     stm1->add_expr(new rbb::literal::symbol_table);
     rbb::expr *symbols[] = { new rbb::literal::symbol("x") };
     rbb::expr *objects[] = { new rbb::literal::block_arg };
-    stm1->add_expr(new rbb::literal::generic_object(symbols, objects, 1));
+    stm1->add_expr(new rbb::literal::table(symbols, objects, 1));
     bl->add_statement(stm1);
     
     rbb::block_statement *ret_expr = new rbb::block_statement;
@@ -23,7 +23,7 @@ TESTS_INIT()
     ret_expr->add_expr(expr);
     bl->set_return_expression(ret_expr);
     
-    rbb::object sym_table = rbb::generic_object(0, 0, 0);
+    rbb::object sym_table = rbb::table(0, 0, 0);
     
     rbb::object block_body = bl->eval();
     rbb::object block = block_body.send_msg(sym_table);
@@ -91,7 +91,7 @@ TESTS_INIT()
     bl4->set_return_expression(ret_expr4);
     
     rbb::object block4 = bl4->eval();
-    block4 = block4.send_msg(rbb::generic_object(0, 0, 0));
+    block4 = block4.send_msg(rbb::table(0, 0, 0));
     
     TEST_CONDITION(
         rbb::number(9) == block4.send_msg(rbb::number(3)),
@@ -102,6 +102,6 @@ TESTS_INIT()
     rbb::object block5 = bl5->eval();
     
     TEST_CONDITION(
-        block5.send_msg(rbb::generic_object(0, 0, 0)).send_msg(rbb::empty()) == rbb::number(10),
+        block5.send_msg(rbb::table(0, 0, 0)).send_msg(rbb::empty()) == rbb::number(10),
         puts("{! 10 } doesn't run"))
 TESTS_END()

@@ -120,13 +120,13 @@ object literal::array::eval()
     return l;
 }
 
-literal::generic_object::generic_object(expr* symbol_array[], expr* obj_array[], int size) :
+literal::table::table(expr* symbol_array[], expr* obj_array[], int size) :
     _symbol_array(symbol_array),
     _obj_array(obj_array),
     _size(size)
 {}
 
-literal::generic_object::~generic_object()
+literal::table::~table()
 {
     for (int i = 0; i < _size; ++i) {
         delete _symbol_array[i];
@@ -134,7 +134,7 @@ literal::generic_object::~generic_object()
     }
 }
 
-void literal::generic_object::set_symbol_table(const object &sym_table)
+void literal::table::set_symbol_table(const object &sym_table)
 {
     for (int i = 0; i < _size; ++i) {
         _symbol_array[i]->set_symbol_table(sym_table);
@@ -142,7 +142,7 @@ void literal::generic_object::set_symbol_table(const object &sym_table)
     }
 }
 
-void literal::generic_object::set_arg(const object &arg)
+void literal::table::set_arg(const object &arg)
 {
     for (int i = 0; i < _size; ++i) {
         _symbol_array[i]->set_arg(arg);
@@ -150,7 +150,7 @@ void literal::generic_object::set_arg(const object &arg)
     }
 }
 
-object literal::generic_object::eval()
+object literal::table::eval()
 {
     object *symbols = new object[_size];
     object *objects = new object[_size];
@@ -160,7 +160,7 @@ object literal::generic_object::eval()
         objects[i] = _obj_array[i]->eval();
     }
     
-    object e = rbb::generic_object(symbols, objects, _size);
+    object e = rbb::table(symbols, objects, _size);
     
     delete[] symbols;
     delete[] objects;

@@ -61,13 +61,13 @@ TESTS_INIT()
     TEST_CONDITION(
         rbb::boolean(true)
             .send_msg(rbb::symbol("?"))
-            .send_msg(rbb::generic_object(0, 0, 0))
+            .send_msg(rbb::table(0, 0, 0))
             .send_msg(array) == rbb::number(3),
         puts("Flow control isn't working."))
     TEST_CONDITION(
         rbb::boolean(false)
             .send_msg(rbb::symbol("?"))
-            .send_msg(rbb::generic_object(0, 0, 0))
+            .send_msg(rbb::table(0, 0, 0))
             .send_msg(array) == rbb::number(5),
         puts("Flow control isn't working."))
 TESTS_END()

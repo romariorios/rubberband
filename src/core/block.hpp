@@ -103,11 +103,11 @@ namespace literal
         int _size;
     };
     
-    class generic_object : public expr
+    class table : public expr
     {
     public:
-        generic_object(rbb::expr *symbol_array[], rbb::expr *obj_array[], int size);
-        ~generic_object();
+        table(rbb::expr *symbol_array[], rbb::expr *obj_array[], int size);
+        ~table();
         void set_symbol_table(const object &sym_table);
         void set_arg(const object &arg);
         object eval();

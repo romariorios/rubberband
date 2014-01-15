@@ -650,28 +650,28 @@ protected:
     symbol_node *key_from_node(node *n) const { return n->item.sym; }
 };
 
-class generic_object_data : public shared_data_t
+class table_data : public shared_data_t
 {
 public:
     symbol_object_tree objtree;
 };
 
-SEND_MSG(generic_object_merge)
+SEND_MSG(table_merge)
 {
     if (msg.__value.type != value_t::data_t)
         return empty();
     
-    if (!static_cast<generic_object_data *>(msg.__value.data))
+    if (!static_cast<table_data *>(msg.__value.data))
         return empty();
     
-    object gen_obj = rbb::generic_object(0, 0, 0);
+    object gen_obj = rbb::table(0, 0, 0);
     gen_obj.send_msg(static_cast<object_data *>(thisptr->__value.data)->obj);
     gen_obj.send_msg(msg);
     
     return gen_obj;
 }
 
-SEND_MSG(generic_object)
+SEND_MSG(table)
 {
     if (msg.__value.type == value_t::symbol_t) {
         object answer;
@@ -683,9 +683,9 @@ SEND_MSG(generic_object)
         else if (msg == rbb::symbol("!="))
             answer.__send_msg = data_comparison_ne_send_msg;
         else if (msg == rbb::symbol("+"))
-            answer.__send_msg = generic_object_merge_send_msg;
+            answer.__send_msg = table_merge_send_msg;
         else if (msg == rbb::symbol("?:")) {
-            generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
+            table_data *d = static_cast<table_data *>(thisptr->__value.data);
             
             linked_list<symbol_node *> *fields = d->objtree.keys();
             linked_list<symbol_node *> *old_fields = fields;
@@ -707,7 +707,7 @@ SEND_MSG(generic_object)
             
             return array(l_el, size);
         } else {
-            generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
+            table_data *d = static_cast<table_data *>(thisptr->__value.data);
             
             const symbol_object_pair &pair = d->objtree.at(msg.__value.symbol);
             return pair.obj;
@@ -715,9 +715,9 @@ SEND_MSG(generic_object)
             
         return answer;
     } else if (msg.__value.type == value_t::data_t) {
-        generic_object_data *d = static_cast<generic_object_data *>(thisptr->__value.data);
-        generic_object_data *msg_d =
-            static_cast<generic_object_data *>(msg.__value.data);
+        table_data *d = static_cast<table_data *>(thisptr->__value.data);
+        table_data *msg_d =
+            static_cast<table_data *>(msg.__value.data);
         if (!msg_d)
             return empty();
         
@@ -734,9 +734,9 @@ SEND_MSG(generic_object)
     return empty();
 }
 
-object rbb::generic_object(const object symbol_array[], const object obj_array[], int size)
+object rbb::table(const object symbol_array[], const object obj_array[], int size)
 {
-    generic_object_data *d = new generic_object_data;
+    table_data *d = new table_data;
     
     for (int i = 0; i < size; ++i) {
         if (symbol_array[i].__value.type != value_t::symbol_t)
@@ -749,7 +749,7 @@ object rbb::generic_object(const object symbol_array[], const object obj_array[]
     object gen_obj;
     gen_obj.__value.type = value_t::data_t;
     gen_obj.__value.data = d;
-    gen_obj.__send_msg = generic_object_send_msg;
+    gen_obj.__send_msg = table_send_msg;
     
     return gen_obj;
 }

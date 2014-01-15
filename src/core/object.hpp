@@ -85,7 +85,7 @@ object boolean(bool val);
 
 object array(const object obj_array[], int size);
 
-object generic_object(const object symbol_array[], const object obj_array[], int size);
+object table(const object symbol_array[], const object obj_array[], int size);
 
 }
 
