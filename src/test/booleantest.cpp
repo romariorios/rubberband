@@ -45,6 +45,13 @@ TESTS_INIT()
     TEST_CONDITION(
         false_obj.send_msg(rbb::symbol("\\/")).send_msg(false_obj) == false_obj,
         puts("OR   | F| F|  error"))
+
+    TEST_CONDITION(
+        true_obj.send_msg(rbb::symbol("><")) == false_obj,
+        puts("NOT     | T| error"))
+    TEST_CONDITION(
+        false_obj.send_msg(rbb::symbol("><")) == true_obj,
+        puts("NOT     | F| error"))
     
     // [true]? [:] [| {! 3 }, {! 5 }]
     rbb::literal::block *bl_true = new rbb::literal::block;
