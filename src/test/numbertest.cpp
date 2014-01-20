@@ -2,13 +2,13 @@
 
 #define TEST_NUMBER_COMPARISON(num1, num2, symb, eq)\
 TEST_CONDITION(\
-    rbb::number(num1).send_msg(rbb::symbol(symb)).send_msg(rbb::number(num2)) == rbb::boolean(eq),\
+    rbb::number(num1) << rbb::symbol(symb) << rbb::number(num2) == rbb::boolean(eq),\
     printf("%lf %s %lf doesn't equal %s!\n",\
            (double) num1, symb, (double) num2, eq? "true" : "false"))
 
 #define TEST_ARITH_OPERATION(num1, num2, symb, expected_result)\
 {\
-rbb::object result_ = rbb::number(num1).send_msg(rbb::symbol(symb)).send_msg(rbb::number(num2));\
+rbb::object result_ = rbb::number(num1) << rbb::symbol(symb) << rbb::number(num2);\
 double result = rbb::number_to_double(result_);\
 double n1 = rbb::number_to_double(rbb::number(num1));\
 double n2 = rbb::number_to_double(rbb::number(num2));\

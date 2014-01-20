@@ -60,7 +60,7 @@ public:
     bool operator==(const object &other) const;
     inline bool operator!=(const object &other) const { return !(other == *this); }
     
-    object send_msg(const object &msg);
+    object operator<<(const object &msg); // send_msg
     
     value_t __value;
     object (*__send_msg)(object *, const object &);

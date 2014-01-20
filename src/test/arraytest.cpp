@@ -6,15 +6,15 @@ bool cmp_array(rbb::object &l1, rbb::object &l2)
         l2.__value.type != rbb::value_t::data_t)
         return false;
     
-    int l1_len = l1.send_msg(rbb::symbol("?|")).__value.integer;
-    int l2_len = l2.send_msg(rbb::symbol("?|")).__value.integer;
+    int l1_len = (l1 << rbb::symbol("?|")).__value.integer;
+    int l2_len = (l2 << rbb::symbol("?|")).__value.integer;
     
     if (l1_len != l2_len)
         return false;
     
     bool l1_eq_l2 = true;
     for (int i = 0; i < l1_len; ++i) {
-        if (l1.send_msg(rbb::number(i)) == l2.send_msg(rbb::number(i))) {
+        if (l1 << rbb::number(i) == l2 << rbb::number(i)) {
         } else {
             l1_eq_l2 = false;
             break;
@@ -29,44 +29,44 @@ TESTS_INIT()
     rbb::object l = rbb::array(numbers, 3);
 
     TEST_CONDITION(
-        l.send_msg(rbb::symbol("==")).send_msg(l) == rbb::boolean(true),
+        l << rbb::symbol("==") << l == rbb::boolean(true),
         puts("An aray doesn't equal itself"))
     TEST_CONDITION(
-        l.send_msg(rbb::symbol("!=")).send_msg(l) == rbb::boolean(false),
+        l << rbb::symbol("!=") << l == rbb::boolean(false),
         puts("An array differs from itself"))
     
     rbb::object l_ = l;
     
     TEST_CONDITION(
-        l.send_msg(rbb::symbol("==")).send_msg(l_) == rbb::boolean(true),
+        l << rbb::symbol("==") << l_ == rbb::boolean(true),
         puts("operator= is not working well")
     )
     
     TEST_CONDITION(
-        l.send_msg(rbb::symbol("?|")) == rbb::number(3),
+        l << rbb::symbol("?|") == rbb::number(3),
         puts("The array doesn't correctly report its size"))
     TEST_CONDITION(
-        l.send_msg(rbb::number(0)) == rbb::number(1),
+        l << rbb::number(0) == rbb::number(1),
         puts("The array doesn't return its elements"))
     TEST_CONDITION(
-        l.send_msg(rbb::number(1)) == rbb::number(4),
+        l << rbb::number(1) == rbb::number(4),
         puts("The array doesn't return its elements"))
     TEST_CONDITION(
-        l.send_msg(rbb::number(3)) == rbb::empty(),
+        l << rbb::number(3) == rbb::empty(),
         puts("The array isn't handling out-of-bounds well"))
     
     rbb::object ch_0_arr[] = { rbb::number(0), rbb::symbol("number_array") };
     rbb::object ch_0 = rbb::array(ch_0_arr, 2);
     
-    l.send_msg(ch_0);
+    l << ch_0;
     
     TEST_CONDITION(
-        l.send_msg(rbb::number(0)) == rbb::symbol("number_array"),
+        l << rbb::number(0) == rbb::symbol("number_array"),
         puts("Assigning an object to a position has no effect"))
     
     rbb::object other_numbers[] = {rbb::number(2), rbb::number(3), rbb::number(5)};
     rbb::object l2 = rbb::array(other_numbers, 3);
-    rbb::object l3 = l.send_msg(rbb::symbol("+")).send_msg(l2);
+    rbb::object l3 = l << rbb::symbol("+") << l2;
     
     rbb::object all_numbers[] = {
         rbb::symbol("number_array"), rbb::number(4), rbb::number(9),
@@ -79,7 +79,7 @@ TESTS_INIT()
     rbb::object slice_by[] = {rbb::number(1), rbb::number(3)};
     rbb::object sb = rbb::array(slice_by, 2);
     
-    rbb::object l5 = l3.send_msg(rbb::symbol("/")).send_msg(sb);
+    rbb::object l5 = l3 << rbb::symbol("/") << sb;
     
     rbb::object expected_array[] = {rbb::number(4), rbb::number(9), rbb::number(2)};
     rbb::object el = rbb::array(expected_array, 3);

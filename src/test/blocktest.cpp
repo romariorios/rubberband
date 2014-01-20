@@ -26,8 +26,8 @@ TESTS_INIT()
     rbb::object context = rbb::table(0, 0, 0);
     
     rbb::object block_body = bl->eval();
-    rbb::object block = block_body.send_msg(context);
-    rbb::object result = block.send_msg(rbb::number(6));
+    rbb::object block = block_body << context;
+    rbb::object result = block << rbb::number(6);
     
     TEST_CONDITION(result == rbb::number(36), puts("Block isn't computing 6 squared"))
     
@@ -41,8 +41,8 @@ TESTS_INIT()
     bl2->set_return_expression(ret_expr2);
     
     rbb::object block_body2 = bl2->eval();
-    rbb::object block2 = block_body2.send_msg(rbb::empty());
-    rbb::object result2 = block2.send_msg(rbb::number(6));
+    rbb::object block2 = block_body2 << rbb::empty();
+    rbb::object result2 = block2 << rbb::number(6);
     
     TEST_CONDITION(result2 == rbb::number(36), puts("Simple block isn't computing 6 squared"))
     
@@ -51,8 +51,8 @@ TESTS_INIT()
     bl3->set_return_expression(new rbb::literal::block_arg);
     
     rbb::object block_body3 = bl3->eval();
-    rbb::object block3 = block_body3.send_msg(rbb::empty());
-    rbb::object result3 = block3.send_msg(rbb::number(6));
+    rbb::object block3 = block_body3 << rbb::empty();
+    rbb::object result3 = block3 << rbb::number(6);
     
     TEST_CONDITION(result3 == rbb::number(6), puts("Identity function doesn't work"))
     
@@ -91,10 +91,10 @@ TESTS_INIT()
     bl4->set_return_expression(ret_expr4);
     
     rbb::object block4 = bl4->eval();
-    block4 = block4.send_msg(rbb::table(0, 0, 0));
+    block4 = block4 << rbb::table(0, 0, 0);
     
     TEST_CONDITION(
-        rbb::number(9) == block4.send_msg(rbb::number(3)),
+        rbb::number(9) == block4 << rbb::number(3),
         puts("{! $ > 5? $ [| { ! ~ * 2 }, { ! ~ * ~ }] } doesn't run."));
     
     rbb::literal::block *bl5 = new rbb::literal::block;
@@ -102,6 +102,6 @@ TESTS_INIT()
     rbb::object block5 = bl5->eval();
     
     TEST_CONDITION(
-        block5.send_msg(rbb::table(0, 0, 0)).send_msg(rbb::empty()) == rbb::number(10),
+        block5 << rbb::table(0, 0, 0) << rbb::empty() == rbb::number(10),
         puts("{! 10 } doesn't run"))
 TESTS_END()

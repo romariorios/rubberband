@@ -9,10 +9,10 @@ TESTS_INIT()
     
     TEST_CONDITION(true_obj.__value.boolean == true, puts("True object is false"))
     TEST_CONDITION(false_obj.__value.boolean == false, puts("False object is true"))
-    TEST_CONDITION(true_obj.send_msg(equals).send_msg(true_obj).__value.type == rbb::value_t::boolean_t,
+    TEST_CONDITION((true_obj << equals << true_obj).__value.type == rbb::value_t::boolean_t,
                    puts("The comparison block isn't returning a boolean"))
-    TEST_CONDITION(true_obj.send_msg(equals).send_msg(true_obj) == true_obj, puts("(true == true) != true"))
-    TEST_CONDITION(true_obj.send_msg(true_obj) == rbb::empty(), puts("Boolean responds to a boolean message (it shouldn't)"))
+    TEST_CONDITION(true_obj << equals << true_obj == true_obj, puts("(true == true) != true"))
+    TEST_CONDITION(true_obj << true_obj == rbb::empty(), puts("Boolean responds to a boolean message (it shouldn't)"))
     
     TEST_OPERATOR_EQ(true_obj, false_obj)
     TEST_OPERATOR_EQ(true_obj, rbb::empty())
@@ -21,36 +21,36 @@ TESTS_INIT()
     TEST_OPERATOR_EQ(rbb::empty(), false_obj)
     
     TEST_CONDITION(
-        true_obj.send_msg(rbb::symbol("/\\")).send_msg(true_obj) == true_obj,
+        true_obj << rbb::symbol("/\\") << true_obj == true_obj,
         puts("AND  | T| T|  error"))
     TEST_CONDITION(
-        true_obj.send_msg(rbb::symbol("/\\")).send_msg(false_obj) == false_obj,
+        true_obj << rbb::symbol("/\\") << false_obj == false_obj,
         puts("AND  | T| F|  error"))
     TEST_CONDITION(
-        false_obj.send_msg(rbb::symbol("/\\")).send_msg(true_obj) == false_obj,
+        false_obj << rbb::symbol("/\\") << true_obj == false_obj,
         puts("AND  | F| T|  error"))
     TEST_CONDITION(
-        false_obj.send_msg(rbb::symbol("/\\")).send_msg(false_obj) == false_obj,
+        false_obj << rbb::symbol("/\\") << false_obj == false_obj,
         puts("AND  | F| F|  error"))
     
     TEST_CONDITION(
-        true_obj.send_msg(rbb::symbol("\\/")).send_msg(true_obj) == true_obj,
+        true_obj << rbb::symbol("\\/") << true_obj == true_obj,
         puts("OR   | T| T|  error"))
     TEST_CONDITION(
-        true_obj.send_msg(rbb::symbol("\\/")).send_msg(false_obj) == true_obj,
+        true_obj << rbb::symbol("\\/") << false_obj == true_obj,
         puts("OR   | T| F|  error"))
     TEST_CONDITION(
-        false_obj.send_msg(rbb::symbol("\\/")).send_msg(true_obj) == true_obj,
+        false_obj << rbb::symbol("\\/") << true_obj == true_obj,
         puts("OR   | F| T|  error"))
     TEST_CONDITION(
-        false_obj.send_msg(rbb::symbol("\\/")).send_msg(false_obj) == false_obj,
+        false_obj << rbb::symbol("\\/") << false_obj == false_obj,
         puts("OR   | F| F|  error"))
 
     TEST_CONDITION(
-        true_obj.send_msg(rbb::symbol("><")) == false_obj,
+        true_obj << rbb::symbol("><") == false_obj,
         puts("NOT     | T| error"))
     TEST_CONDITION(
-        false_obj.send_msg(rbb::symbol("><")) == true_obj,
+        false_obj << rbb::symbol("><") == true_obj,
         puts("NOT     | F| error"))
     
     // [true]? [:] [| {! 3 }, {! 5 }]
@@ -67,14 +67,14 @@ TESTS_INIT()
     
     TEST_CONDITION(
         rbb::boolean(true)
-            .send_msg(rbb::symbol("?"))
-            .send_msg(rbb::table(0, 0, 0))
-            .send_msg(array) == rbb::number(3),
+             << rbb::symbol("?")
+             << rbb::table(0, 0, 0)
+             << array == rbb::number(3),
         puts("Flow control isn't working."))
     TEST_CONDITION(
         rbb::boolean(false)
-            .send_msg(rbb::symbol("?"))
-            .send_msg(rbb::table(0, 0, 0))
-            .send_msg(array) == rbb::number(5),
+             << rbb::symbol("?")
+             << rbb::table(0, 0, 0)
+             << array == rbb::number(5),
         puts("Flow control isn't working."))
 TESTS_END()

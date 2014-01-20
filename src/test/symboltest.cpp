@@ -4,7 +4,7 @@
 
 #define TEST_SYMBOL_COMPARISON(sym1, sym2, symb, eq)\
 TEST_CONDITION(\
-    rbb::symbol(sym1).send_msg(rbb::symbol(symb)).send_msg(rbb::symbol(sym2)) == rbb::boolean(eq),\
+    rbb::symbol(sym1) << rbb::symbol(symb) << rbb::symbol(sym2) == rbb::boolean(eq),\
     printf("%s %s %s doesn't equal %s!\n", sym1, symb, sym2, eq? "true" : "false"))
 
 #define COMPARE_EQ_AND_NE(sym1, sym2)\
@@ -33,7 +33,7 @@ COMPARE_EQ_AND_NE(sym, "?:")
 TESTS_INIT()
     TEST_CONDITION(rbb::symbol("abcd") == rbb::symbol("abcd"), puts("Error when comparing equal symbols"))
     
-    rbb::object abcd_comp = rbb::symbol("abcd").send_msg(rbb::symbol("==")).send_msg(rbb::symbol("abcd"));
+    rbb::object abcd_comp = rbb::symbol("abcd") << rbb::symbol("==") << rbb::symbol("abcd");
     
     TEST_CONDITION(
         abcd_comp.__value.type == rbb::value_t::boolean_t,
@@ -42,7 +42,7 @@ TESTS_INIT()
         abcd_comp == rbb::boolean(true),
         puts("Error when comparing equal symbols sending messages"))
     TEST_CONDITION(
-        rbb::symbol("a12345").send_msg(rbb::symbol("!=")).send_msg(rbb::symbol("a1234")) == rbb::boolean(true),
+        rbb::symbol("a12345") << rbb::symbol("!=") << rbb::symbol("a1234") == rbb::boolean(true),
         puts("Error when cheking two symbols for inequality"))
     
     // Test all special symbols

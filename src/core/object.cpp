@@ -102,7 +102,7 @@ bool object::operator==(const object& other) const
     return false;
 }
 
-object object::send_msg(const object &msg)
+object object::operator<<(const object &msg)
 {
     return __send_msg(this, msg);
 }
@@ -386,8 +386,8 @@ SEND_MSG(boolean_decision_exec)
         return empty();
     
     return d->boolean_obj.__value.boolean?
-        l->arr[0].send_msg(d->context).send_msg(empty()) :
-        l->arr[1].send_msg(d->context).send_msg(empty());
+        l->arr[0] << d->context << empty() :
+        l->arr[1] << d->context << empty();
 }
 
 SEND_MSG(boolean_get_context)
@@ -667,8 +667,8 @@ SEND_MSG(table_merge)
         return empty();
     
     object gen_obj = rbb::table(0, 0, 0);
-    gen_obj.send_msg(static_cast<object_data *>(thisptr->__value.data)->obj);
-    gen_obj.send_msg(msg);
+    gen_obj << static_cast<object_data *>(thisptr->__value.data)->obj;
+    gen_obj << msg;
     
     return gen_obj;
 }
