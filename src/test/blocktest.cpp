@@ -104,4 +104,51 @@ TESTS_INIT()
     TEST_CONDITION(
         block5 << rbb::table(0, 0, 0) << rbb::empty() == rbb::number(10),
         puts("{! 10 } doesn't run"))
+
+    // Testing if a block responds the same message the same way twice in a row
+    // { ~:x => $ + (~x) !~x }
+    rbb::object symbols6[] = { rbb::symbol("x") };
+    rbb::object objects6[] = { rbb::number(13) };
+    rbb::object context6 = rbb::table(symbols6, objects6, 1);
+
+    rbb::literal::block *bll6 = new rbb::literal::block;
+
+    rbb::block_statement *c_x_eq_arg_pl_x = new rbb::block_statement;
+    c_x_eq_arg_pl_x->add_expr(new rbb::literal::context);
+
+    rbb::block_statement *arg_pl_x = new rbb::block_statement;
+    arg_pl_x->add_expr(new rbb::literal::block_arg);
+    arg_pl_x->add_expr(new rbb::literal::symbol("+"));
+
+    rbb::block_statement *_x = new rbb::block_statement;
+    _x->add_expr(new rbb::literal::context);
+    _x->add_expr(new rbb::literal::symbol("x"));
+
+    arg_pl_x->add_expr(_x);
+
+    rbb::expr *s6[] = { new rbb::literal::symbol("+") };
+    rbb::expr *o6[] = { arg_pl_x };
+    c_x_eq_arg_pl_x->add_expr(new rbb::literal::table(s6, o6, 1));
+
+    bll6->add_statement(c_x_eq_arg_pl_x);
+    bll6->set_return_expression(_x);
+
+    rbb::object block6 = bll6->eval();
+    block6 = block6 << context6;
+
+    rbb::object result6_1 = block6 << rbb::number(7);
+
+    TEST_CONDITION(
+        result6_1 == rbb::number(20),
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 13 ] 7  ==  %ld\n", result6_1.__value.integer))
+
+    rbb::object result6_2 = block6 << rbb::number(7);
+
+    TEST_CONDITION(
+        result6_2 == rbb::number(20),
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 13 ] 7  ==  %ld\n", result6_2.__value.integer))
+
+    TEST_CONDITION(
+        result6_1 == result6_2,
+        puts("Block gives different results when run a second time"))
 TESTS_END()
