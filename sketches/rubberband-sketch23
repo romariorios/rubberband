@@ -1,0 +1,68 @@
+# Problem: The context isn't reset between two executions of the same block
+{
+
+~:bl => {
+    ~:arg => $
+    ~a == []? |{
+        ~:a => arg
+    }~, {
+        ~:a => ~a + (~arg)
+    }~
+
+    !~a
+}:[]
+
+~bl 10  # Will answer 10
+~bl 30  # Will answer 40
+~bl 15  # Will answer 55
+# And so on...
+
+}
+
+# This happens because, as soon as the context object is passed to the block, it's already been
+# evaluated. Thus, the block can't reset the value, since it cannot know how that object has been
+# evaluated. It can't copy its initial value either, since the way of copying an object varies
+# depending on the object.
+
+# An attempt to solve the problem: the volatile object
+# Declared as: &[object_or_expression]
+# Examples: &:[], &|[], &~a
+# It's a resettable object. It works like any normal object, except that it stores its original
+# expression and, if you send it ><, it discards its current value and reevaluates it using the
+# stored expression
+
+{
+
+~:bl => { ~>< # The context is reset before every execution
+    ~:arg => $
+    ~a == []? |{
+        ~:a => arg
+    }~, {
+        ~:a => ~a + (~arg)
+    }~
+
+    !~a
+}&:[]
+
+~:bl => 10      # Context is reset; will answer 10
+~:bl => 30      # Context is reset; will answer 30
+~:bl => 15      # Context is reset; will answer 55
+
+# More examples
+~:a => &:[]
+~a:b => 10
+~a b            # == 10
+~a:c => :[]
+~a c:a => 20
+~a c            # == :a => 20
+~a c a          # == 20
+~a:d => 30
+~a d            # == 30
+~a><
+~a b            # == []
+~a c            # == []
+~a d            # == []
+~a:s => 10
+~a s            # == 10
+
+}

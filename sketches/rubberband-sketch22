@@ -1,0 +1,26 @@
+# A new way to set the context
+# Old:
+{
+
+{ ~:var => $ ! ~var }  # Contextless block; expects context as message
+{ ~:var => $ ! ~var }~ # Block with context; now it's executable
+
+}
+
+# New:
+{
+
+{ ~:var => $ ! ~var }    # Block runs over an empty ([]) context by default
+:[]{ ~:var => $ ! ~var } # Sending a block as a message to a table will set that table as the
+                         # block's context and will return the block
+# What if I want to set a block as the context?
+# Unfeasible in the new way: either you can't or you can, but can't directly send a block as a
+# message to another block
+# E.g.:
+{ ~:block1 => $ ! ~block1 } { ~:block2 => $ * $ ! ~block2 }
+# Am I setting block1 as block2's context? Am I sending block2 to block1?
+# It's ambiguous and it makes it harder to set any complex object as a context
+
+# Conclusion: the new way seems nicer at first, but it doesn't work
+
+}
