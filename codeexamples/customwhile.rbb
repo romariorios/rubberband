@@ -1,0 +1,64 @@
+{
+
+# A custom while implementation
+# Get arguments from curried functions and put them into a list
+~:uncurry => {
+    ~args|~i - 1, $
+
+    !~i < (~argc)? ~ |{
+        !@(:[i => i + 1] + ~)
+    }, {
+        !~fun(:[args => ~args] + ~context)[]
+    }
+}
+
+# Function declaration
+~:fun => {
+    ~context == []? ~ |{
+        ~:context => :[]
+    }
+
+    !~uncurry:
+        args => |~argc|[],
+        i => 1,
+        argc => ~argc,
+        context => ~context,
+        ~fun => $
+}
+
+# While definition
+~:while => ~fun:[argc = 3] {
+    ~args 1(~args 0)[]? (~ + :[while => @]) |{
+        ~args 2(~args 0)[]
+        ~while~[]
+    }
+}:[]
+
+# While usage
+~:i => 0
+~:v => |20|[]
+~while~ {! ~i < 20 } {
+    ~v|~i, ~i * (~i)
+}
+
+# Fibonacci with while
+~:fib => {
+    ~:fibnums => |3|[0, 1], n => $
+
+    !~n < 2? ~ |{
+        !~fibnums (~n)
+    }, {
+        ~:i => 2
+
+        ~while~ {! ~i <= (~n) } {
+            ~fibnums|0, ~fibnums 1
+            ~fibnums|1, ~fibnums 2
+            ~fibnums|2, ~fibnums 0 + (~fibnums 1)
+            ~:i => i + 1
+        }
+
+        !~fibnums 2
+    }
+}~
+
+}
