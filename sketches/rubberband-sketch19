@@ -1,0 +1,4 @@
+# Try to replace blocks by simpler statement objects 
+# Sending a statement to a generic_object will make that statement run on that block
+|
+!~:fact = [$!$ == 0? [$!]]

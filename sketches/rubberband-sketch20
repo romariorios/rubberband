@@ -1,0 +1,98 @@
+# Usual syntax
+[]
+10
+lol
+:[ a => 100, b => 200, c => 300 ]
+|[100, 200, 300]
+{ ~obj1 $ msg; ~obj2 :[ param => 45 ] ! $ (~obj1) (~obj2) }
+
+# Verbose syntax
+[]
+10
+lol
+table:[ a => 100, b => 200, c => 300 ]
+array:[100, 200, 300]
+{ $obj1 arg msg; $obj2 table:[ param => 45 ] return arg $obj1 $obj2 }
+
+# ---
+{
+
+# Curry functions handling (with verbose syntax)
+$table:[ uncurry => {
+    $args array: $i - 1, $
+
+    return $i < $argc then $ list: {
+        return self (table:[ i => i + 1 ] + $)
+    }, {
+        return $fun (table:[ args => $args ] + $symt)
+    }
+}]
+
+$table:[ fun => {
+    $symt == [] then $ array:{
+        $table:[ symt => table:[] ]
+    }
+
+    return $uncurry table:[ args => list($argc):[], i => 1, argc => $argc, symt => $symt, $fun = $ ]
+}]
+
+# While definition
+$table:[ while => $fun table:[ argc => 3 ] {
+    $args 1 ($args 0)[] then ($ + table:[ while => @ ]) array: {
+        $args 2 ($args 0)[]
+        $while$ []
+    }
+}table:[]]
+
+# While usage
+$table:
+i => 0,
+v => array(20):[]
+
+$while$ { return $i < 20 } {
+    $v array:$i, $i * $i 
+}
+
+# Fibonacci with while
+$table:fib => {
+    $table:fibnums => array(3):[0, 1], n = arg
+
+    #                  \/ Uh-oh...
+    # return $n < 2 then $array:{
+    # Because of that   /\, sending messages to $ (or ~) should not precede
+    # sending messages to everyone else
+    return $n < 2 then s_table array:{
+        return $fibnums $n
+    }, {
+        $table:i => 2
+
+        $while s_table { return $i <= $n } {
+            $fibnums array:0, $fibnums 1
+            $fibnums array:1, $fibnums 2
+            $fibnums array:2, $fibnums 0 + ($fibnums 1)
+        }
+
+        return $fibnums 2
+    }
+}
+
+# Finding a middle ground
+# No explicit table and list keywords required
+$:uncurry => {
+    $args|$i - 1, $
+
+    return $i < $argc then |{
+        $:symt = :[]
+    }
+
+    return $uncurry:[args = |$argc|[], i = 1, argc = $argc, symt = $symt, $fun = arg]
+}
+
+# Turn back to ~ instead of $
+~:uncurry => {
+    ~args|~i - 1, $
+
+    return
+}
+
+}

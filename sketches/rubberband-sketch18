@@ -1,0 +1,25 @@
+# Communicating to the interpreter 
+# %: the master object (the interpreter or compiler)
+{
+%[."{char|^"}". {
+    !$/ [|1, $?| - 2]
+}]
+# or maybe a state machine instead of a regexp
+%[.start: " => getc.
+   getc: [&char|^"\\] => getc, \\ => scap.
+   scap: " => getc.. {
+    ! $/ [|1, $?| - 2]
+}]
+
+# or
+%[.start: " => [|getc, { ~[:str = [|]] }].
+   getc: [&char|^"] => [|getc, { ~[:str = str + [|$]] }], \\ => [|scap, {}].
+   scap: " => [|getc, {~[:str = str + [|$]]}].. {!~str}]
+
+%[.start: {! $ == 34 } => [|getc, { ~[:str = [|]] }].
+    getc: {! $ != 34 || ($ != 92) } => [|getc, { ~[:str = str + [|$]] }], {! $ == 92 } => [|scap, {}].
+    scap: {! 1 == 1 } => [|getc, {~[:str = str + [|$]]}].. {!~str}]
+
+~[:str = "Hello, world!"]
+
+}
