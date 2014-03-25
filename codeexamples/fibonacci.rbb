@@ -9,19 +9,19 @@
     ][]
 }
 
-~: fib_ = {
-    !~n < 2? ~ |{
+~:fib_ = {
+    !~n < 2? |{
         !~fnumbers (~n)
-    }, {
-        !~i < (~n)? ~ |{
+    }~, {
+        !~i < (~n)? |{
             ~:i => i + 1
             ~fnumbers[|0, ~fnumbers 1]
             ~fnumbers[|1, ~fnumbers 2]
             ~fnumbers[|2, ~fnumbers 0 + (~fnumbers 1)]
 
             !~fib_~[]
-        }, {
+        }~, {
             !~fnumbers 2
-        }
-    }
+        }~
+    }~
 } 

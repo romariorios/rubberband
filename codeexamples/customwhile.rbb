@@ -5,18 +5,23 @@
 ~:uncurry => {
     ~args|~i - 1, $
 
-    !~i < (~argc)? ~ |{
-        !@(:[i => i + 1] + ~)
-    }, {
-        !~fun(:[args => ~args] + ~context)[]
-    }
+    !~i < (~argc)? |{
+        ~:i => ~i + 1
+
+        !@~
+    }~, {
+        ~:ctxt => ~context + :[] # Copy ~context
+        ~ctxt:args => ~args
+
+        !~fun(~ctxt)[]
+    }~
 }
 
 # Function declaration
 ~:fun => {
-    ~context == []? ~ |{
+    ~context == []? |{
         ~:context => :[]
-    }
+    }~
 
     !~uncurry:
         args => |~argc|[],
@@ -28,10 +33,12 @@
 
 # While definition
 ~:while => ~fun:[argc = 3] {
-    ~args 1(~args 0)[]? (~ + :[while => @]) |{
+    ~:while => @
+
+    ~args 1(~args 0)[]? |{
         ~args 2(~args 0)[]
         ~while~[]
-    }
+    }~
 }:[]
 
 # While usage
@@ -45,9 +52,9 @@
 ~:fib => {
     ~:fibnums => |3|[0, 1], n => $
 
-    !~n < 2? ~ |{
+    !~n < 2? |{
         !~fibnums (~n)
-    }, {
+    }~, {
         ~:i => 2
 
         ~while~ {! ~i <= (~n) } {
@@ -58,7 +65,7 @@
         }
 
         !~fibnums 2
-    }
+    }~
 }~
 
 }
