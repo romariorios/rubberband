@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
 // 
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -579,7 +579,7 @@ SEND_MSG(array)
     array_data *d = static_cast<array_data *>(thisptr->__value.data);
     
     if (msg.__value.type == value_t::symbol_t) {
-        if (msg == symbol("?|"))
+        if (msg == symbol("<->"))
             return rbb::number(d->size);
         
         object symb_ret;
