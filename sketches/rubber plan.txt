@@ -78,7 +78,7 @@ Rubberband plan:
        Answer: The object at the index; empty if the index is out of range
      ° <: Array[<index: Number>, <obj: Object>]>
        Does: Replaces the element at index by obj
-     ° <->
+     ° *
        Answer: The size of the list
      ° + <a: Array>
        Answer: This and a concatenated

@@ -43,7 +43,7 @@ TESTS_INIT()
     )
     
     TEST_CONDITION(
-        l << rbb::symbol("<->") == rbb::number(3),
+        l << rbb::symbol("*") == rbb::number(3),
         puts("The array doesn't correctly report its size"))
     TEST_CONDITION(
         l << rbb::number(0) == rbb::number(1),

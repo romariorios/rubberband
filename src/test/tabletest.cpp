@@ -2,7 +2,7 @@
 
 bool array_contains(rbb::object l, rbb::object obj)
 {
-    int size = (l << rbb::symbol("?|")).__value.integer;
+    int size = (l << rbb::symbol("*")).__value.integer;
     
     for (int i = 0; i < size; ++i) {
         if (l << rbb::number(i) == obj)
@@ -14,8 +14,8 @@ bool array_contains(rbb::object l, rbb::object obj)
 
 bool arrays_have_same_elements(rbb::object l1, rbb::object l2)
 {
-    int size1 = (l1 << rbb::symbol("?|")).__value.integer;
-    int size2 = (l2 << rbb::symbol("?|")).__value.integer;
+    int size1 = (l1 << rbb::symbol("*")).__value.integer;
+    int size2 = (l2 << rbb::symbol("*")).__value.integer;
     
     if (size1 != size2)
         return false;
@@ -34,7 +34,7 @@ bool merging_works(rbb::object go1, rbb::object go2, rbb::object *result, int re
     
     rbb::object result_array = rbb::array(result, resultsize);
     
-    return arrays_have_same_elements(go1 << rbb::symbol("?:"), result_array);
+    return arrays_have_same_elements(go1 << rbb::symbol("*"), result_array);
 }
 
 TESTS_INIT()
@@ -68,7 +68,7 @@ TESTS_INIT()
     rbb::object fields = rbb::array(symbols, 3);
     
     TEST_CONDITION(
-        arrays_have_same_elements(g_object << rbb::symbol("?:"), fields),
+        arrays_have_same_elements(g_object << rbb::symbol("*"), fields),
         puts("The object doesn't inform its fields"))
     
     rbb::object fields2[] = {rbb::symbol("d"), rbb::symbol("e"), rbb::symbol("f")};
@@ -114,7 +114,7 @@ TESTS_INIT()
     rbb::object result2 = rbb::array(fields_result_a2, 8);
     
     TEST_CONDITION(
-        arrays_have_same_elements(result2, g_object5 << rbb::symbol("?:")),
+        arrays_have_same_elements(result2, g_object5 << rbb::symbol("*")),
         puts("Merging doesn't work"))
 
     rbb::object symbs1[] = { rbb::symbol("hahaha") };

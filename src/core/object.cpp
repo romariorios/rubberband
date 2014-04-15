@@ -579,7 +579,7 @@ SEND_MSG(array)
     array_data *d = static_cast<array_data *>(thisptr->__value.data);
     
     if (msg.__value.type == value_t::symbol_t) {
-        if (msg == symbol("<->"))
+        if (msg == symbol("*"))
             return rbb::number(d->size);
         
         object symb_ret;
@@ -686,7 +686,7 @@ SEND_MSG(table)
             answer.__send_msg = data_comparison_ne_send_msg;
         else if (msg == rbb::symbol("+"))
             answer.__send_msg = table_merge_send_msg;
-        else if (msg == rbb::symbol("?:")) {
+        else if (msg == rbb::symbol("*")) {
             table_data *d = static_cast<table_data *>(thisptr->__value.data);
             
             linked_list<symbol_node *> *fields = d->objtree.keys();
