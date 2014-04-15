@@ -16,146 +16,94 @@ Rubberband plan:
      ° @ (self-reference): A reference to the block itself
    Messages
    (Note: if an object receives an unexpected message, it answers Empty and does nothing)
+   The following list groups several messages that make part of the same curried call. Each
+   message which isn't a symbol is represented by the format <name: Type>. BlockWC means
+   block with context.
    * Boolean
      Expected messages:
-     ° == (Symbol)
-       Answer:  Block
-         Expects: Boolean "a"
-         Answer:  True if both Booleans are equal, false otherwise
-     ° != (Symbol)
-       Answer:  Block
-         Expects: Boolean "a"
-         Answer:  False if both Booleans are equal, true otherwise
-     ° \/ (Symbol)
-       Answer: Block
-         Expects: Boolean "a"
-         Answer:  ORs the two booleans
-     ° /\ (Symbol)
-       Answer: Block
-         Expects: Boolean "a"
-         Answer:  ANDs the two booleans
-     ° >< (Symbol)
+     ° == <other: Boolean>
+       Answer: True if other equals this boolean; false otherwise
+     ° != <other: Boolean>
+       Answer: True if other does not equal this boolean; false otherwise
+     ° \/ <other: Boolean>
+       Answer: ORs this boolean and other
+     ° /\ <other: Boolean>
+       Answer: ANDs this boolean and other
+     ° ><
        Answer: The negation of this boolean (NOT)
-     ° ? (Symbol)
-       Answer:  Block
-         Expects: Array with Block "a" and Block "b"
-         Does:    Runs "a" if the Boolean is true; runs "b" if the Boolean is false
-         Answer:  The answer of whatever block it ran
+     ° ? <context: Object> <ifTrueBlock: Block> <ifFalseBlock: Block>
+       Answer: If this boolean is true, returns the answer of ifTrueBlock; otherwise, returns
+               the answer of ifFalseBlock
    * Empty
      Expected messages:
-     ° == (Symbol)
-       Answer:  Block
-         Expects: Object
-         Answer:  True if the Object is Empty, false otherwise
-     ° != (Symbol)
-       Answer:  Block
-         Expects: Object
-         Answer:  False if the Object is Empty, true otherwise
+     ° == <object: Object>
+       Answer: True if object is Empty; false otherwise
+     ° != <object: Object>
+       Answer: True if object is not Empty; false otherwise
    * Number
      Expected messages:
-     ° == (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  True if both Numbers are equal, false otherwise
-     ° != (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  False if both Numbers are equal, true otherwise
-     ° > (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  True if the Number is greater than "a", false otherwise
-     ° < (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  True if the Number is less than "a", false otherwise
-     ° <= (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  True if the Number is less than or equal to "a", false otherwise
-     ° >= (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  True if the Number is greater than or equal to "a", false otherwise
-     ° + (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  The Number plus "a"
-     ° - (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  The Number minus "a"
-     ° * (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  The Number times "a"
-     ° / (Symbol)
-       Answer:  Block
-         Expects: Number "a"
-         Answer:  The Number divided by "a"
+     ° == <n: Number>
+       Answer: True if this and n are equal; false otherwise
+     ° != <n: Number>
+       Answer: True if this and n are not equal; false otherwise
+     ° > <n: Number>
+       Answer: True if this is greater than n; false otherwise
+     ° < <n: Number>
+       Answer: True if this is less than n; false otherwise
+     ° >= <n: Number>
+       Answer: True if this is greater than or equal to n; false otherwise
+     ° <= <n: Number>
+       Answer: True if this is less than or equal to n; false otherwise
+     ° + <n: Number>
+       Answer: This plus n
+     ° - <n: Number>
+       Answer: This minus n
+     ° * <n: Number>
+       Answer: This times n
+     ° / <n: Number>
+       Answer: This divided by n
    * Symbol
      Expected messages:
-     ° == (Symbol)
-       Answer:  Block
-         Expects: Symbol "a"
-         Answer:  True if the Symbol is equal to "a", false other wise
-     ° != (Symbol)
-       Answer:  Block
-         Expects: Symbol "a"
-         Answer:  False if the Symbol is equal to "a", true other wise
+     ° == <s: Symbol>
+       Answer: True if this equals s; false otherwise
+     ° != <s: Symbol>
+       Answer: True if this does not equal s; false otherwise
    * Array
      Expected messages:
-     ° == (Symbol)
-       Answer: Block
-         Expects: Object
-         Answer: True if the Object is this Array. False otherwise
-     ° != (Symbol)
-       Answer: Block
-         Expects: Object
-         Answer: False if the Object is this Array. True otherwise
-     ° Number
-       Answer: The Object at the position of the number. Empty if there's no number in that position
-     ° Array "a"
-       Does: Makes this list's position defined at "a"'s first element point to the object at "a"'s second position
-       Answer: Empty
-     ° ?| (Symbol)
-       Answer: The list length (a Number)
-     ° + (Symbol)
-       Answer: Block
-         Expects: Array "a"
-         Answer: This Array and Array "a" concatenated
-     ° / (Symbol)
-       Answer: Block
-         Expects: Array "a"
-         Answer: Slice the amount of elements indicated by "a"'s second element starting from the position indicated by "a"'s first element
-   * Contextless Block
+     ° == <a: Array>
+       Answer: True if a is this object; false otherwise
+     ° != <a: Array>
+       Answer: True if a is not this object; false otherwise
+     ° <index: Number>
+       Answer: The object at the index; empty if the index is out of range
+     ° <: Array[<index: Number>, <obj: Object>]>
+       Does: Replaces the element at index by obj
+     ° <->
+       Answer: The size of the list
+     ° + <a: Array>
+       Answer: This and a concatenated
+     ° / <: Array[<i: Number>, <s: Number>]>
+       Answer: Returns a subset of the current array of size s from index i
+   * Block
      Expected messages:
-     ° The context (Object)
-       Answer: Block
-         Expects: Object
-         Does: Passes the Object as the argument ($) of this block and executes it
-         Answer: The Object that results from the expression after the exclamation mark
+     ° <context: Object> <m: Object>
+       Does: Executes the block over context (~) with the message m ($)
+       Answer: The Object that results from the expression after the exclamation mark
    * Table
      Expected messages:
-     ° == (Symbol)
-       Answer: Block
-         Expects: Object
-         Answer: True if the Object is this Table. False otherwise
-     ° != (Symbol)
-       Answer: Block
-         Expects: Object
-         Answer: False if the Object is this Table. True otherwise
-     ° + (Symbol)
-       Answer: Block
-         Expects: Table "a"
-         Answer: This Table and "a" concatenated
-     ° ?: (Symbol)
-       Answer: Array containing the symbols to which this Table responds
-     ° Symbol
-       Answer: If it isn't any of the symbols above, the Object to which this Symbol points
-     ° Table "a"
-       Does: Unites "a" into this Table
-       Answer: This Table
+     ° == <t: Table>
+       Answer: True if a is this object; false otherwise
+     ° != <t: Table>
+       Answer: True if a is not this object; false otherwise
+     ° + <t: Table>
+       Answer: This and t concatenated
+     ° *
+       Answer: Array containing the symbols to which this responds
+     ° <s: Symbol>
+       Answer: If it isn't any of the symbols above, the Object to which s points
+     ° <t: Table>
+       Does: Unites t and this
+       Answer: This
  - Define the language syntax
    * Grammar
      start -> object
