@@ -10,7 +10,7 @@ for t in *test.cpp
 do
     test_name=${t%\.*}-$CXX
     echo "--- $test_name ---"
-    $CXX $t ../core/object.cpp ../core/symbol.cpp ../core/block.cpp -o $test_name $CXX_FLAGS &&
+    $CXX $t ../core/object.cpp ../core/symbol.cpp ../core/block.cpp -o $test_name $CXX_FLAGS -std=c++11 &&
     ./$test_name &&
     rm $test_name
 done
