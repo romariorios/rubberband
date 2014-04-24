@@ -41,6 +41,24 @@ public:
     int refc;
 };
 
+// Helper create_object functions
+static object create_object(value_t::type_t type, send_msg_function send_msg = 0)
+{
+    object ret;
+    ret.__value.type = type;
+    ret.__send_msg = send_msg;
+
+    return ret;
+}
+
+static object create_data_object(shared_data_t *data, send_msg_function send_msg = 0)
+{
+    object ret = create_object(value_t::data_t, send_msg);
+    ret.__value.data = data;
+
+    return ret;
+}
+
 // object: The base for everything
 SEND_MSG(noop)
 {
@@ -228,7 +246,7 @@ SEND_MSG(number)
     if (msg.__value.type != value_t::symbol_t)
         return empty();
 
-    object comp;
+    object comp = create_data_object(new object_data(*thisptr));
 
     if (msg == symbol("=="))
         comp.__send_msg = num_op_eq_send_msg;
@@ -252,9 +270,6 @@ SEND_MSG(number)
         comp.__send_msg = num_op_div_send_msg;
     else
         return empty();
-
-    comp.__value.type = value_t::data_t;
-    comp.__value.data = new object_data(*thisptr);
 
     return comp;
 }
@@ -294,9 +309,7 @@ SEND_MSG(symbol)
     if (msg.__value.type != value_t::symbol_t)
         return empty();
 
-    object cmp_op;
-    cmp_op.__value.data = new object_data(*thisptr);
-    cmp_op.__value.type = value_t::data_t;
+    object cmp_op = create_data_object(new object_data(*thisptr));
 
     if (msg.__value.symbol == symbol_node::retrieve("=="))
         cmp_op.__send_msg = symbol_comp_eq_send_msg;
@@ -400,12 +413,7 @@ SEND_MSG(boolean_get_iftrue_block)
     if (d->boolean_obj.__value.boolean)
         d_ret->true_result = block << d->context << empty();
 
-    object ret;
-    ret.__value.type = value_t::data_t;
-    ret.__value.data = d_ret;
-    ret.__send_msg = boolean_get_iffalse_block_send_msg;
-
-    return ret;
+    return create_data_object(d_ret, boolean_get_iffalse_block_send_msg);
 }
 
 SEND_MSG(boolean_get_context)
@@ -414,12 +422,9 @@ SEND_MSG(boolean_get_context)
     if (!d)
         return empty();
 
-    object ret;
-    ret.__value.type = value_t::data_t;
-    ret.__value.data = new boolean_decision_data(msg, d->obj);
-    ret.__send_msg = boolean_get_iftrue_block_send_msg;
-
-    return ret;
+    return create_data_object(
+        new boolean_decision_data(msg, d->obj),
+        boolean_get_iftrue_block_send_msg);
 }
 
 #define BOOLEAN_DO(op, sym)\
@@ -443,9 +448,7 @@ SEND_MSG(boolean)
     if (msg.__value.type != value_t::symbol_t)
         return empty();
 
-    object comp_block;
-    comp_block.__send_msg = boolean_comp_send_msg;
-    comp_block.__value.type = value_t::no_data_t;
+    object comp_block = create_object(value_t::no_data_t, boolean_comp_send_msg);
 
     if (msg.__value.symbol == symbol("==").__value.symbol) {
         comp_block.__value.boolean = thisptr->__value.boolean;
@@ -454,28 +457,13 @@ SEND_MSG(boolean)
         comp_block.__value.boolean = !thisptr->__value.boolean;
         return comp_block;
     } else if (msg == symbol("/\\")) {
-        object do_AND;
-        do_AND.__value.type = value_t::data_t;
-        do_AND.__value.data = new object_data(*thisptr);
-        do_AND.__send_msg = boolean_do_AND_send_msg;
-
-        return do_AND;
+        return create_data_object(new object_data(*thisptr), boolean_do_AND_send_msg);
     } else if (msg == symbol("\\/")) {
-        object do_OR;
-        do_OR.__value.type = value_t::data_t;
-        do_OR.__value.data = new object_data(*thisptr);
-        do_OR.__send_msg = boolean_do_OR_send_msg;
-
-        return do_OR;
+        return create_data_object(new object_data(*thisptr), boolean_do_OR_send_msg);
     } else if (msg == symbol("><")) {
         return boolean(!thisptr->__value.boolean);
     } else if (msg == symbol("?")) {
-        object boolean_decision;
-        boolean_decision.__value.type = value_t::data_t;
-        boolean_decision.__value.data = new object_data(*thisptr);
-        boolean_decision.__send_msg = boolean_get_context_send_msg;
-
-        return boolean_decision;
+        return create_data_object(new object_data(*thisptr), boolean_get_context_send_msg);
     }
 
     return empty();
@@ -511,12 +499,7 @@ SEND_MSG(array);
 
 static object create_array_object(array_data *d)
 {
-    object l;
-    l.__value.type = value_t::data_t;
-    l.__value.data = d;
-    l.__send_msg = array_send_msg;
-
-    return l;
+    return create_data_object(d, array_send_msg);
 }
 
 SEND_MSG(array_concatenation)
@@ -600,9 +583,7 @@ SEND_MSG(array)
         if (msg == symbol("*"))
             return rbb::number(d->size);
 
-        object symb_ret;
-        symb_ret.__value.type = value_t::data_t;
-        symb_ret.__value.data = new object_data(*thisptr);
+        object symb_ret = create_data_object(new object_data(*thisptr));
 
         if (msg == symbol("=="))
             symb_ret.__send_msg = data_comparison_eq_send_msg;
@@ -694,9 +675,7 @@ SEND_MSG(table_merge)
 SEND_MSG(table)
 {
     if (msg.__value.type == value_t::symbol_t) {
-        object answer;
-        answer.__value.type = value_t::data_t;
-        answer.__value.data = new object_data(*thisptr);
+        object answer = create_data_object(new object_data(*thisptr));
 
         if (msg == rbb::symbol("=="))
             answer.__send_msg = data_comparison_eq_send_msg;
@@ -768,12 +747,7 @@ object rbb::table(const object symbol_array[], const object obj_array[], int siz
         d->objtree.insert(sym, symbol_object_pair(sym, obj_array[i]));
     }
 
-    object gen_obj;
-    gen_obj.__value.type = value_t::data_t;
-    gen_obj.__value.data = d;
-    gen_obj.__send_msg = table_send_msg;
-
-    return gen_obj;
+    return create_data_object(d, table_send_msg);
 }
 
 // Block: A sequence of instructions ready to be executed
@@ -805,20 +779,10 @@ SEND_MSG(block_body)
     block_data *d = static_cast<block_data *>(thisptr->__value.data);
     d->block_l->set_block_context(msg);
 
-    object ret;
-    ret.__value.type = value_t::data_t;
-    ret.__value.data = new object_data(*thisptr);
-    ret.__send_msg = block_send_msg;
-
-    return ret;
+    return create_data_object(new object_data(*thisptr), block_send_msg);
 }
 
 object rbb::literal::block::eval()
 {
-    object bl;
-    bl.__value.type = value_t::data_t;
-    bl.__value.data = new block_data(this);
-    bl.__send_msg = block_body_send_msg;
-
-    return bl;
+    return create_data_object(new block_data(this), block_body_send_msg);
 }

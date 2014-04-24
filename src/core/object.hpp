@@ -27,7 +27,7 @@ class shared_data_t;
 
 struct value_t
 {
-    enum
+    enum type_t
     {
         no_data_t  = 0x10,
         empty_t    = 0x11,
@@ -48,6 +48,9 @@ struct value_t
     };
 };
 
+class object;
+typedef object (*send_msg_function)(object *, const object &);
+
 // Object
 class object
 {
@@ -63,7 +66,7 @@ public:
     object operator<<(const object &msg); // send_msg
 
     value_t __value;
-    object (*__send_msg)(object *, const object &);
+    send_msg_function __send_msg;
 
 private:
     void destroy();
