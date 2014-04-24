@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -36,7 +36,7 @@ struct value_t
         boolean_t  = 0x14,
         symbol_t   = 0x15,
         data_t     = 0x20
-    } type;
+    } type = value_t::no_data_t;
 
     union
     {
