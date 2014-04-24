@@ -56,7 +56,7 @@ TESTS_INIT()
 
     TEST_CONDITION(result3 == rbb::number(6), puts("Identity function doesn't work"))
 
-    // { ! $ > 5? $ [| { ! ~ * 2 }, { ! ~ * ~ }] }
+    // { ! $ > 5? $ { ! ~ * 2 } { ! ~ * ~ } }
     rbb::literal::block *bl4 = new rbb::literal::block;
 
     rbb::block_statement *ret_expr4 = new rbb::block_statement;
@@ -74,6 +74,7 @@ TESTS_INIT()
     true_ret->add_expr(new rbb::literal::number(2));
     true_bl->set_return_expression(true_ret);
     true_expr->add_expr(true_bl);
+    ret_expr4->add_expr(true_expr);
 
     rbb::block_statement *false_expr = new rbb::block_statement;
     rbb::literal::block *false_bl = new rbb::literal::block;
@@ -83,10 +84,7 @@ TESTS_INIT()
     false_ret->add_expr(new rbb::literal::context);
     false_bl->set_return_expression(false_ret);
     false_expr->add_expr(false_bl);
-
-    rbb::expr *decision_array[] = { true_expr, false_expr };
-    rbb::literal::array *d_array = new rbb::literal::array(decision_array, 2);
-    ret_expr4->add_expr(d_array);
+    ret_expr4->add_expr(false_expr);
 
     bl4->set_return_expression(ret_expr4);
 
@@ -95,7 +93,7 @@ TESTS_INIT()
 
     TEST_CONDITION(
         rbb::number(9) == block4 << rbb::number(3),
-        puts("{! $ > 5? $ [| { ! ~ * 2 }, { ! ~ * ~ }] } doesn't run."));
+        puts("{! $ > 5? $ { ! ~ * 2 }, { ! ~ * ~ } } doesn't run."));
 
     rbb::literal::block *bl5 = new rbb::literal::block;
     bl5->set_return_expression(new rbb::literal::number(10));

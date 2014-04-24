@@ -367,27 +367,45 @@ public:
 
     object context;
     object boolean_obj;
+    object true_result;
 };
 
-SEND_MSG(boolean_decision_exec)
+SEND_MSG(boolean_get_iffalse_block)
 {
     if (msg.__value.type != value_t::data_t)
-        return empty();
-
-    array_data *l = static_cast<array_data *>(msg.__value.data);
-    if (!l)
-        return empty();
-
-    if (l->size != 2 && l->size != 1)
         return empty();
 
     boolean_decision_data *d = static_cast<boolean_decision_data *>(thisptr->__value.data);
     if (!d)
         return empty();
 
+    object block = msg;
     return d->boolean_obj.__value.boolean?
-        l->arr[0] << d->context << empty() :
-        l->arr[1] << d->context << empty();
+        d->true_result :
+        block << d->context << empty();
+}
+
+SEND_MSG(boolean_get_iftrue_block)
+{
+    if (msg.__value.type != value_t::data_t)
+        return empty();
+
+    boolean_decision_data *d = static_cast<boolean_decision_data *>(thisptr->__value.data);
+    if (!d)
+        return empty();
+
+    boolean_decision_data *d_ret = new boolean_decision_data(d->context, d->boolean_obj);
+
+    object block = msg;
+    if (d->boolean_obj.__value.boolean)
+        d_ret->true_result = block << d->context << empty();
+
+    object ret;
+    ret.__value.type = value_t::data_t;
+    ret.__value.data = d_ret;
+    ret.__send_msg = boolean_get_iffalse_block_send_msg;
+
+    return ret;
 }
 
 SEND_MSG(boolean_get_context)
@@ -399,7 +417,7 @@ SEND_MSG(boolean_get_context)
     object ret;
     ret.__value.type = value_t::data_t;
     ret.__value.data = new boolean_decision_data(msg, d->obj);
-    ret.__send_msg = boolean_decision_exec_send_msg;
+    ret.__send_msg = boolean_get_iftrue_block_send_msg;
 
     return ret;
 }

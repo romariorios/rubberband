@@ -53,7 +53,7 @@ TESTS_INIT()
         false_obj << rbb::symbol("><") == true_obj,
         puts("NOT     | F| error"))
 
-    // [true]? [:] [| {! 3 }, {! 5 }]
+    // [true]? :[] {! 3 } {! 5 }
     rbb::literal::block *bl_true = new rbb::literal::block;
     bl_true->set_return_expression(new rbb::literal::number(3));
     rbb::object block_true = bl_true->eval();
@@ -62,19 +62,18 @@ TESTS_INIT()
     bl_false->set_return_expression(new rbb::literal::number(5));
     rbb::object block_false = bl_false->eval();
 
-    rbb::object arr[] = { block_true, block_false };
-    rbb::object array = rbb::array(arr, 2);
-
     TEST_CONDITION(
         rbb::boolean(true)
              << rbb::symbol("?")
              << rbb::table(0, 0, 0)
-             << array == rbb::number(3),
+             << block_true
+             << block_false == rbb::number(3),
         puts("Flow control isn't working."))
     TEST_CONDITION(
         rbb::boolean(false)
              << rbb::symbol("?")
              << rbb::table(0, 0, 0)
-             << array == rbb::number(5),
+             << block_true
+             << block_false == rbb::number(5),
         puts("Flow control isn't working."))
 TESTS_END()
