@@ -1,16 +1,16 @@
 // Rubberband language
 // Copyright (C) 2013  Luiz Romário Santana Rios <luizromario at gmail dot com>
-// 
+//
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
 // License as published by the Free Software Foundation; either
 // version 2.1 of the License, or (at your option) any later version.
-// 
+//
 // This library is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 // Lesser General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Lesser General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
@@ -37,7 +37,7 @@ struct value_t
         symbol_t   = 0x15,
         data_t     = 0x20
     } type;
-    
+
     union
     {
         long integer;
@@ -56,15 +56,15 @@ public:
     object(const object &other);
     object &operator=(const object &other);
     ~object();
-    
+
     bool operator==(const object &other) const;
     inline bool operator!=(const object &other) const { return !(other == *this); }
-    
+
     object operator<<(const object &msg); // send_msg
-    
+
     value_t __value;
     object (*__send_msg)(object *, const object &);
-    
+
 private:
     void destroy();
     void ref();

@@ -31,7 +31,7 @@ TESTS_INIT()
     TEST_CONDITION(
         rbb::number(15).__value.integer == 15,
         puts("rbb::number doesn't initialize integer numbers correctly"))
-    
+
     TEST_NUMBER_COMPARISON(15, 15, "!=", false)
     TEST_NUMBER_COMPARISON(11, 13, "!=", true)
     TEST_NUMBER_COMPARISON(12.1, 12.1, "!=", false)
@@ -40,7 +40,7 @@ TESTS_INIT()
     TEST_NUMBER_COMPARISON(14.0000001, 14, "!=", true)
     TEST_NUMBER_COMPARISON(13, 12, "==", false)
     TEST_NUMBER_COMPARISON(14.2, 14.2, "!=", false)
-    
+
     TEST_NUMBER_COMPARISON(11.000001, 11, ">", true)
     TEST_NUMBER_COMPARISON(11, 12, "<", true)
     TEST_NUMBER_COMPARISON(15.3, 13, "<", false)
@@ -49,12 +49,12 @@ TESTS_INIT()
     TEST_NUMBER_COMPARISON(30, 30, "<=", true)
     TEST_NUMBER_COMPARISON(12, 13, ">=", false)
     TEST_NUMBER_COMPARISON(14, 12, "<=", false)
-    
+
     TEST_ARITH_OPERATION(10, 10, "+", 20)
     TEST_ARITH_OPERATION(10, 20, "-", -10)
     TEST_ARITH_OPERATION(5, 3, "*", 15)
     TEST_ARITH_OPERATION(10, 3, "/", 10/3)
-    
+
     TEST_OPERATOR_EQ(rbb::number(15), rbb::number(12))
     TEST_OPERATOR_EQ(rbb::number(12.1), rbb::number(13.3))
     TEST_OPERATOR_EQ(rbb::number(14), rbb::number(19.22))

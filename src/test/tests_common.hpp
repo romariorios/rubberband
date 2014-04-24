@@ -25,12 +25,12 @@ bool test_operator_eq(const rbb::object &obj1, const rbb::object &obj2)
         obj1 != obj1 ||
         obj2 != obj2)
         return false;
-    
+
     if (obj1 != obj2 &&
         obj1 == obj1 &&
         obj2 == obj2)
         return true;
-    
+
     return false;
 }
 

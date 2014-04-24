@@ -4,7 +4,7 @@
 
 TESTS_INIT()
     rbb::literal::block *bl = new rbb::literal::block;
-    
+
     // { ~[: x = $] ! ~x * (~x) }
     rbb::block_statement *stm1 = new rbb::block_statement;
     stm1->add_expr(new rbb::literal::context);
@@ -12,7 +12,7 @@ TESTS_INIT()
     rbb::expr *objects[] = { new rbb::literal::block_arg };
     stm1->add_expr(new rbb::literal::table(symbols, objects, 1));
     bl->add_statement(stm1);
-    
+
     rbb::block_statement *ret_expr = new rbb::block_statement;
     ret_expr->add_expr(new rbb::literal::context);
     ret_expr->add_expr(new rbb::literal::symbol("x"));
@@ -22,50 +22,50 @@ TESTS_INIT()
     expr->add_expr(new rbb::literal::symbol("x"));
     ret_expr->add_expr(expr);
     bl->set_return_expression(ret_expr);
-    
+
     rbb::object context = rbb::table(0, 0, 0);
-    
+
     rbb::object block_body = bl->eval();
     rbb::object block = block_body << context;
     rbb::object result = block << rbb::number(6);
-    
+
     TEST_CONDITION(result == rbb::number(36), puts("Block isn't computing 6 squared"))
-    
+
     // { ! $ * $ }
     rbb::literal::block *bl2 = new rbb::literal::block;
-    
+
     rbb::block_statement *ret_expr2 = new rbb::block_statement;
     ret_expr2->add_expr(new rbb::literal::block_arg);
     ret_expr2->add_expr(new rbb::literal::symbol("*"));
     ret_expr2->add_expr(new rbb::literal::block_arg);
     bl2->set_return_expression(ret_expr2);
-    
+
     rbb::object block_body2 = bl2->eval();
     rbb::object block2 = block_body2 << rbb::empty();
     rbb::object result2 = block2 << rbb::number(6);
-    
+
     TEST_CONDITION(result2 == rbb::number(36), puts("Simple block isn't computing 6 squared"))
-    
+
     // { ! $ } # The identity
     rbb::literal::block *bl3 = new rbb::literal::block;
     bl3->set_return_expression(new rbb::literal::block_arg);
-    
+
     rbb::object block_body3 = bl3->eval();
     rbb::object block3 = block_body3 << rbb::empty();
     rbb::object result3 = block3 << rbb::number(6);
-    
+
     TEST_CONDITION(result3 == rbb::number(6), puts("Identity function doesn't work"))
-    
+
     // { ! $ > 5? $ [| { ! ~ * 2 }, { ! ~ * ~ }] }
     rbb::literal::block *bl4 = new rbb::literal::block;
-    
+
     rbb::block_statement *ret_expr4 = new rbb::block_statement;
     ret_expr4->add_expr(new rbb::literal::block_arg);
     ret_expr4->add_expr(new rbb::literal::symbol(">"));
     ret_expr4->add_expr(new rbb::literal::number(5));
     ret_expr4->add_expr(new rbb::literal::symbol("?"));
     ret_expr4->add_expr(new rbb::literal::block_arg);
-    
+
     rbb::block_statement *true_expr = new rbb::block_statement;
     rbb::literal::block *true_bl = new rbb::literal::block;
     rbb::block_statement *true_ret = new rbb::block_statement;
@@ -74,7 +74,7 @@ TESTS_INIT()
     true_ret->add_expr(new rbb::literal::number(2));
     true_bl->set_return_expression(true_ret);
     true_expr->add_expr(true_bl);
-    
+
     rbb::block_statement *false_expr = new rbb::block_statement;
     rbb::literal::block *false_bl = new rbb::literal::block;
     rbb::block_statement *false_ret = new rbb::block_statement;
@@ -83,24 +83,24 @@ TESTS_INIT()
     false_ret->add_expr(new rbb::literal::context);
     false_bl->set_return_expression(false_ret);
     false_expr->add_expr(false_bl);
-    
+
     rbb::expr *decision_array[] = { true_expr, false_expr };
     rbb::literal::array *d_array = new rbb::literal::array(decision_array, 2);
     ret_expr4->add_expr(d_array);
-    
+
     bl4->set_return_expression(ret_expr4);
-    
+
     rbb::object block4 = bl4->eval();
     block4 = block4 << rbb::table(0, 0, 0);
-    
+
     TEST_CONDITION(
         rbb::number(9) == block4 << rbb::number(3),
         puts("{! $ > 5? $ [| { ! ~ * 2 }, { ! ~ * ~ }] } doesn't run."));
-    
+
     rbb::literal::block *bl5 = new rbb::literal::block;
     bl5->set_return_expression(new rbb::literal::number(10));
     rbb::object block5 = bl5->eval();
-    
+
     TEST_CONDITION(
         block5 << rbb::table(0, 0, 0) << rbb::empty() == rbb::number(10),
         puts("{! 10 } doesn't run"))
