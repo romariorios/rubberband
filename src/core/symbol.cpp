@@ -64,6 +64,8 @@ symbol_node *rbb::symbol_node::retrieve(char *string)
         symbol_node *d = node->down.insert_if_not_found(ch, new_d);
         if (d != new_d)
             delete new_d;
+        else
+            d->up = node;
 
         node = d;
     }
