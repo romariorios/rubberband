@@ -19,6 +19,7 @@
 
 #include "block.hpp"
 #include "data_templates.hpp"
+#include "object_private.hpp"
 #include "symbol.hpp"
 
 #include <cmath>
@@ -27,19 +28,6 @@
 static object typename##_send_msg(object *thisptr, const object &msg)
 
 using namespace rbb;
-
-class rbb::shared_data_t
-{
-public:
-    shared_data_t() :
-        refc(1)
-    {}
-
-    virtual ~shared_data_t()
-    {}
-
-    int refc;
-};
 
 // Helper create_object functions
 static object create_object(value_t::type_t type, send_msg_function send_msg = 0)
@@ -352,24 +340,6 @@ SEND_MSG(boolean_comp)
     return boolean(true);
 }
 
-class array_data : public shared_data_t
-{
-public:
-    array_data(const int size) :
-        size(size)
-    {
-        arr = new object[size];
-    }
-
-    ~array_data()
-    {
-        delete[] arr;
-    }
-
-    object *arr;
-    int size;
-};
-
 class boolean_decision_data : public shared_data_t
 {
 public:
@@ -631,32 +601,6 @@ object rbb::array(const object obj_array[], int size)
 }
 
 // Generic object: Basically, a map from symbols to objects
-struct symbol_object_pair
-{
-    symbol_object_pair(symbol_node *sym = 0, const object &obj = empty()) :
-        sym(sym),
-        obj(obj)
-    {}
-
-    symbol_node *sym;
-    object obj;
-};
-
-class symbol_object_tree : public splay_tree<symbol_node *, symbol_object_pair>
-{
-public:
-    symbol_object_tree() {}
-
-protected:
-    symbol_node *key_from_node(node *n) const { return n->item.sym; }
-};
-
-class table_data : public shared_data_t
-{
-public:
-    symbol_object_tree objtree;
-};
-
 SEND_MSG(table_merge)
 {
     if (msg.__value.type != value_t::data_t)
@@ -751,18 +695,6 @@ object rbb::table(const object symbol_array[], const object obj_array[], int siz
 }
 
 // Block: A sequence of instructions ready to be executed
-class block_data : public shared_data_t
-{
-public:
-    block_data(literal::block *block_l) : block_l(block_l) {}
-    ~block_data()
-    {
-        delete block_l;
-    }
-
-    literal::block *block_l;
-};
-
 SEND_MSG(block)
 {
     object_data *o_d = static_cast<object_data *>(thisptr->__value.data);

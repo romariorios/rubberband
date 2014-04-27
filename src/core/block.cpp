@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -17,26 +17,10 @@
 
 #include "block.hpp"
 
+#include "block_private.hpp"
 #include "data_templates.hpp"
 
 using namespace rbb;
-
-class rbb::block_statement_private
-{
-public:
-    block_statement_private() :
-        expressions(0),
-        expressions_tail(0)
-    {}
-    ~block_statement_private()
-    {
-        if (expressions)
-            delete expressions;
-    }
-
-    linked_list<expr *> *expressions;
-    linked_list<expr *> *expressions_tail;
-};
 
 block_statement::block_statement() :
     _p(new block_statement_private)
@@ -166,41 +150,6 @@ object literal::table::eval()
     delete[] objects;
     return e;
 }
-
-class rbb::literal::block_private
-{
-public:
-    block_private() :
-        statements(0),
-        statements_tail(0),
-        _return_expression(new literal::empty)
-    {}
-
-    ~block_private()
-    {
-        if (statements)
-            delete statements;
-
-        delete _return_expression;
-    }
-
-    void set_return_expression(expr *ret_exp)
-    {
-        delete _return_expression;
-        _return_expression = ret_exp;
-    }
-
-    expr *return_expression() const
-    {
-        return _return_expression;
-    }
-
-    linked_list<block_statement *> *statements;
-    linked_list<block_statement *> *statements_tail;
-
-private:
-    expr *_return_expression;
-};
 
 literal::block::block() :
     _p(new block_private)
