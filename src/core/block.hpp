@@ -45,7 +45,6 @@ public:
     void add_expr(expr *e);
     object eval();
 
-private:
     block_statement_private *_p;
 };
 
@@ -153,7 +152,6 @@ namespace literal
         object eval();
         object run();
 
-    private:
         block_private *_p;
     };
 }
