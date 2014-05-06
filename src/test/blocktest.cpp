@@ -124,7 +124,7 @@ TESTS_INIT()
 
     arg_pl_x->add_expr(_x);
 
-    rbb::expr *s6[] = { new rbb::literal::symbol("+") };
+    rbb::expr *s6[] = { new rbb::literal::symbol("x") };
     rbb::expr *o6[] = { arg_pl_x };
     c_x_eq_arg_pl_x->add_expr(new rbb::literal::table(s6, o6, 1));
 
@@ -143,10 +143,6 @@ TESTS_INIT()
     rbb::object result6_2 = block6 << rbb::number(7);
 
     TEST_CONDITION(
-        result6_2 == rbb::number(20),
-        printf("{ ~:x => $ + (~x) !~x }:[ x => 13 ] 7  ==  %ld\n", result6_2.__value.integer))
-
-    TEST_CONDITION(
-        result6_1 == result6_2,
-        puts("Block gives different results when run a second time"))
+        result6_2 == rbb::number(27),
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 20 ] 7  ==  %ld\n", result6_2.__value.integer))
 TESTS_END()
