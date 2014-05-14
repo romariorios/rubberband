@@ -162,4 +162,66 @@ TESTS_INIT()
         result6_3 == rbb::number(34),
         printf("{ ~:x => $ + (~x) !~x }:[ x => 27 ] 7 == %ld (should be 34)\n",
             result6_3.__value.integer))
+
+    // { ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:i => 10
+    rbb::expr *self[] = { new rbb::literal::symbol("self") };
+    rbb::expr *self_ref[] = { new rbb::literal::self_ref };
+    auto table_self_is_self_ref = new rbb::literal::table { self, self_ref, 1 };
+
+    auto stm_self_is_self_ref = new rbb::block_statement;
+    stm_self_is_self_ref->add_expr(new rbb::literal::context);
+    stm_self_is_self_ref->add_expr(table_self_is_self_ref);
+
+    auto increment_expr_ = new rbb::block_statement;
+    increment_expr_->add_expr(new rbb::literal::context);
+    increment_expr_->add_expr(new rbb::literal::symbol("i"));
+    increment_expr_->add_expr(new rbb::literal::symbol("+"));
+    increment_expr_->add_expr(new rbb::literal::number(1));
+
+    rbb::expr *increment_symbol[] = { new rbb::literal::symbol("i") };
+    rbb::expr *increment_expr[] = { increment_expr_ };
+    auto table_increment = new rbb::literal::table(increment_symbol, increment_expr, 1);
+
+    auto stm_increment = new rbb::block_statement;
+    stm_increment->add_expr(new rbb::literal::context);
+    stm_increment->add_expr(table_increment);
+
+    auto stm_self_call = new rbb::block_statement;
+    stm_self_call->add_expr(new rbb::literal::context);
+    stm_self_call->add_expr(new rbb::literal::symbol("self"));
+    stm_self_call->add_expr(new rbb::literal::context);
+    stm_self_call->add_expr(new rbb::literal::empty);
+
+    auto bll_increment = new rbb::literal::block;
+    bll_increment->add_statement(stm_increment);
+    bll_increment->add_statement(stm_self_call);
+
+    auto stm_if_i_lt_1000_then_increment = new rbb::block_statement;
+    stm_if_i_lt_1000_then_increment->add_expr(new rbb::literal::context);
+    stm_if_i_lt_1000_then_increment->add_expr(new rbb::literal::symbol("i"));
+    stm_if_i_lt_1000_then_increment->add_expr(new rbb::literal::symbol("<"));
+    stm_if_i_lt_1000_then_increment->add_expr(new rbb::literal::number(1000));
+    stm_if_i_lt_1000_then_increment->add_expr(new rbb::literal::symbol("?"));
+    stm_if_i_lt_1000_then_increment->add_expr(new rbb::literal::context);
+    stm_if_i_lt_1000_then_increment->add_expr(bll_increment);
+
+    auto expr_bll7_ans = new rbb::block_statement;
+    expr_bll7_ans->add_expr(new rbb::literal::context);
+    expr_bll7_ans->add_expr(new rbb::literal::symbol("i"));
+
+    auto bll7 = new rbb::literal::block;
+    bll7->add_statement(stm_self_is_self_ref);
+    bll7->add_statement(stm_if_i_lt_1000_then_increment);
+    bll7->set_return_expression(expr_bll7_ans);
+
+    rbb::object symbols7[] = { rbb::symbol("i") };
+    rbb::object *objects7 = objects6_1;
+    auto context7 = rbb::table(symbols7, objects7, 1);
+
+    auto block7 = bll7->eval() << context7;
+    auto result7 = block7 << rbb::empty();
+
+    TEST_CONDITION(
+        result7 == rbb::number(1000),
+        printf("{ ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:[i => 10][] == %ld (should be 1000)\n", result7.__value.integer))
 TESTS_END()

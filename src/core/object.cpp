@@ -714,5 +714,5 @@ SEND_MSG(block_body)
 
 object rbb::literal::block::eval(literal::block*)
 {
-    return create_data_object(new block_data(this), block_body_send_msg);
+    return create_data_object(new block_data(new block(*this)), block_body_send_msg);
 }

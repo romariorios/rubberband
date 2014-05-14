@@ -43,7 +43,6 @@ class block_statement : public expr
 public:
     block_statement();
     ~block_statement();
-    void set_parent_block(literal::block *b);
     void add_expr(expr *e);
     object eval(literal::block *parent_block);
 
@@ -113,6 +112,13 @@ namespace literal
         expr **_symbol_array;
         expr **_obj_array;
         int _size;
+    };
+
+    class self_ref : public expr
+    {
+    public:
+        inline self_ref() {}
+        object eval(block *parent_block);
     };
 
     class context : public expr

@@ -109,6 +109,11 @@ object literal::table::eval(literal::block* parent_block)
     return e;
 }
 
+object literal::self_ref::eval(literal::block* parent_block)
+{
+    return parent_block->eval();
+}
+
 object literal::context::eval(literal::block* parent_block)
 {
     return parent_block->_context;
