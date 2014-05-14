@@ -166,6 +166,16 @@ Rubberband plan:
    /src/interpreter -- Files for the interpreter
  - Starting coding the base objects (Yay!)
    * Done
- - Write a preliminary version of the interpreter
-   * Only basic objects available (Boolean, Empty, Number, Symbol, Block)
  - Review sketches and update this plan accordingly
+   * Block behavior when a context is passed (return a copy instead of self)
+   * Self-reference
+ - Review memory behavior
+ - Review grammar
+ - Write a preliminary version of the interpreter
+   * Only basic objects available
+   * With built-in strings
+ - Make core library
+   * Control structures (for, while)
+   * Iteration methods (range, map, filter)
+   * Type system (classes, typeclasses, or something of the sort)
+   * whatnot
