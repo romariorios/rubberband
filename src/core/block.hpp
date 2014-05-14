@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -23,15 +23,18 @@
 namespace rbb
 {
 
+namespace literal
+{
+    class block;
+}
+
 class expr
 {
 public:
     expr() {}
     virtual ~expr() {}
 
-    virtual void set_context(const object &) {}
-    virtual void set_arg(const object &) {}
-    virtual object eval() = 0;
+    virtual object eval(literal::block *parent_block) = 0;
 };
 
 class block_statement_private;
@@ -40,10 +43,9 @@ class block_statement : public expr
 public:
     block_statement();
     ~block_statement();
-    void set_context(const object &context);
-    void set_arg(const object &arg);
+    void set_parent_block(literal::block *b);
     void add_expr(expr *e);
-    object eval();
+    object eval(literal::block *parent_block);
 
     block_statement_private *_p;
 };
@@ -54,7 +56,7 @@ namespace literal
     {
     public:
         inline boolean(bool val) : _val(val) {}
-        inline object eval() { return rbb::boolean(_val); }
+        inline object eval(block *) { return rbb::boolean(_val); }
 
     private:
         bool _val;
@@ -64,14 +66,14 @@ namespace literal
     {
     public:
         inline empty() {}
-        inline object eval() { return rbb::empty(); }
+        inline object eval(block *) { return rbb::empty(); }
     };
 
     class number : public expr
     {
     public:
         inline number(double val) : _val(val) {}
-        inline object eval() { return rbb::number(_val); }
+        inline object eval(block *) { return rbb::number(_val); }
 
     private:
         double _val;
@@ -82,7 +84,7 @@ namespace literal
     public:
         inline symbol(const char *str) : _sym(rbb::symbol(str)) {}
         inline symbol(char *str) : _sym(rbb::symbol(str)) {}
-        inline object eval() { return _sym; }
+        inline object eval(block *) { return _sym; }
 
     private:
         object _sym;
@@ -93,9 +95,7 @@ namespace literal
     public:
         array(rbb::expr *obj_array[], int size);
         ~array();
-        void set_context(const object &context);
-        void set_arg(const object &arg);
-        object eval();
+        object eval(block *parent_block);
 
     private:
         expr **_obj_array;
@@ -107,9 +107,7 @@ namespace literal
     public:
         table(rbb::expr *symbol_array[], rbb::expr *obj_array[], int size);
         ~table();
-        void set_context(const object &context);
-        void set_arg(const object &arg);
-        object eval();
+        object eval(block *parent_block);
 
     private:
         expr **_symbol_array;
@@ -121,38 +119,33 @@ namespace literal
     {
     public:
         inline context() {}
-        inline void set_context(const object &context) { _context = context; }
-        inline object eval() { return _context; }
-
-    private:
-        object _context;
+        object eval(block *parent_block);
     };
 
-    class block_arg : public expr
+    class message : public expr
     {
     public:
-        inline block_arg() {}
-        inline void set_arg(const object &arg) { _arg = arg; }
-        inline object eval() { return _arg; }
-
-    private:
-        object _arg;
+        inline message() {}
+        object eval(block *parent_block);
     };
 
     class block_private;
-    class block : public expr // blocks don't depend on an external context
+    class block : public expr
     {
     public:
         block();
+        block(const block &other);
         ~block();
         void add_statement(block_statement *stm);
         void set_return_expression(expr *expr);
         void set_block_context(const object &context);
-        void set_block_arg(const object &arg);
-        object eval();
+        void set_block_message(const object &msg);
+        object eval(block * = nullptr); // blocks don't depend on their parent block
         object run();
 
         block_private *_p;
+        object _context;
+        object _message;
     };
 }
 

@@ -49,8 +49,6 @@ namespace literal
     {
     public:
         block_private() :
-        statements(0),
-        statements_tail(0),
         _return_expression(new literal::empty)
         {}
 
@@ -73,8 +71,9 @@ namespace literal
             return _return_expression;
         }
 
-        linked_list<block_statement *> *statements;
-        linked_list<block_statement *> *statements_tail;
+        linked_list<block_statement *> *statements = nullptr;
+        linked_list<block_statement *> *statements_tail = nullptr;
+        int refc = 1;
 
     private:
         expr *_return_expression;

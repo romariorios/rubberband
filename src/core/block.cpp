@@ -31,20 +31,6 @@ block_statement::~block_statement()
     delete _p;
 }
 
-void block_statement::set_context(const object& context)
-{
-    for (linked_list<expr *> *cur_expr = _p->expressions;
-         cur_expr; cur_expr = cur_expr->next)
-        cur_expr->value->set_context(context);
-}
-
-void block_statement::set_arg(const object& arg)
-{
-    for (linked_list<expr *> *cur_expr = _p->expressions;
-         cur_expr; cur_expr = cur_expr->next)
-        cur_expr->value->set_arg(arg);
-}
-
 void block_statement::add_expr(expr* e)
 {
     if (!_p->expressions) {
@@ -56,14 +42,14 @@ void block_statement::add_expr(expr* e)
     _p->expressions_tail = _p->expressions_tail->append(e);
 }
 
-object block_statement::eval()
+object block_statement::eval(literal::block* parent_block)
 {
-    object cur_obj = _p->expressions->value->eval();
+    object cur_obj = _p->expressions->value->eval(parent_block);
 
     for (linked_list<expr *> *cur_expr = _p->expressions->next;
          cur_expr; cur_expr = cur_expr->next)
     {
-        cur_obj = cur_obj << cur_expr->value->eval();
+        cur_obj = cur_obj << cur_expr->value->eval(parent_block);
     }
 
     return cur_obj;
@@ -80,23 +66,11 @@ literal::array::~array()
         delete _obj_array[i];
 }
 
-void literal::array::set_context(const object& context)
-{
-    for (int i = 0; i < _size; ++i)
-        _obj_array[i]->set_context(context);
-}
-
-void literal::array::set_arg(const object& arg)
-{
-    for (int i = 0; i < _size; ++i)
-        _obj_array[i]->set_context(arg);
-}
-
-object literal::array::eval()
+object literal::array::eval(literal::block* parent_block)
 {
     object *arr = new object[_size];
     for (int i = 0; i < _size; ++i)
-        arr[i] = _obj_array[i]->eval();
+        arr[i] = _obj_array[i]->eval(parent_block);
 
     object l = rbb::array(arr, _size);
 
@@ -118,30 +92,14 @@ literal::table::~table()
     }
 }
 
-void literal::table::set_context(const object &context)
-{
-    for (int i = 0; i < _size; ++i) {
-        _symbol_array[i]->set_context(context);
-        _obj_array[i]->set_context(context);
-    }
-}
-
-void literal::table::set_arg(const object &arg)
-{
-    for (int i = 0; i < _size; ++i) {
-        _symbol_array[i]->set_arg(arg);
-        _obj_array[i]->set_arg(arg);
-    }
-}
-
-object literal::table::eval()
+object literal::table::eval(literal::block* parent_block)
 {
     object *symbols = new object[_size];
     object *objects = new object[_size];
 
     for (int i = 0; i < _size; ++i) {
-        symbols[i] = _symbol_array[i]->eval();
-        objects[i] = _obj_array[i]->eval();
+        symbols[i] = _symbol_array[i]->eval(parent_block);
+        objects[i] = _obj_array[i]->eval(parent_block);
     }
 
     object e = rbb::table(symbols, objects, _size);
@@ -151,13 +109,29 @@ object literal::table::eval()
     return e;
 }
 
+object literal::context::eval(literal::block* parent_block)
+{
+    return parent_block->_context;
+}
+
+object literal::message::eval(literal::block* parent_block)
+{
+    return parent_block->_message;
+}
+
 literal::block::block() :
     _p(new block_private)
 {}
 
+literal::block::block(const block& other) :
+    _p(other._p)
+{
+    _p->refc++;
+}
+
 literal::block::~block()
 {
-    delete _p;
+    if (--_p->refc == 0) delete _p;
 }
 
 void literal::block::add_statement(block_statement* stm)
@@ -179,20 +153,12 @@ void literal::block::set_return_expression(expr* expr)
 
 void literal::block::set_block_context(const object& context)
 {
-    for (linked_list<block_statement *> *cur_stm = _p->statements;
-         cur_stm; cur_stm = cur_stm->next)
-        cur_stm->value->set_context(context);
-
-    _p->return_expression()->set_context(context);
+    _context = context;
 }
 
-void literal::block::set_block_arg(const object& arg)
+void literal::block::set_block_message(const object& msg)
 {
-    for (linked_list<block_statement *> *cur_stm = _p->statements;
-         cur_stm; cur_stm = cur_stm->next)
-        cur_stm->value->set_arg(arg);
-
-    _p->return_expression()->set_arg(arg);
+    _message = msg;
 }
 
 // eval() is at object.cpp
@@ -201,7 +167,7 @@ object literal::block::run()
 {
     for (linked_list<block_statement *> *cur_stm = _p->statements;
          cur_stm; cur_stm = cur_stm->next)
-        cur_stm->value->eval();
+        cur_stm->value->eval(this);
 
-    return _p->return_expression()->eval();
+    return _p->return_expression()->eval(this);
 }

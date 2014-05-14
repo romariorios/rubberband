@@ -697,11 +697,8 @@ object rbb::table(const object symbol_array[], const object obj_array[], int siz
 // Block: A sequence of instructions ready to be executed
 SEND_MSG(block)
 {
-    object_data *o_d = static_cast<object_data *>(thisptr->__value.data);
-    object obj = o_d->obj;
-
-    block_data *d = static_cast<block_data *>(obj.__value.data);
-    d->block_l->set_block_arg(msg);
+    block_data *d = static_cast<block_data *>(thisptr->__value.data);
+    d->block_l->set_block_message(msg);
 
     return d->block_l->run();
 }
@@ -709,12 +706,13 @@ SEND_MSG(block)
 SEND_MSG(block_body)
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data);
-    d->block_l->set_block_context(msg);
+    auto block_l = new literal::block(*d->block_l);
+    block_l->set_block_context(msg);
 
-    return create_data_object(new object_data(*thisptr), block_send_msg);
+    return create_data_object(new block_data(block_l), block_send_msg);
 }
 
-object rbb::literal::block::eval()
+object rbb::literal::block::eval(literal::block*)
 {
     return create_data_object(new block_data(this), block_body_send_msg);
 }

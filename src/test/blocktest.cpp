@@ -9,7 +9,7 @@ TESTS_INIT()
     rbb::block_statement *stm1 = new rbb::block_statement;
     stm1->add_expr(new rbb::literal::context);
     rbb::expr *symbols[] = { new rbb::literal::symbol("x") };
-    rbb::expr *objects[] = { new rbb::literal::block_arg };
+    rbb::expr *objects[] = { new rbb::literal::message };
     stm1->add_expr(new rbb::literal::table(symbols, objects, 1));
     bl->add_statement(stm1);
 
@@ -35,9 +35,9 @@ TESTS_INIT()
     rbb::literal::block *bl2 = new rbb::literal::block;
 
     rbb::block_statement *ret_expr2 = new rbb::block_statement;
-    ret_expr2->add_expr(new rbb::literal::block_arg);
+    ret_expr2->add_expr(new rbb::literal::message);
     ret_expr2->add_expr(new rbb::literal::symbol("*"));
-    ret_expr2->add_expr(new rbb::literal::block_arg);
+    ret_expr2->add_expr(new rbb::literal::message);
     bl2->set_return_expression(ret_expr2);
 
     rbb::object block_body2 = bl2->eval();
@@ -48,7 +48,7 @@ TESTS_INIT()
 
     // { ! $ } # The identity
     rbb::literal::block *bl3 = new rbb::literal::block;
-    bl3->set_return_expression(new rbb::literal::block_arg);
+    bl3->set_return_expression(new rbb::literal::message);
 
     rbb::object block_body3 = bl3->eval();
     rbb::object block3 = block_body3 << rbb::empty();
@@ -60,11 +60,11 @@ TESTS_INIT()
     rbb::literal::block *bl4 = new rbb::literal::block;
 
     rbb::block_statement *ret_expr4 = new rbb::block_statement;
-    ret_expr4->add_expr(new rbb::literal::block_arg);
+    ret_expr4->add_expr(new rbb::literal::message);
     ret_expr4->add_expr(new rbb::literal::symbol(">"));
     ret_expr4->add_expr(new rbb::literal::number(5));
     ret_expr4->add_expr(new rbb::literal::symbol("?"));
-    ret_expr4->add_expr(new rbb::literal::block_arg);
+    ret_expr4->add_expr(new rbb::literal::message);
 
     rbb::block_statement *true_expr = new rbb::block_statement;
     rbb::literal::block *true_bl = new rbb::literal::block;
@@ -115,7 +115,7 @@ TESTS_INIT()
     c_x_eq_arg_pl_x->add_expr(new rbb::literal::context);
 
     rbb::block_statement *arg_pl_x = new rbb::block_statement;
-    arg_pl_x->add_expr(new rbb::literal::block_arg);
+    arg_pl_x->add_expr(new rbb::literal::message);
     arg_pl_x->add_expr(new rbb::literal::symbol("+"));
 
     rbb::block_statement *_x = new rbb::block_statement;
@@ -131,8 +131,8 @@ TESTS_INIT()
     bll6->add_statement(c_x_eq_arg_pl_x);
     bll6->set_return_expression(_x);
 
-    rbb::object block6 = bll6->eval();
-    block6 = block6 << context6;
+    rbb::object prototype6 = bll6->eval();
+    rbb::object block6 = prototype6 << context6;
 
     rbb::object result6_1 = block6 << rbb::number(7);
 
@@ -145,4 +145,21 @@ TESTS_INIT()
     TEST_CONDITION(
         result6_2 == rbb::number(27),
         printf("{ ~:x => $ + (~x) !~x }:[ x => 20 ] 7  ==  %ld\n", result6_2.__value.integer))
+
+    rbb::object symbols6_1[] = { rbb::symbol("x") };
+    rbb::object objects6_1[] = { rbb::number(10) };
+    rbb::object block6_1 = prototype6 << rbb::table(symbols6_1, objects6_1, 1);
+    rbb::object result6_1_1 = block6_1 << rbb::number(7);
+
+    TEST_CONDITION(
+        result6_1_1 == rbb::number(17),
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 10 ] 7 == %ld (should be 17)\n",
+            result6_1_1.__value.integer))
+
+    rbb::object result6_3 = block6 << rbb::number(7);
+
+    TEST_CONDITION(
+        result6_3 == rbb::number(34),
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 27 ] 7 == %ld (should be 34)\n",
+            result6_3.__value.integer))
 TESTS_END()
