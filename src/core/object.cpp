@@ -18,11 +18,11 @@
 #include "object.hpp"
 
 #include "block.hpp"
-#include "data_templates.hpp"
 #include "object_private.hpp"
 #include "symbol.hpp"
 
 #include <cmath>
+#include <vector>
 
 #define SEND_MSG(typename)\
 static object typename##_send_msg(object *thisptr, const object &msg)
@@ -630,30 +630,22 @@ SEND_MSG(table)
         else if (msg == rbb::symbol("*")) {
             table_data *d = static_cast<table_data *>(thisptr->__value.data);
 
-            linked_list<symbol_node *> *fields = d->objtree.keys();
-            linked_list<symbol_node *> *old_fields = fields;
-            int size = fields->count();
-            object *l_el = new object[size];
+            std::vector<object> l_el;
 
-            for (int i = 0; i < size; ++i) {
+            for (auto pair : d->objtree) {
                 object sym;
                 sym.__value.type = value_t::symbol_t;
-                sym.__value.symbol = fields->value;
+                sym.__value.symbol = pair.first;
 
-                l_el[i] = sym;
-
-                linked_list<symbol_node *> *old_fields = fields;
-                fields = fields->next;
+                l_el.push_back(sym);
             }
 
-            delete old_fields;
-
-            return array(l_el, size);
+            return array(&l_el[0], l_el.size());
         } else {
             table_data *d = static_cast<table_data *>(thisptr->__value.data);
 
-            const symbol_object_pair &pair = d->objtree.at(msg.__value.symbol);
-            return pair.obj;
+            auto result = d->objtree.find(msg.__value.symbol);
+            return result != d->objtree.end()? result->second : empty();
         }
 
         return answer;
@@ -663,15 +655,10 @@ SEND_MSG(table)
             static_cast<table_data *>(msg.__value.data);
         if (!msg_d)
             return empty();
-
-        linked_list<symbol_node *> *msg_fields = msg_d->objtree.keys();
-        linked_list<symbol_node *> *msg_fields_head = msg_fields;
-
-        for (; msg_fields; msg_fields = msg_fields->next) {
-            d->objtree.insert(msg_fields->value, msg_d->objtree.at(msg_fields->value));
+        
+        for (auto msg_pair : msg_d->objtree) {
+            d->objtree[msg_pair.first] = msg_pair.second;
         }
-
-        delete msg_fields_head;
 
         return *thisptr;
     }
@@ -688,7 +675,7 @@ object rbb::table(const object symbol_array[], const object obj_array[], int siz
             continue;
 
         symbol_node *sym = symbol_array[i].__value.symbol;
-        d->objtree.insert(sym, symbol_object_pair(sym, obj_array[i]));
+        d->objtree[sym] = obj_array[i];
     }
 
     return create_data_object(d, table_send_msg);

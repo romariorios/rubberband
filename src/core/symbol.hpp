@@ -18,37 +18,21 @@
 #ifndef SYMBOL_HPP
 #define SYMBOL_HPP
 
-#include "data_templates.hpp"
+#include <set>
 
 namespace rbb
 {
 
-struct symbol_node;
-
-class symbol_downtree : public splay_tree<char, symbol_node *>
-{
-public:
-    symbol_downtree() {}
-    ~symbol_downtree();
-
-protected:
-    char key_from_node(node *n) const;
-
-private:
-    void delete_tree(node *n);
-};
-
 struct symbol_node
 {
     char ch;
-    symbol_node *up;
-    symbol_downtree down;
+    symbol_node *up = nullptr;
+    std::set<symbol_node *> down;
 
     static symbol_node *retrieve(char *string);
     inline static symbol_node *retrieve(const char *string)
         { return retrieve(const_cast<char *>(string)); }
     symbol_node(char ch);
-    ~symbol_node();
 };
 
 }

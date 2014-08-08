@@ -18,7 +18,7 @@
 #ifndef OBJECT_PRIVATE_HPP
 #define OBJECT_PRIVATE_HPP
 
-#include "data_templates.hpp"
+#include <map>
 
 namespace rbb
 {
@@ -64,30 +64,10 @@ public:
     int size;
 };
 
-struct symbol_object_pair
-{
-    symbol_object_pair(symbol_node *sym = 0, const object &obj = empty()) :
-        sym(sym),
-        obj(obj)
-    {}
-
-    symbol_node *sym;
-    object obj;
-};
-
-class symbol_object_tree : public splay_tree<symbol_node *, symbol_object_pair>
-{
-public:
-    symbol_object_tree() {}
-
-protected:
-    symbol_node *key_from_node(node *n) const { return n->item.sym; }
-};
-
 class table_data : public shared_data_t
 {
 public:
-    symbol_object_tree objtree;
+    std::map<symbol_node *, object> objtree;
 };
 
 class block_data : public shared_data_t

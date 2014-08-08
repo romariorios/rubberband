@@ -18,7 +18,6 @@
 #include "block.hpp"
 
 #include "block_private.hpp"
-#include "data_templates.hpp"
 
 using namespace rbb;
 

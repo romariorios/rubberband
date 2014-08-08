@@ -17,34 +17,13 @@
 
 #include "symbol.hpp"
 
+#include <algorithm>
 #include <cstring>
 
 using namespace rbb;
 
-char symbol_downtree::key_from_node(rbb::splay_tree<char, symbol_node*>::node* n) const
-{
-    return n->item->ch;
-}
-
-symbol_downtree::~symbol_downtree()
-{
-    delete_tree(p_root);
-}
-
-void symbol_downtree::delete_tree(rbb::splay_tree< char, symbol_node* >::node* n)
-{
-    if (!n) return;
-    if (n->item) delete n->item;
-    if (n->left) delete_tree(n->left);
-    if (n->right) delete_tree(n->right);
-}
-
 symbol_node::symbol_node(char ch) :
-    ch(ch),
-    up(0)
-{}
-
-symbol_node::~symbol_node()
+    ch {ch}
 {}
 
 static symbol_node *trie_head = 0;
@@ -60,14 +39,23 @@ symbol_node *rbb::symbol_node::retrieve(char *string)
 
     for (int i = 0; i < length; ++i) {
         char ch = string[i];
-        symbol_node *new_d = new symbol_node(ch);
-        symbol_node *d = node->down.insert_if_not_found(ch, new_d);
-        if (d != new_d)
-            delete new_d;
-        else
-            d->up = node;
-
-        node = d;
+        
+        auto result = std::find_if(
+            node->down.begin(),
+            node->down.end(),
+            [ch](symbol_node *node) -> bool {
+                return node->ch == ch;
+            });
+        
+        if (result == node->down.end()) {
+            auto sym = new symbol_node {ch};
+            sym->up = node;
+            
+            node->down.insert(sym);
+            node = sym;
+        } else {
+            node = *result;
+        }
     }
 
     return node;
