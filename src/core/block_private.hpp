@@ -18,7 +18,7 @@
 #ifndef BLOCK_PRIVATE
 #define BLOCK_PRIVATE
 
-#include "data_templates.hpp"
+#include <forward_list>
 
 namespace rbb
 {
@@ -29,18 +29,9 @@ class expr;
 class block_statement_private
 {
 public:
-    block_statement_private() :
-        expressions(0),
-        expressions_tail(0)
-    {}
-    ~block_statement_private()
-    {
-        if (expressions)
-            delete expressions;
-    }
-
-    linked_list<expr *> *expressions;
-    linked_list<expr *> *expressions_tail;
+    std::forward_list<expr *> expressions;
+    std::forward_list<expr *>::iterator expressions_tail =
+        expressions.before_begin();
 };
 
 namespace literal
@@ -48,18 +39,6 @@ namespace literal
     class block_private
     {
     public:
-        block_private() :
-        _return_expression(new literal::empty)
-        {}
-
-        ~block_private()
-        {
-            if (statements)
-                delete statements;
-
-            delete _return_expression;
-        }
-
         void set_return_expression(expr *ret_exp)
         {
             delete _return_expression;
@@ -71,12 +50,13 @@ namespace literal
             return _return_expression;
         }
 
-        linked_list<block_statement *> *statements = nullptr;
-        linked_list<block_statement *> *statements_tail = nullptr;
+        std::forward_list<block_statement *> statements;
+        std::forward_list<block_statement *>::iterator statements_tail =
+            statements.before_begin();
         int refc = 1;
 
     private:
-        expr *_return_expression;
+        expr *_return_expression = new literal::empty;
     };
 }
 

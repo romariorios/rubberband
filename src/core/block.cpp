@@ -33,23 +33,20 @@ block_statement::~block_statement()
 
 void block_statement::add_expr(expr* e)
 {
-    if (!_p->expressions) {
-        _p->expressions = new linked_list<expr *>(e);
-        _p->expressions_tail = _p->expressions;
-        return;
-    }
-
-    _p->expressions_tail = _p->expressions_tail->append(e);
+    _p->expressions_tail =
+        _p->expressions.insert_after(_p->expressions_tail, e);
 }
 
 object block_statement::eval(literal::block* parent_block)
 {
-    object cur_obj = _p->expressions->value->eval(parent_block);
+    auto cur_expr = _p->expressions.begin();
+    auto cur_obj = (*cur_expr)->eval(parent_block);
+    
+    cur_expr++;
 
-    for (linked_list<expr *> *cur_expr = _p->expressions->next;
-         cur_expr; cur_expr = cur_expr->next)
+    for (; cur_expr != _p->expressions.end(); cur_expr++)
     {
-        cur_obj = cur_obj << cur_expr->value->eval(parent_block);
+        cur_obj = cur_obj << (*cur_expr)->eval(parent_block);
     }
 
     return cur_obj;
@@ -141,14 +138,8 @@ literal::block::~block()
 
 void literal::block::add_statement(block_statement* stm)
 {
-    if (!_p->statements) {
-        _p->statements = new linked_list<block_statement *>(stm);
-        _p->statements_tail = _p->statements;
-
-        return;
-    }
-
-    _p->statements_tail = _p->statements_tail->append(stm);
+    _p->statements_tail =
+        _p->statements.insert_after(_p->statements_tail, stm);
 }
 
 void literal::block::set_return_expression(expr* expr)
@@ -170,9 +161,8 @@ void literal::block::set_block_message(const object& msg)
 
 object literal::block::run()
 {
-    for (linked_list<block_statement *> *cur_stm = _p->statements;
-         cur_stm; cur_stm = cur_stm->next)
-        cur_stm->value->eval(this);
+    for (auto cur_stm : _p->statements)
+        cur_stm->eval(this);
 
     return _p->return_expression()->eval(this);
 }
