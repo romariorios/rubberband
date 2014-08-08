@@ -19,6 +19,7 @@
 #define SYMBOL_HPP
 
 #include <set>
+#include <string>
 
 namespace rbb
 {
@@ -29,9 +30,7 @@ struct symbol_node
     symbol_node *up = nullptr;
     std::set<symbol_node *> down;
 
-    static symbol_node *retrieve(char *string);
-    inline static symbol_node *retrieve(const char *string)
-        { return retrieve(const_cast<char *>(string)); }
+    static symbol_node *retrieve(const std::string &string);
     symbol_node(char ch);
 };
 

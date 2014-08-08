@@ -18,6 +18,8 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
+#include <string>
+
 namespace rbb
 {
 
@@ -79,8 +81,7 @@ object empty();
 object number(double val);
 double number_to_double(const object &num);
 
-object symbol(char *val);
-object symbol(const char *val);
+object symbol(const std::string &val);
 
 object boolean(bool val);
 

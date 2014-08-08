@@ -81,8 +81,7 @@ namespace literal
     class symbol : public expr
     {
     public:
-        inline symbol(const char *str) : _sym(rbb::symbol(str)) {}
-        inline symbol(char *str) : _sym(rbb::symbol(str)) {}
+        inline symbol(const std::string &str) : _sym(rbb::symbol(str)) {}
         inline object eval(block *) { return _sym; }
 
     private:

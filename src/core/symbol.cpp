@@ -28,18 +28,14 @@ symbol_node::symbol_node(char ch) :
 
 static symbol_node *trie_head = 0;
 
-symbol_node *rbb::symbol_node::retrieve(char *string)
+symbol_node *rbb::symbol_node::retrieve(const std::string &string)
 {
-    const int length = strlen(string);
-
     if (!trie_head)
         trie_head = new symbol_node('\0');
 
     symbol_node *node = trie_head;
 
-    for (int i = 0; i < length; ++i) {
-        char ch = string[i];
-        
+    for (auto ch : string) {
         auto result = std::find_if(
             node->down.begin(),
             node->down.end(),

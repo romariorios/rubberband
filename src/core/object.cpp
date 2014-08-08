@@ -308,17 +308,7 @@ SEND_MSG(symbol)
     return cmp_op;
 }
 
-object rbb::symbol(char* val)
-{
-    object symb;
-    symb.__send_msg = symbol_send_msg;
-    symb.__value.type = value_t::symbol_t;
-    symb.__value.symbol = symbol_node::retrieve(val);
-
-    return symb;
-}
-
-object rbb::symbol(const char* val)
+object rbb::symbol(const std::string &val)
 {
     object symb;
     symb.__send_msg = symbol_send_msg;
