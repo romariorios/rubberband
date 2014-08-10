@@ -18,7 +18,9 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
+#include <initializer_list>
 #include <string>
+#include <vector>
 
 namespace rbb
 {
@@ -87,9 +89,23 @@ object boolean(bool val);
 
 // NEVER assign pointers directly to other objects
 
-object array(const object obj_array[], int size);
+object array(const std::vector<object> &objects = std::vector<object> {});
+inline object array(const std::initializer_list<object> &objects)
+{
+    return array(std::vector<object> {objects});
+}
 
-object table(const object symbol_array[], const object obj_array[], int size);
+object table(
+    const std::vector<object> &symbols = std::vector<object> {},
+    const std::vector<object> &objects = std::vector<object> {});
+inline object table(
+    const std::initializer_list<object> &symbols,
+    const std::initializer_list<object> &objects)
+{
+    return table(
+        std::vector<object> {symbols},
+        std::vector<object> {objects});
+}
 
 }
 

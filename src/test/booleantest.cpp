@@ -65,14 +65,14 @@ TESTS_INIT()
     TEST_CONDITION(
         rbb::boolean(true)
              << rbb::symbol("?")
-             << rbb::table(0, 0, 0)
+             << rbb::table()
              << block_true
              << block_false == rbb::number(3),
         puts("Flow control isn't working."))
     TEST_CONDITION(
         rbb::boolean(false)
              << rbb::symbol("?")
-             << rbb::table(0, 0, 0)
+             << rbb::table()
              << block_true
              << block_false == rbb::number(5),
         puts("Flow control isn't working."))

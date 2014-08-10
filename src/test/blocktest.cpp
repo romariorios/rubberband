@@ -23,7 +23,7 @@ TESTS_INIT()
     ret_expr->add_expr(expr);
     bl->set_return_expression(ret_expr);
 
-    rbb::object context = rbb::table(0, 0, 0);
+    auto context = rbb::table();
 
     rbb::object block_body = bl->eval();
     rbb::object block = block_body << context;
@@ -89,7 +89,7 @@ TESTS_INIT()
     bl4->set_return_expression(ret_expr4);
 
     rbb::object block4 = bl4->eval();
-    block4 = block4 << rbb::table(0, 0, 0);
+    block4 = block4 << rbb::table();
 
     TEST_CONDITION(
         rbb::number(9) == block4 << rbb::number(3),
@@ -100,14 +100,12 @@ TESTS_INIT()
     rbb::object block5 = bl5->eval();
 
     TEST_CONDITION(
-        block5 << rbb::table(0, 0, 0) << rbb::empty() == rbb::number(10),
+        block5 << rbb::table() << rbb::empty() == rbb::number(10),
         puts("{! 10 } doesn't run"))
 
     // Testing if a block responds the same message the same way twice in a row
     // { ~:x => $ + (~x) !~x }
-    rbb::object symbols6[] = { rbb::symbol("x") };
-    rbb::object objects6[] = { rbb::number(13) };
-    rbb::object context6 = rbb::table(symbols6, objects6, 1);
+    auto context6 = rbb::table({ rbb::symbol("x") }, { rbb::number(13) });
 
     rbb::literal::block *bll6 = new rbb::literal::block;
 
@@ -146,9 +144,7 @@ TESTS_INIT()
         result6_2 == rbb::number(27),
         printf("{ ~:x => $ + (~x) !~x }:[ x => 20 ] 7  ==  %ld\n", result6_2.__value.integer))
 
-    rbb::object symbols6_1[] = { rbb::symbol("x") };
-    rbb::object objects6_1[] = { rbb::number(10) };
-    rbb::object block6_1 = prototype6 << rbb::table(symbols6_1, objects6_1, 1);
+    auto block6_1 = prototype6 << rbb::table({ rbb::symbol("x") }, { rbb::number(10) });
     rbb::object result6_1_1 = block6_1 << rbb::number(7);
 
     TEST_CONDITION(
@@ -214,9 +210,7 @@ TESTS_INIT()
     bll7->add_statement(stm_if_i_lt_1000_then_increment);
     bll7->set_return_expression(expr_bll7_ans);
 
-    rbb::object symbols7[] = { rbb::symbol("i") };
-    rbb::object *objects7 = objects6_1;
-    auto context7 = rbb::table(symbols7, objects7, 1);
+    auto context7 = rbb::table({ rbb::symbol("i") }, { rbb::number(10) });
 
     auto block7 = bll7->eval() << context7;
     auto result7 = block7 << rbb::empty();

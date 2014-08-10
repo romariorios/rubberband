@@ -64,14 +64,11 @@ literal::array::~array()
 
 object literal::array::eval(literal::block* parent_block)
 {
-    object *arr = new object[_size];
+    std::vector<object> arr;
     for (int i = 0; i < _size; ++i)
-        arr[i] = _obj_array[i]->eval(parent_block);
+        arr.push_back(_obj_array[i]->eval(parent_block));
 
-    object l = rbb::array(arr, _size);
-
-    delete[] arr;
-    return l;
+    return rbb::array(arr);
 }
 
 literal::table::table(expr* symbol_array[], expr* obj_array[], int size) :
@@ -90,19 +87,15 @@ literal::table::~table()
 
 object literal::table::eval(literal::block* parent_block)
 {
-    object *symbols = new object[_size];
-    object *objects = new object[_size];
+    std::vector<object> symbols;
+    std::vector<object> objects;
 
     for (int i = 0; i < _size; ++i) {
-        symbols[i] = _symbol_array[i]->eval(parent_block);
-        objects[i] = _obj_array[i]->eval(parent_block);
+        symbols.push_back(_symbol_array[i]->eval(parent_block));
+        objects.push_back(_obj_array[i]->eval(parent_block));
     }
 
-    object e = rbb::table(symbols, objects, _size);
-
-    delete[] symbols;
-    delete[] objects;
-    return e;
+    return rbb::table(symbols, objects);
 }
 
 object literal::self_ref::eval(literal::block* parent_block)

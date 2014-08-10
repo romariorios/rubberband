@@ -25,8 +25,7 @@ bool cmp_array(rbb::object &l1, rbb::object &l2)
 }
 
 TESTS_INIT()
-    rbb::object numbers[] = {rbb::number(1), rbb::number(4), rbb::number(9)};
-    rbb::object l = rbb::array(numbers, 3);
+    auto l = rbb::array({rbb::number(1), rbb::number(4), rbb::number(9)});
 
     TEST_CONDITION(
         l << rbb::symbol("==") << l == rbb::boolean(true),
@@ -35,7 +34,7 @@ TESTS_INIT()
         l << rbb::symbol("!=") << l == rbb::boolean(false),
         puts("An array differs from itself"))
 
-    rbb::object l_ = l;
+    auto l_ = l;
 
     TEST_CONDITION(
         l << rbb::symbol("==") << l_ == rbb::boolean(true),
@@ -55,8 +54,7 @@ TESTS_INIT()
         l << rbb::number(3) == rbb::empty(),
         puts("The array isn't handling out-of-bounds well"))
 
-    rbb::object ch_0_arr[] = { rbb::number(0), rbb::symbol("number_array") };
-    rbb::object ch_0 = rbb::array(ch_0_arr, 2);
+    auto ch_0 = rbb::array({ rbb::number(0), rbb::symbol("number_array") });
 
     l << ch_0;
 
@@ -64,25 +62,19 @@ TESTS_INIT()
         l << rbb::number(0) == rbb::symbol("number_array"),
         puts("Assigning an object to a position has no effect"))
 
-    rbb::object other_numbers[] = {rbb::number(2), rbb::number(3), rbb::number(5)};
-    rbb::object l2 = rbb::array(other_numbers, 3);
-    rbb::object l3 = l << rbb::symbol("+") << l2;
+    auto l2 = rbb::array({rbb::number(2), rbb::number(3), rbb::number(5)});
+    auto l3 = l << rbb::symbol("+") << l2;
 
-    rbb::object all_numbers[] = {
+    auto l4 = rbb::array({
         rbb::symbol("number_array"), rbb::number(4), rbb::number(9),
         rbb::number(2), rbb::number(3), rbb::number(5)
-    };
-    rbb::object l4 = rbb::array(all_numbers, 6);
+    });
 
     TEST_CONDITION(cmp_array(l3, l4), puts("Concatenation doesn't work"));
 
-    rbb::object slice_by[] = {rbb::number(1), rbb::number(3)};
-    rbb::object sb = rbb::array(slice_by, 2);
-
-    rbb::object l5 = l3 << rbb::symbol("/") << sb;
-
-    rbb::object expected_array[] = {rbb::number(4), rbb::number(9), rbb::number(2)};
-    rbb::object el = rbb::array(expected_array, 3);
+    auto sb = rbb::array({rbb::number(1), rbb::number(3)});
+    auto l5 = l3 << rbb::symbol("/") << sb;
+    auto el = rbb::array({rbb::number(4), rbb::number(9), rbb::number(2)});
 
     TEST_CONDITION(cmp_array(l5, el), puts("Slicing doesn't work"))
 

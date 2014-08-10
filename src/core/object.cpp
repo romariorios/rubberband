@@ -580,12 +580,13 @@ SEND_MSG(array)
     return d->arr[ind];
 }
 
-object rbb::array(const object obj_array[], int size)
+object rbb::array(const std::vector<object> &objects)
 {
-    array_data *d = new array_data(size);
+    array_data *d = new array_data(objects.size());
+    int i = 0;
 
-    for (int i = 0; i < size; ++i)
-        d->arr[i] = obj_array[i];
+    for (auto obj : objects)
+        d->arr[i++] = obj;
 
     return create_array_object(d);
 }
@@ -599,11 +600,11 @@ SEND_MSG(table_merge)
     if (!static_cast<table_data *>(msg.__value.data))
         return empty();
 
-    object gen_obj = rbb::table(0, 0, 0);
-    gen_obj << static_cast<object_data *>(thisptr->__value.data)->obj;
-    gen_obj << msg;
+    object table = rbb::table();
+    table << static_cast<object_data *>(thisptr->__value.data)->obj;
+    table << msg;
 
-    return gen_obj;
+    return table;
 }
 
 SEND_MSG(table)
@@ -630,7 +631,7 @@ SEND_MSG(table)
                 l_el.push_back(sym);
             }
 
-            return array(&l_el[0], l_el.size());
+            return array(l_el);
         } else {
             table_data *d = static_cast<table_data *>(thisptr->__value.data);
 
@@ -656,16 +657,19 @@ SEND_MSG(table)
     return empty();
 }
 
-object rbb::table(const object symbol_array[], const object obj_array[], int size)
+object rbb::table(
+    const std::vector<object> &symbols,
+    const std::vector<object> &objects)
 {
-    table_data *d = new table_data;
+    auto d = new table_data;
+    const auto size = std::min(symbols.size(), objects.size());
 
     for (int i = 0; i < size; ++i) {
-        if (symbol_array[i].__value.type != value_t::symbol_t)
+        if (symbols[i].__value.type != value_t::symbol_t)
             continue;
 
-        symbol_node *sym = symbol_array[i].__value.symbol;
-        d->objtree[sym] = obj_array[i];
+        auto sym = symbols[i].__value.symbol;
+        d->objtree[sym] = objects[i];
     }
 
     return create_data_object(d, table_send_msg);
