@@ -6,7 +6,14 @@ then
     exit -1
 fi
 
-for t in *test.cpp
+if [ -z $TESTS ]
+then
+    tests=$(echo *test.cpp)
+else
+    tests=$TESTS
+fi
+
+for t in $tests
 do
     test_name=${t%\.*}-$CXX
     echo "--- $test_name ---"
