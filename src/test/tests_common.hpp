@@ -8,7 +8,8 @@
 #define TESTS_INIT()\
 int main() {\
     int errors = 0;\
-    int tests = 0;
+    int tests = 0;\
+    printf("Running... ");
 
 #define TEST_CONDITION(condition, message)\
     ++tests;\
