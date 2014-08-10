@@ -24,11 +24,18 @@
 namespace rbb
 {
 
+struct symbol_node;
+
+struct cmp_symbol_nodes
+{
+    bool operator()(symbol_node *const node1, symbol_node *const node2) const;
+};
+
 struct symbol_node
 {
     char ch;
     symbol_node *up = nullptr;
-    std::set<symbol_node *> down;
+    std::set<symbol_node *, cmp_symbol_nodes> down;
 
     static symbol_node *retrieve(const std::string &string);
     symbol_node(char ch);

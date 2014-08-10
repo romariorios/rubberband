@@ -19,8 +19,14 @@
 
 #include <algorithm>
 #include <cstring>
+#include <memory>
 
 using namespace rbb;
+
+bool cmp_symbol_nodes::operator()(symbol_node *const node1, symbol_node *const node2) const
+{
+    return node1->ch < node2->ch;
+}
 
 symbol_node::symbol_node(char ch) :
     ch {ch}
@@ -36,12 +42,8 @@ symbol_node *rbb::symbol_node::retrieve(const std::string &string)
     symbol_node *node = trie_head;
 
     for (auto ch : string) {
-        auto result = std::find_if(
-            node->down.begin(),
-            node->down.end(),
-            [ch](symbol_node *node) -> bool {
-                return node->ch == ch;
-            });
+        std::unique_ptr<symbol_node> ch_node {new symbol_node{ch}};
+        auto result = node->down.find(ch_node.get());
         
         if (result == node->down.end()) {
             auto sym = new symbol_node {ch};
