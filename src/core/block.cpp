@@ -25,11 +25,6 @@ block_statement::block_statement() :
     _p(new block_statement_private)
 {}
 
-block_statement::~block_statement()
-{
-    delete _p;
-}
-
 void block_statement::add_expr(expr* e)
 {
     _p->expressions_tail =
@@ -119,14 +114,7 @@ literal::block::block() :
 
 literal::block::block(const block& other) :
     _p(other._p)
-{
-    _p->refc++;
-}
-
-literal::block::~block()
-{
-    if (--_p->refc == 0) delete _p;
-}
+{}
 
 void literal::block::add_statement(block_statement* stm)
 {

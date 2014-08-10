@@ -53,7 +53,6 @@ namespace literal
         std::forward_list<block_statement *> statements;
         std::forward_list<block_statement *>::iterator statements_tail =
             statements.before_begin();
-        int refc = 1;
 
     private:
         expr *_return_expression = new literal::empty;

@@ -20,6 +20,8 @@
 
 #include "object.hpp"
 
+#include <memory>
+
 namespace rbb
 {
 
@@ -42,11 +44,10 @@ class block_statement : public expr
 {
 public:
     block_statement();
-    ~block_statement();
     void add_expr(expr *e);
     object eval(literal::block *parent_block);
 
-    block_statement_private *_p;
+    std::unique_ptr<block_statement_private> _p;
 };
 
 namespace literal
@@ -140,7 +141,6 @@ namespace literal
     public:
         block();
         block(const block &other);
-        ~block();
         void add_statement(block_statement *stm);
         void set_return_expression(expr *expr);
         void set_block_context(const object &context);
@@ -148,7 +148,7 @@ namespace literal
         object eval(block * = nullptr); // blocks don't depend on their parent block
         object run();
 
-        block_private *_p;
+        std::shared_ptr<block_private> _p;
         object _context;
         object _message;
     };
