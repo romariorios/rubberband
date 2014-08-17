@@ -19,7 +19,6 @@
 
 #include <algorithm>
 #include <cstring>
-#include <memory>
 
 using namespace rbb;
 
@@ -42,8 +41,8 @@ symbol_node *rbb::symbol_node::retrieve(const std::string &string)
     symbol_node *node = trie_head;
 
     for (auto ch : string) {
-        std::unique_ptr<symbol_node> ch_node {new symbol_node{ch}};
-        auto result = node->down.find(ch_node.get());
+        symbol_node ch_node {ch};
+        auto result = node->down.find(&ch_node);
         
         if (result == node->down.end()) {
             auto sym = new symbol_node {ch};
