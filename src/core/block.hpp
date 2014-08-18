@@ -20,6 +20,7 @@
 
 #include "object.hpp"
 
+#include <forward_list>
 #include <memory>
 
 namespace rbb
@@ -39,15 +40,15 @@ public:
     virtual object eval(literal::block *parent_block) = 0;
 };
 
-class block_statement_private;
 class block_statement : public expr
 {
 public:
-    block_statement();
     void add_expr(expr *e);
     object eval(literal::block *parent_block);
 
-    std::unique_ptr<block_statement_private> _p;
+    std::forward_list<expr *> expressions;
+    std::forward_list<expr *>::iterator expressions_tail =
+        expressions.before_begin();
 };
 
 namespace literal

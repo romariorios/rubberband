@@ -26,14 +26,6 @@ namespace rbb
 class block_statement;
 class expr;
 
-class block_statement_private
-{
-public:
-    std::forward_list<expr *> expressions;
-    std::forward_list<expr *>::iterator expressions_tail =
-        expressions.before_begin();
-};
-
 namespace literal
 {
     class block_private

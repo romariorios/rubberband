@@ -21,24 +21,20 @@
 
 using namespace rbb;
 
-block_statement::block_statement() :
-    _p(new block_statement_private)
-{}
-
 void block_statement::add_expr(expr* e)
 {
-    _p->expressions_tail =
-        _p->expressions.insert_after(_p->expressions_tail, e);
+    expressions_tail =
+        expressions.insert_after(expressions_tail, e);
 }
 
 object block_statement::eval(literal::block* parent_block)
 {
-    auto cur_expr = _p->expressions.begin();
+    auto cur_expr = expressions.begin();
     auto cur_obj = (*cur_expr)->eval(parent_block);
     
     cur_expr++;
 
-    for (; cur_expr != _p->expressions.end(); cur_expr++)
+    for (; cur_expr != expressions.end(); cur_expr++)
     {
         cur_obj = cur_obj << (*cur_expr)->eval(parent_block);
     }
