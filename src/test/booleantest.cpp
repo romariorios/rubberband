@@ -54,13 +54,13 @@ TESTS_INIT()
         puts("NOT     | F| error"))
 
     // [true]? :[] {! 3 } {! 5 }
-    rbb::literal::block *bl_true = new rbb::literal::block;
-    bl_true->set_return_expression(new rbb::literal::number(3));
-    rbb::object block_true = bl_true->eval();
+    rbb::literal::block bl_true;
+    bl_true.return_statement().add_expr<rbb::literal::number>(3);
+    auto block_true = bl_true.eval();
 
-    rbb::literal::block *bl_false = new rbb::literal::block;
-    bl_false->set_return_expression(new rbb::literal::number(5));
-    rbb::object block_false = bl_false->eval();
+    rbb::literal::block bl_false;
+    bl_false.return_statement().add_expr<rbb::literal::number>(5);
+    auto block_false = bl_false.eval();
 
     TEST_CONDITION(
         rbb::boolean(true)

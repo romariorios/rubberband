@@ -24,30 +24,17 @@ namespace rbb
 {
 
 class block_statement;
-class expr;
 
 namespace literal
 {
     class block_private
     {
     public:
-        void set_return_expression(expr *ret_exp)
-        {
-            delete _return_expression;
-            _return_expression = ret_exp;
-        }
-
-        expr *return_expression() const
-        {
-            return _return_expression;
-        }
-
-        std::forward_list<block_statement *> statements;
-        std::forward_list<block_statement *>::iterator statements_tail =
+        std::forward_list<block_statement> statements;
+        std::forward_list<block_statement>::iterator statements_tail =
             statements.before_begin();
 
-    private:
-        expr *_return_expression = new literal::empty;
+        block_statement return_statement;
     };
 }
 

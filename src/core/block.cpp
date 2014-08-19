@@ -21,14 +21,11 @@
 
 using namespace rbb;
 
-void block_statement::add_expr(expr* e)
-{
-    expressions_tail =
-        expressions.insert_after(expressions_tail, e);
-}
-
 object block_statement::eval(literal::block* parent_block)
 {
+    if (expressions.empty())
+        return empty();
+    
     auto cur_expr = expressions.begin();
     auto cur_obj = (*cur_expr)->eval(parent_block);
     
@@ -42,49 +39,24 @@ object block_statement::eval(literal::block* parent_block)
     return cur_obj;
 }
 
-literal::array::array(expr* obj_array[], int size) :
-    _obj_array(obj_array),
-    _size(size)
-{}
-
-literal::array::~array()
-{
-    for (int i = 0; i < _size; ++i)
-        delete _obj_array[i];
-}
-
 object literal::array::eval(literal::block* parent_block)
 {
     std::vector<object> arr;
-    for (int i = 0; i < _size; ++i)
-        arr.push_back(_obj_array[i]->eval(parent_block));
+    for (auto &el : _objects)
+        arr.push_back(el->eval(parent_block));
 
     return rbb::array(arr);
-}
-
-literal::table::table(expr* symbol_array[], expr* obj_array[], int size) :
-    _symbol_array(symbol_array),
-    _obj_array(obj_array),
-    _size(size)
-{}
-
-literal::table::~table()
-{
-    for (int i = 0; i < _size; ++i) {
-        delete _symbol_array[i];
-        delete _obj_array[i];
-    }
 }
 
 object literal::table::eval(literal::block* parent_block)
 {
     std::vector<object> symbols;
+    for (auto &sym : _symbols)
+        symbols.push_back(sym->eval(parent_block));
+    
     std::vector<object> objects;
-
-    for (int i = 0; i < _size; ++i) {
-        symbols.push_back(_symbol_array[i]->eval(parent_block));
-        objects.push_back(_obj_array[i]->eval(parent_block));
-    }
+    for (auto &obj : _objects)
+        objects.push_back(obj->eval(parent_block));
 
     return rbb::table(symbols, objects);
 }
@@ -112,15 +84,17 @@ literal::block::block(const block& other) :
     _p(other._p)
 {}
 
-void literal::block::add_statement(block_statement* stm)
+block_statement &literal::block::add_statement()
 {
     _p->statements_tail =
-        _p->statements.insert_after(_p->statements_tail, stm);
+        _p->statements.emplace_after(_p->statements_tail);
+
+    return *_p->statements_tail;
 }
 
-void literal::block::set_return_expression(expr* expr)
+block_statement &literal::block::return_statement()
 {
-    _p->set_return_expression(expr);
+    return _p->return_statement;
 }
 
 void literal::block::set_block_context(const object& context)
@@ -137,8 +111,8 @@ void literal::block::set_block_message(const object& msg)
 
 object literal::block::run()
 {
-    for (auto cur_stm : _p->statements)
-        cur_stm->eval(this);
+    for (auto &cur_stm : _p->statements)
+        cur_stm.eval(this);
 
-    return _p->return_expression()->eval(this);
+    return _p->return_statement.eval(this);
 }

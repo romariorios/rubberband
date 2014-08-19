@@ -34,21 +34,42 @@ namespace literal
 class expr
 {
 public:
+    typedef std::unique_ptr<expr> ptr;
+    
     expr() {}
+    expr(const expr &other) = delete;
     virtual ~expr() {}
 
     virtual object eval(literal::block *parent_block) = 0;
 };
 
+class expr_list : public std::forward_list<expr::ptr>
+{
+public:
+    template <class T, class... Args>
+    T &append(Args&&... a)
+    {
+        list_end = emplace_after(list_end, new T{a...});
+        return *static_cast<T *>(list_end->get());
+    }
+    
+private:
+    std::forward_list<expr::ptr>::iterator list_end = before_begin();
+};
+
 class block_statement : public expr
 {
 public:
-    void add_expr(expr *e);
+    template <class T, class... Args>
+    T &add_expr(Args&&... a)
+    {
+        return expressions.append<T>(a...);
+    }
+    
     object eval(literal::block *parent_block);
 
-    std::forward_list<expr *> expressions;
-    std::forward_list<expr *>::iterator expressions_tail =
-        expressions.before_begin();
+private:
+    expr_list expressions;
 };
 
 namespace literal
@@ -74,6 +95,7 @@ namespace literal
     {
     public:
         inline number(double val) : _val(val) {}
+        inline number(int val) : _val{static_cast<double>(val)} {}
         inline object eval(block *) { return rbb::number(_val); }
 
     private:
@@ -93,26 +115,38 @@ namespace literal
     class array : public expr
     {
     public:
-        array(rbb::expr *obj_array[], int size);
-        ~array();
         object eval(block *parent_block);
+        
+        template<class T, class... Args>
+        T &add_element(Args&&... a)
+        {
+            return _objects.append<T>(a...);
+        }
 
     private:
-        expr **_obj_array;
-        int _size;
+        expr_list _objects;
     };
 
     class table : public expr
     {
     public:
-        table(rbb::expr *symbol_array[], rbb::expr *obj_array[], int size);
-        ~table();
         object eval(block *parent_block);
+        
+        template <class T, class... Args>
+        T &add_symbol(Args&&... a)
+        {
+            return _symbols.append<T>(a...);
+        }
+        
+        template <class T, class... Args>
+        T &add_object(Args&&... a)
+        {
+            return _objects.append<T>(a...);
+        }
 
     private:
-        expr **_symbol_array;
-        expr **_obj_array;
-        int _size;
+        expr_list _symbols;
+        expr_list _objects;
     };
 
     class self_ref : public expr
@@ -142,8 +176,8 @@ namespace literal
     public:
         block();
         block(const block &other);
-        void add_statement(block_statement *stm);
-        void set_return_expression(expr *expr);
+        block_statement &add_statement();
+        block_statement &return_statement();
         void set_block_context(const object &context);
         void set_block_message(const object &msg);
         object eval(block * = nullptr); // blocks don't depend on their parent block
@@ -158,3 +192,4 @@ namespace literal
 }
 
 #endif
+
