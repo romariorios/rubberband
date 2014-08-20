@@ -152,8 +152,8 @@ Rubberband plan:
        contextless initially, and it expects its context as the first message, returning itself under the passed context. This returned block, then,
        passes the messages it receives inside itself as the $ upon execution. Worth noting is that, although ~ is meant to be a table, you can pass any
        object to it if you want (even an empty one). Finally, the @ object is simply a self-reference without a defined context. Every block is mutable.
-     Table: :[ msg1 => obj1, msg2 => obj2, ...] or
-            : msg1 => obj1, msg2 => obj2, ...
+     Table: :[ msg1 -> obj1, msg2 -> obj2, ...] or
+            : msg1 -> obj1, msg2 -> obj2, ...
      ° Maps symbols to objects. There are no guarantees of the order of the symbols. Note that pointing a symbol which is already used by the object (like :?)
        has no effect.
  - Define the source code dir structure

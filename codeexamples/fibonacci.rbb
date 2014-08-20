@@ -1,20 +1,19 @@
 # Fibonacci sequence
-{
-~:fib => {
+~:fib -> {
     !~fib_:[
-        i => 2,
-        fnumbers => |[ 0, 1, 1],
-        fib_ => ~fib_,
-        n => $
+        i -> 2,
+        fnumbers -> |[ 0, 1, 1],
+        fib_ -> ~fib_,
+        n -> $
     ][]
 }
 
-~:fib_ = {
+~:fib -> {
     !~n < 2?~ {
         !~fnumbers (~n)
     } {
         !~i < (~n)?~ {
-            ~:i => i + 1
+            ~:i -> i + 1
             ~fnumbers|[0, ~fnumbers 1]
             ~fnumbers|[1, ~fnumbers 2]
             ~fnumbers|[2, ~fnumbers 0 + (~fnumbers 1)]

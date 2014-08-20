@@ -1,39 +1,38 @@
-{
-
 # A custom while implementation
 # Get arguments from curried functions and put them into a list
-~:uncurry => {
+~:uncurry -> {
     ~args|~i - 1, $
+    ~:self -> @
 
     !~i < (~argc)?~ {
-        ~:i => ~i + 1
+        ~:i -> ~i + 1
 
-        !@~
+        !~self~
     } {
-        ~:ctxt => ~context + :[] # Copy ~context
-        ~ctxt:args => ~args
+        ~:ctxt -> ~context + :[] # Copy ~context
+        ~ctxt:args -> ~args
 
         !~fun(~ctxt)[]
     }
 }
 
 # Function declaration
-~:fun => {
+~:fun -> {
     ~context == []?~ {
-        ~:context => :[]
+        ~:context -> :[]
     }
 
     !~uncurry:
-        args => |~argc|[],
-        i => 1,
-        argc => ~argc,
-        context => ~context,
-        fun => $
+        args -> |~argc|[],
+        i -> 1,
+        argc -> ~argc,
+        context -> ~context,
+        fun -> $
 }
 
 # While definition
-~:while => ~fun:[argc => 3] {
-    ~:while => @
+~:while -> ~fun:[argc -> 3] {
+    ~:while -> @
 
     ~args 1(~args 0)[]?~ {
         ~args 2(~args 0)[]
@@ -42,30 +41,28 @@
 }:[]
 
 # While usage
-~:i => 0
-~:v => |20|[]
+~:i -> 0
+~:v -> |20|[]
 ~while~ {! ~i < 20 } {
     ~v|~i, ~i * (~i)
 }
 
 # Fibonacci with while
-~:fib => {
-    ~:fibnums => |3|[0, 1], n => $
+~:fib -> {
+    ~:fibnums -> |3|[0, 1], n -> $
 
     !~n < 2?~ {
         !~fibnums (~n)
     } {
-        ~:i => 2
+        ~:i -> 2
 
         ~while~ {! ~i <= (~n) } {
             ~fibnums|0, ~fibnums 1
             ~fibnums|1, ~fibnums 2
             ~fibnums|2, ~fibnums 0 + (~fibnums 1)
-            ~:i => i + 1
+            ~:i -> i + 1
         }
 
         !~fibnums 2
     }
 }~
-
-}
