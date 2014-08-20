@@ -61,6 +61,7 @@ class object
 public:
     object();
     object(const object &other);
+    object(object &&other);
     object &operator=(const object &other);
     ~object();
 

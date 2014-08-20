@@ -62,6 +62,13 @@ object::object(const object &other)
     *this = other;
 }
 
+object::object(object&& other) :
+    __value{other.__value},
+    __send_msg{other.__send_msg}
+{
+    other.__value = value_t{};
+}
+
 object& object::operator=(const object& other)
 {
     this->~object();
