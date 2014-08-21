@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include "../core/object.hpp"
+#include <object.hpp>
 
 #define TESTS_INIT()\
 int main() {\

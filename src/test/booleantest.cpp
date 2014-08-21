@@ -1,5 +1,5 @@
 #include "tests_common.hpp"
-#include "../core/block.hpp"
+#include <block.hpp>
 
 TESTS_INIT()
 

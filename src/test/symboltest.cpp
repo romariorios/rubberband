@@ -1,7 +1,7 @@
 #include "tests_common.hpp"
 
 #include <cstring>
-#include "../core/symbol.hpp"
+#include <symbol.hpp>
 
 #define TEST_SYMBOL_COMPARISON(sym1, sym2, symb, eq)\
 TEST_CONDITION(\
