@@ -8,10 +8,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(rubberbandcore_sources
     block.cpp
     object.cpp
+    parse.cpp
     symbol.cpp)
 set(rubberbandcore_headers
     block.hpp
     object.hpp
+    parse.hpp
     symbol.hpp)
 
 add_library(rubberbandcore SHARED ${rubberbandcore_sources})

@@ -9,7 +9,7 @@
 int main() {\
     int errors = 0;\
     int tests = 0;\
-    printf("Running... ");
+    puts("Running... ");
 
 #define TEST_CONDITION(condition, message)\
     ++tests;\
