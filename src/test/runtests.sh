@@ -26,8 +26,9 @@ fi
 if [ -d build ]
 then
     rm build -rf
-    mkdir build
 fi &&
+
+mkdir build
 
 if [ ! -d inst ]
 then
