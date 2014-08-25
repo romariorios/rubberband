@@ -13,7 +13,7 @@ using namespace rbb;
 std::string symbol_node_to_string(symbol_node *sym)
 {
     if (!sym->up)
-        return std::string{sym->ch};
+        return std::string{};
     
     return symbol_node_to_string(sym->up) + std::string{sym->ch};
 }
@@ -27,7 +27,6 @@ std::string array_data_to_string(array_data *data)
         
         if (i + 1 < data->size)
             result += ", ";
-        puts("hey");
     }
     
     result += "]";
