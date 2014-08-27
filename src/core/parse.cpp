@@ -73,6 +73,8 @@ std::string rbb::object_to_string(const object& obj)
         return std::to_string(obj.__value.floating);
     case value_t::symbol_t:
         return symbol_node_to_string(obj.__value.symbol);
+    case value_t::boolean_t:
+        return obj.__value.boolean? "[T]" : "[F]";
     case value_t::data_t:
         return data_to_string(obj.__value.data);
     default:
