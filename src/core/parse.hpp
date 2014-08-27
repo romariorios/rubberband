@@ -8,7 +8,6 @@
 namespace rbb
 {
 
-std::string object_to_string(const object &obj);
 object parse(const std::string &code);
 
 }

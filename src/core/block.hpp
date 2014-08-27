@@ -40,7 +40,20 @@ public:
     expr(const expr &other) = delete;
     virtual ~expr() {}
 
-    virtual object eval(literal::block *parent_block) = 0;
+    virtual object const_eval() const
+    {
+        return rbb::empty();
+    }
+    
+    virtual object eval(literal::block *parent_block)
+    {
+        return const_eval();
+    }
+    
+    virtual std::string to_string() const
+    {
+        return const_eval().to_string();
+    }
 };
 
 class expr_list : public std::forward_list<expr::ptr>
@@ -57,6 +70,7 @@ private:
     std::forward_list<expr::ptr>::iterator list_end = before_begin();
 };
 
+class block_data;
 class block_statement : public expr
 {
 public:
@@ -68,7 +82,6 @@ public:
     
     object eval(literal::block *parent_block);
 
-private:
     expr_list expressions;
 };
 
@@ -78,7 +91,7 @@ namespace literal
     {
     public:
         inline boolean(bool val) : _val(val) {}
-        inline object eval(block *) { return rbb::boolean(_val); }
+        inline object const_eval() const { return rbb::boolean(_val); }
 
     private:
         bool _val;
@@ -88,7 +101,7 @@ namespace literal
     {
     public:
         inline empty() {}
-        inline object eval(block *) { return rbb::empty(); }
+        inline object const_eval() const { return rbb::empty(); }
     };
 
     class number : public expr
@@ -96,7 +109,7 @@ namespace literal
     public:
         inline number(double val) : _val(val) {}
         inline number(int val) : _val{static_cast<double>(val)} {}
-        inline object eval(block *) { return rbb::number(_val); }
+        inline object const_eval() const { return rbb::number(_val); }
 
     private:
         double _val;
@@ -106,7 +119,7 @@ namespace literal
     {
     public:
         inline symbol(const std::string &str) : _sym(rbb::symbol(str)) {}
-        inline object eval(block *) { return _sym; }
+        inline object const_eval() const { return _sym; }
 
     private:
         object _sym;

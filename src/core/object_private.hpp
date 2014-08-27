@@ -42,6 +42,10 @@ public:
 
     virtual ~shared_data_t()
     {}
+    
+    virtual std::string to_string() const {
+        return "[unknown data]";
+    }
 
     int refc;
 };
@@ -59,6 +63,8 @@ public:
     {
         delete[] arr;
     }
+    
+    std::string to_string() const;
 
     object *arr;
     int size;
@@ -67,6 +73,8 @@ public:
 class table_data : public shared_data_t
 {
 public:
+    std::string to_string() const;
+    
     std::map<symbol_node *, object> objtree;
 };
 
@@ -78,6 +86,8 @@ public:
     {
         delete block_l;
     }
+    
+    std::string to_string() const;
 
     literal::block *block_l;
 };

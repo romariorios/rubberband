@@ -16,5 +16,5 @@ TESTS_INIT()
         result_number == rbb::number(10),
         printf(
             "Program { !10 } returns %s\n",
-            rbb::object_to_string(result_number).c_str()))
+            result_number.to_string().c_str()))
 TESTS_END()

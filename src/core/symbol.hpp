@@ -39,6 +39,8 @@ struct symbol_node
 
     static symbol_node *retrieve(const std::string &string);
     symbol_node(char ch);
+    
+    std::string to_string() const;
 };
 
 }

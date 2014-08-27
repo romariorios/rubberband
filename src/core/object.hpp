@@ -69,6 +69,8 @@ public:
     inline bool operator!=(const object &other) const { return !(other == *this); }
 
     object operator<<(const object &msg); // send_msg
+    
+    std::string to_string() const;
 
     value_t __value;
     send_msg_function __send_msg;

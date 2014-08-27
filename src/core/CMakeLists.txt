@@ -9,7 +9,8 @@ set(rubberbandcore_sources
     block.cpp
     object.cpp
     parse.cpp
-    symbol.cpp)
+    symbol.cpp
+    to_string.cpp)
 set(rubberbandcore_headers
     block.hpp
     object.hpp
