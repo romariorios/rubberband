@@ -35,7 +35,7 @@ class expr
 {
 public:
     typedef std::unique_ptr<expr> ptr;
-    
+
     expr() {}
     expr(const expr &other) = delete;
     virtual ~expr() {}
@@ -44,12 +44,12 @@ public:
     {
         return rbb::empty();
     }
-    
+
     virtual object eval(literal::block *parent_block)
     {
         return const_eval();
     }
-    
+
     virtual std::string to_string() const
     {
         return const_eval().to_string();
@@ -65,7 +65,7 @@ public:
         list_end = emplace_after(list_end, new T{a...});
         return *static_cast<T *>(list_end->get());
     }
-    
+
 private:
     std::forward_list<expr::ptr>::iterator list_end = before_begin();
 };
@@ -79,9 +79,11 @@ public:
     {
         return expressions.append<T>(a...);
     }
-    
-    object eval(literal::block *parent_block);
 
+    object eval(literal::block *parent_block);
+    std::string to_string() const;
+
+private:
     expr_list expressions;
 };
 
@@ -129,7 +131,7 @@ namespace literal
     {
     public:
         object eval(block *parent_block);
-        
+
         template<class T, class... Args>
         T &add_element(Args&&... a)
         {
@@ -144,13 +146,13 @@ namespace literal
     {
     public:
         object eval(block *parent_block);
-        
+
         template <class T, class... Args>
         T &add_symbol(Args&&... a)
         {
             return _symbols.append<T>(a...);
         }
-        
+
         template <class T, class... Args>
         T &add_object(Args&&... a)
         {
@@ -195,6 +197,7 @@ namespace literal
         void set_block_message(const object &msg);
         object eval(block * = nullptr); // blocks don't depend on their parent block
         object run();
+        std::string to_string() const;
 
         std::shared_ptr<block_private> _p;
         object _context;

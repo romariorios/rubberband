@@ -14,38 +14,80 @@ std::string rbb::symbol_node::to_string() const
 {
     if (!up)
         return std::string{};
-    
+
     return up->to_string() + std::string{ch};
 }
 
 std::string rbb::array_data::to_string() const
 {
     std::string result{"|["};
-    
+
     for (int i = 0; i < size; ++i) {
         result += arr[i].to_string();
-        
+
         if (i + 1 < size)
             result += ", ";
     }
-    
+
     result += "]";
-    
+
     return result;
 }
 
 std::string rbb::table_data::to_string() const
 {
     std::string result{":["};
-    
+
     for (auto &entry : objtree) {
         result += entry.first->to_string() + " -> " + entry.second.to_string();
         result += ", ";
     }
-    
-    result.erase(result.size() - 2);
+
+    if (!objtree.empty())
+        result.erase(result.size() - 2);
+
     result += "]";
-    
+
+    return result;
+}
+
+std::string rbb::block_statement::to_string() const
+{
+    std::string result;
+
+    for (auto &expression : expressions) {
+        auto sub_expression = typeid(*expression) == typeid(block_statement);
+
+        if (sub_expression)
+            result += "(";
+
+        result += expression->to_string();
+
+        if (sub_expression)
+            result += ")";
+
+        result += " ";
+    }
+
+    if (!expressions.empty())
+        result.erase(result.size() - 1);
+
+    return result;
+}
+
+std::string rbb::literal::block::to_string() const
+{
+    std::string result{"{ "};
+
+    for (auto &stm : _p->statements) {
+        result += stm.to_string() + "; ";
+    }
+
+    if (!_p->statements.empty())
+        result.erase(result.size() - 2);
+
+    result += "!" + _p->return_statement.to_string() + " }";
+
     return result;
 }
 
@@ -58,7 +100,7 @@ std::string rbb::block_data::to_string() const
 std::string rbb::object::to_string() const
 {
     const auto type = __value.type;
-    
+
     switch (type) {
     case value_t::empty_t:
         return "[]";
