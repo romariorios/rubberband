@@ -8,9 +8,10 @@
 
 #include <cstdio>
 
-using namespace rbb;
+namespace rbb
+{
 
-std::string rbb::symbol_node::to_string() const
+std::string symbol_node::to_string() const
 {
     if (!up)
         return std::string{};
@@ -18,7 +19,7 @@ std::string rbb::symbol_node::to_string() const
     return up->to_string() + std::string{ch};
 }
 
-std::string rbb::array_data::to_string() const
+std::string array_data::to_string() const
 {
     std::string result{"|["};
 
@@ -34,7 +35,7 @@ std::string rbb::array_data::to_string() const
     return result;
 }
 
-std::string rbb::table_data::to_string() const
+std::string table_data::to_string() const
 {
     std::string result{":["};
 
@@ -51,7 +52,7 @@ std::string rbb::table_data::to_string() const
     return result;
 }
 
-std::string rbb::block_statement::to_string() const
+std::string block_statement::to_string() const
 {
     std::string result;
 
@@ -75,7 +76,52 @@ std::string rbb::block_statement::to_string() const
     return result;
 }
 
-std::string rbb::literal::block::to_string() const
+namespace literal
+{
+
+std::string array::to_string() const
+{
+    std::string result{"|["};
+
+    for (auto &element : _objects) {
+        result += element->to_string() + ", ";
+    }
+
+    if (!_objects.empty())
+        result.erase(result.size() - 2);
+
+    result += "]";
+
+    return result;
+}
+
+std::string table::to_string() const
+{
+    std::string result{":["};
+
+    for (
+        auto sym = _symbols.cbegin(), obj = _objects.cbegin();
+        sym != _symbols.cend() && obj != _objects.cend();
+        ++sym, ++obj
+    ) {
+        result += (*sym)->to_string() + " -> " + (*obj)->to_string();
+
+        auto next_sym = sym;
+        ++next_sym;
+
+        auto next_obj = obj;
+        ++next_obj;
+
+        if (next_sym != _symbols.end() && next_obj != _objects.end())
+            result += ", ";
+    }
+
+    result += "]";
+
+    return result;
+}
+
+std::string block::to_string() const
 {
     std::string result{"{ "};
 
@@ -86,18 +132,25 @@ std::string rbb::literal::block::to_string() const
     if (!_p->statements.empty())
         result.erase(result.size() - 2);
 
-    result += "!" + _p->return_statement.to_string() + " }";
+    auto ret_to_string = _p->return_statement.to_string();
+
+    if (!ret_to_string.empty())
+        result += "!" + _p->return_statement.to_string();
+
+    result += " }";
 
     return result;
 }
 
-std::string rbb::block_data::to_string() const
+}
+
+std::string block_data::to_string() const
 {
     return block_l->to_string();
 }
 
 
-std::string rbb::object::to_string() const
+std::string object::to_string() const
 {
     const auto type = __value.type;
 
@@ -117,4 +170,6 @@ std::string rbb::object::to_string() const
     default:
         return "[unknown]";
     }
+}
+
 }

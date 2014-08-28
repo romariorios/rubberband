@@ -39,7 +39,50 @@ TESTS_INIT()
     {
         rbb::literal::block bll;
         bll.return_statement().add_expr<rbb::literal::number>(10);
-        
+
         TEST_STRINGFICATION(bll.eval(), "{ !10 }")
+    }
+
+    {
+        rbb::literal::block bll;
+        auto &ret = bll.return_statement();
+        ret.add_expr<rbb::literal::context>();
+        ret.add_expr<rbb::literal::symbol>("x");
+        ret.add_expr<rbb::literal::symbol>("+");
+        auto &sub_statement = ret.add_expr<rbb::block_statement>();
+        sub_statement.add_expr<rbb::literal::context>();
+        sub_statement.add_expr<rbb::literal::symbol>("x");
+
+        TEST_STRINGFICATION(bll.eval(), "{ !~ x + (~ x) }")
+    }
+
+    {
+        rbb::literal::block bll;
+
+        auto &stm1 = bll.add_statement();
+        stm1.add_expr<rbb::literal::context>();
+        auto &table1 = stm1.add_expr<rbb::literal::table>();
+        table1.add_symbol<rbb::literal::symbol>("a");
+        table1.add_object<rbb::literal::number>(10);
+
+        auto &stm2 = bll.add_statement();
+        stm2.add_expr<rbb::literal::context>();
+        auto &table2 = stm2.add_expr<rbb::literal::table>();
+        table2.add_symbol<rbb::literal::symbol>("b");
+        table2.add_object<rbb::literal::number>(20);
+
+        auto &stm3 = bll.add_statement();
+        stm3.add_expr<rbb::literal::context>();
+        auto &table3 = stm3.add_expr<rbb::literal::table>();
+        table3.add_symbol<rbb::literal::symbol>("c");
+        auto &array1 = table3.add_object<rbb::literal::array>();
+        array1.add_element<rbb::literal::symbol>("thirty");
+        array1.add_element<rbb::literal::symbol>("trinta");
+        array1.add_element<rbb::literal::number>(30);
+
+        TEST_STRINGFICATION(
+            bll.eval(),
+            "{ ~ :[a -> 10]; ~ :[b -> 20]; ~ :[c -> |[thirty, trinta, 30]] }"
+        )
     }
 TESTS_END()

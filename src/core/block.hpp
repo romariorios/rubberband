@@ -138,6 +138,8 @@ namespace literal
             return _objects.append<T>(a...);
         }
 
+        std::string to_string() const;
+
     private:
         expr_list _objects;
     };
@@ -159,6 +161,8 @@ namespace literal
             return _objects.append<T>(a...);
         }
 
+        std::string to_string() const;
+
     private:
         expr_list _symbols;
         expr_list _objects;
@@ -169,6 +173,7 @@ namespace literal
     public:
         inline self_ref() {}
         object eval(block *parent_block);
+        inline std::string to_string() const { return "@"; }
     };
 
     class context : public expr
@@ -176,6 +181,7 @@ namespace literal
     public:
         inline context() {}
         object eval(block *parent_block);
+        inline std::string to_string() const { return "~"; }
     };
 
     class message : public expr
@@ -183,6 +189,7 @@ namespace literal
     public:
         inline message() {}
         object eval(block *parent_block);
+        inline std::string to_string() const { return "$"; }
     };
 
     class block_private;
