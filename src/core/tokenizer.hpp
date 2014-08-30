@@ -18,8 +18,8 @@
 #ifndef TOKENIZER_HPP
 #define TOKENIZER_HPP
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace rbb
 {
@@ -27,24 +27,51 @@ namespace rbb
 struct token
 {
     enum class type_e {
+        // Delimiters
+        //  Openers
         start_of_input,
-        end_of_input,
+        bracket_open,
         curly_open,
-        stm_sep,
-        exclamation,
+        parenthesis_open,
+
+        //  Closers
+        end_of_input,
+        bracket_close,
         curly_close,
+        parenthesis_close,
+
+        // Separators
+        arrow,
+        comma,
+        exclamation,
+        stm_sep,
+
+        // Literals
         number,
-        number_f
+        number_f,
+        symbol,
+        tilde,
+
+        // Triggers
+        bar,
+        colon
     } type;
 
     union {
         long integer;
         double floating;
+        std::string *str;
     } lexem;
 
     token(type_e type) :
         type{type}
     {}
+
+    ~token()
+    {
+        if (type == type_e::symbol)
+            delete lexem.str;
+    }
 
     static token number(long integer)
     {
@@ -58,6 +85,14 @@ struct token
     {
         token ret{type_e::number_f};
         ret.lexem.floating = floating;
+
+        return ret;
+    }
+
+    static token symbol(const std::string &str)
+    {
+        token ret{type_e::symbol};
+        ret.lexem.str = new std::string{str};
 
         return ret;
     }

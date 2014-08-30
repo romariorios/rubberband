@@ -38,7 +38,7 @@ std::vector<token> tokenizer::all()
 {
     std::vector<token> result;
 
-    for (auto tok = next(); tok.type == token::type_e::end_of_input; tok = next())
+    for (auto tok = next(); tok.type != token::type_e::end_of_input; tok = next())
         result.push_back(tok);
 
     return result;
@@ -90,13 +90,23 @@ token tokenizer::_look_token(int& length) const
                 }
             }
 
-            // Single-char symbols
+            // Single-char tokens
+            case '[':
+                return token{token::type_e::bracket_open};
             case '{':
                 return token{token::type_e::curly_open};
+            case '(':
+                return token{token::type_e::parenthesis_open};
+            case ']':
+                return token{token::type_e::bracket_close};
             case '}':
                 return token{token::type_e::curly_close};
+            case ')':
+                return token{token::type_e::parenthesis_close};
             case '!':
                 return token{token::type_e::exclamation};
+            case '~':
+                return token{token::type_e::tilde};
 
             // Number
             case '-':
@@ -159,5 +169,6 @@ token tokenizer::_look_token(int& length) const
         }
     }
 
+    --length;
     return token{token::type_e::end_of_input};
 }
