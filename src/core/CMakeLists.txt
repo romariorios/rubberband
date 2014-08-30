@@ -10,12 +10,14 @@ set(rubberbandcore_sources
     object.cpp
     parse.cpp
     symbol.cpp
-    to_string.cpp)
+    to_string.cpp
+    tokenizer.cpp)
 set(rubberbandcore_headers
     block.hpp
     object.hpp
     parse.hpp
-    symbol.hpp)
+    symbol.hpp
+    tokenizer.hpp)
 
 add_library(rubberbandcore SHARED ${rubberbandcore_sources})
 
