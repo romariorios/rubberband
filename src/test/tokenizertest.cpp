@@ -64,22 +64,18 @@ TESTS_INIT()
         std::vector<token> expected {
             token{token::type_e::tilde},
             token{token::type_e::colon},
-            token{token::type_e::bracket_open},
             token::symbol("i"),
             token{token::type_e::arrow},
             token::number(0),
-            token{token::type_e::bracket_close},
             token{token::type_e::stm_sep},
             token{token::type_e::tilde},
             token{token::type_e::colon},
-            token{token::type_e::bracket_open},
             token::symbol("v"),
             token{token::type_e::arrow},
             token{token::type_e::bar},
             token::number(20),
             token{token::type_e::bar},
             token{token::type_e::bracket_open},
-            token{token::type_e::bracket_close},
             token{token::type_e::bracket_close},
             token{token::type_e::stm_sep},
             token{token::type_e::tilde},
@@ -96,7 +92,6 @@ TESTS_INIT()
             token{token::type_e::tilde},
             token::symbol("v"),
             token{token::type_e::bar},
-            token{token::type_e::bracket_open},
             token{token::type_e::tilde},
             token::symbol("i"),
             token{token::type_e::comma},
@@ -107,7 +102,6 @@ TESTS_INIT()
             token{token::type_e::tilde},
             token::symbol("i"),
             token{token::type_e::parenthesis_close},
-            token{token::type_e::bracket_close},
             token{token::type_e::curly_close}
         };
         auto tok_all = tok.look_all();

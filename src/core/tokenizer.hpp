@@ -27,6 +27,8 @@ namespace rbb
 struct token
 {
     enum class type_e {
+        invalid,
+        
         // Delimiters
         //  Openers
         start_of_input,
@@ -66,6 +68,28 @@ struct token
     token(type_e type) :
         type{type}
     {}
+    
+    token(const token &other)
+    {
+        *this = other;
+    }
+    
+    token &operator=(const token &other)
+    {
+        type = other.type;
+        
+        if (other.type == type_e::symbol)
+            lexem.str = new std::string{*other.lexem.str};
+        else
+            lexem = other.lexem;
+    }
+    
+    token(token &&other) :
+        type{other.type}
+    {
+        other.type = type_e::invalid;
+        lexem = other.lexem;
+    }
 
     ~token()
     {
@@ -137,8 +161,15 @@ public:
 private:
     enum class _state {
         start,
+        arrow_or_negative_number,
         number_integer_part,
-        number_fractional_part
+        number_fractional_part,
+        eq_symbol,
+        gt_char,
+        lt_char,
+        slash_char,
+        inverted_slash_char,
+        alphanumeric_symbol
     };
 
     token _look_token(int &length) const;
