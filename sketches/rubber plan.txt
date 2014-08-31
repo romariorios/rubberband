@@ -23,7 +23,7 @@ Rubberband plan:
      Expected messages:
      ° == <other: Boolean>
        Answer: True if other equals this boolean; false otherwise
-     ° != <other: Boolean>
+     ° /= <other: Boolean>
        Answer: True if other does not equal this boolean; false otherwise
      ° \/ <other: Boolean>
        Answer: ORs this boolean and other
@@ -38,13 +38,13 @@ Rubberband plan:
      Expected messages:
      ° == <object: Object>
        Answer: True if object is Empty; false otherwise
-     ° != <object: Object>
+     ° /= <object: Object>
        Answer: True if object is not Empty; false otherwise
    * Number
      Expected messages:
      ° == <n: Number>
        Answer: True if this and n are equal; false otherwise
-     ° != <n: Number>
+     ° /= <n: Number>
        Answer: True if this and n are not equal; false otherwise
      ° > <n: Number>
        Answer: True if this is greater than n; false otherwise
@@ -66,13 +66,13 @@ Rubberband plan:
      Expected messages:
      ° == <s: Symbol>
        Answer: True if this equals s; false otherwise
-     ° != <s: Symbol>
+     ° /= <s: Symbol>
        Answer: True if this does not equal s; false otherwise
    * Array
      Expected messages:
      ° == <a: Array>
        Answer: True if a is this object; false otherwise
-     ° != <a: Array>
+     ° /= <a: Array>
        Answer: True if a is not this object; false otherwise
      ° <index: Number>
        Answer: The object at the index; empty if the index is out of range
@@ -93,7 +93,7 @@ Rubberband plan:
      Expected messages:
      ° == <t: Table>
        Answer: True if a is this object; false otherwise
-     ° != <t: Table>
+     ° /= <t: Table>
        Answer: True if a is not this object; false otherwise
      ° + <t: Table>
        Answer: This and t concatenated
