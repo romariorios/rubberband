@@ -1,5 +1,14 @@
 #include "tests_common.hpp"
 
+#define TEST_TOKENIZATION_OF(actual, expected)\
+TEST_CONDITION(\
+    actual == expected,\
+    printf(\
+        "Unexpected tokenization (expected length: %d, actual length: %d)\n",\
+        expected.size(), actual.size()))
+
+#define TEST_TOKENIZATION TEST_TOKENIZATION_OF(tok_all, expected)
+
 #include <tokenizer.hpp>
 #include <vector>
 
@@ -16,11 +25,7 @@ TESTS_INIT()
         };
         auto tok_all = tok.look_all();
 
-        TEST_CONDITION(
-            tok_all == expected,
-            printf(
-                "Unexpected tokenization (expected length: %d, result length: %d)\n",
-                expected.size(), tok_all.size()))
+        TEST_TOKENIZATION
 
         TEST_CONDITION(
             tok.look_next() == expected[0],
@@ -106,10 +111,51 @@ TESTS_INIT()
         };
         auto tok_all = tok.look_all();
 
-        TEST_CONDITION(
-            tok_all == expected,
-            printf(
-                "Unexpected tokenization (expected length: %d, result length: %d)\n",
-                expected.size(), tok_all.size()))
+        TEST_TOKENIZATION
+    }
+    
+    {
+        tokenizer tok{R"(
+            # This is a comment
+            { ~:x -> $; ~:y -> ~x +
+            .$ ! ~x * (~x) } # This is also a comment
+        )"};
+        std::vector<token> expected {
+            token{token::type_e::curly_open},
+            token{token::type_e::tilde},
+            token{token::type_e::colon},
+            token::symbol("x"),
+            token{token::type_e::arrow},
+            token{token::type_e::dollar},
+            token{token::type_e::stm_sep},
+            token{token::type_e::tilde},
+            token{token::type_e::colon},
+            token::symbol("y"),
+            token{token::type_e::arrow},
+            token{token::type_e::tilde},
+            token::symbol("x"),
+            token::symbol("+"),
+            token{token::type_e::dollar},
+            token{token::type_e::exclamation},
+            token{token::type_e::tilde},
+            token::symbol("x"),
+            token::symbol("*"),
+            token{token::type_e::parenthesis_open},
+            token{token::type_e::tilde},
+            token::symbol("x"),
+            token{token::type_e::parenthesis_close},
+            token{token::type_e::curly_close}
+        };
+        auto tok_all = tok.look_all();
+        
+        TEST_TOKENIZATION
+        
+        tokenizer tok2{R"(
+            # This is a comment
+            { ~:x -> $; ~:y -> ~x +.
+            $ ! ~x * (~x) } # This is also a comment
+        )"};
+        
+        TEST_TOKENIZATION_OF(tok2.look_all(), expected)
     }
 TESTS_END()

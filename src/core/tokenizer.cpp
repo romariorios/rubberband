@@ -51,6 +51,27 @@ std::vector<token> tokenizer::look_all() const
     return tok.all();
 }
 
+bool tokenizer::_dot_ahead(int &ignore_offset, int &length) const
+{
+    for (auto &ch : _remaining.substr(length)) {
+        ++length;
+        ++ignore_offset;
+        
+        switch (ch) {
+        case ' ':
+        case '\t':
+        case '\n':
+            continue;
+        case '.':
+            return true;
+        default:
+            --length;
+            --ignore_offset;
+            return false;
+        }
+    }
+}
+
 token tokenizer::_look_token(int& length) const
 {
     length = 1;
@@ -79,7 +100,7 @@ token tokenizer::_look_token(int& length) const
                     continue;
                 default:
                 {
-                    // TODO maybe this is a bit overkill?
+                    // FIXME maybe this is a bit overkill?
                     tokenizer tok{_remaining.substr(length)};
                     const auto next_tok = tok.look_next();
 
@@ -90,10 +111,23 @@ token tokenizer::_look_token(int& length) const
                         ++ignore_offset;
                         continue;
                     default:
+                        if (_dot_ahead(ignore_offset, length)) {
+                            cur_state = _state::merge_lines;
+                            continue;
+                        }
+                        
                         return token{token::type_e::stm_sep};
                     }
                 }
             }
+            // Comment
+            case '#':
+                cur_state = _state::comment;
+                continue;
+            // Merge lines
+            case '.':
+                cur_state = _state::merge_lines;
+                continue;
             // Single-char tokens
             case '[':
                 return token{token::type_e::bracket_open};
@@ -117,8 +151,12 @@ token tokenizer::_look_token(int& length) const
                 
                 ++ignore_offset;
                 continue;
+            case '$':
+                return token{token::type_e::dollar};
             case '~':
                 return token{token::type_e::tilde};
+            case '@':
+                return token{token::type_e::at};
             case '|':
                 return token{token::type_e::bar};
             case ':':
@@ -169,6 +207,23 @@ token tokenizer::_look_token(int& length) const
                     return token{token::type_e::invalid};
                 }
                 
+                continue;
+            }
+        case _state::comment:
+            if (ch != '\n')
+                continue;
+            
+            --length;
+            cur_state = _state::start;
+        case _state::merge_lines:
+            switch (ch) {
+            case ' ':
+            case '\t':
+            case '\n':
+                continue;
+            default:
+                --length;
+                cur_state = _state::start;
                 continue;
             }
         case _state::arrow_or_negative_number:

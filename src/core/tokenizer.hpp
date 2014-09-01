@@ -52,7 +52,9 @@ struct token
         number,
         number_f,
         symbol,
+        dollar,
         tilde,
+        at,
 
         // Triggers
         bar,
@@ -161,6 +163,8 @@ public:
 private:
     enum class _state {
         start,
+        comment,
+        merge_lines,
         arrow_or_negative_number,
         number_integer_part,
         number_fractional_part,
@@ -172,6 +176,8 @@ private:
         alphanumeric_symbol
     };
 
+    
+    bool _dot_ahead(int &ignore_offset, int& length) const;
     token _look_token(int &length) const;
 
     token _previous_token = token{token::type_e::start_of_input};
