@@ -111,6 +111,7 @@ namespace literal
     public:
         inline number(double val) : _val(val) {}
         inline number(int val) : _val{static_cast<double>(val)} {}
+        inline number(long val) : _val{static_cast<double>(val)} {}
         inline object const_eval() const { return rbb::number(_val); }
 
     private:
