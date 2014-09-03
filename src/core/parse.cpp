@@ -21,9 +21,33 @@
 
 using namespace rbb;
 
-object rbb::parse(const std::string &code)
+object parser::parse()
 {
-    literal::block bl;
+    auto tok = _tokenizer.next();
 
-    return bl.eval();
+    if (tok == token{token::type_e::exclamation}) {
+        _cur_stm = &_main_block.return_statement();
+
+        for (
+            auto ret_token = _tokenizer.next();
+            ret_token != token{token::type_e::curly_close} &&
+            ret_token != token{token::type_e::end_of_input};
+            ret_token = _tokenizer.next()
+        )
+            _tok_to_literal(ret_token);
+    }
+
+    return _main_block.eval();
+}
+
+void parser::_tok_to_literal(const token &tok)
+{
+    switch (tok.type) {
+    case token::type_e::number:
+        _cur_stm->add_expr<literal::number>(tok.lexem.integer);
+        break;
+    case token::type_e::number_f:
+        _cur_stm->add_expr<literal::number>(tok.lexem.floating);
+        break;
+    }
 }

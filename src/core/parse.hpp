@@ -18,14 +18,31 @@
 #ifndef PARSE_HPP
 #define PARSE_HPP
 
+#include "block.hpp"
 #include "object.hpp"
+#include "tokenizer.hpp"
 
 #include <string>
 
 namespace rbb
 {
 
-object parse(const std::string &code);
+class parser
+{
+public:
+    parser(const std::string &code) :
+        _tokenizer{code}
+    {}
+
+    object parse();
+
+private:
+    void _tok_to_literal(const token &tok);
+
+    tokenizer _tokenizer;
+    block_statement *_cur_stm = nullptr;
+    literal::block _main_block;
+};
 
 }
 
