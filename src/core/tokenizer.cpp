@@ -38,7 +38,7 @@ std::vector<token> tokenizer::all()
 {
     std::vector<token> result;
 
-    for (auto tok = next(); tok.type != token::type_e::end_of_input; tok = next())
+    for (auto tok = next(); tok.type != token::t::end_of_input; tok = next())
         result.push_back(tok);
 
     return result;
@@ -92,10 +92,10 @@ token tokenizer::_look_token(int& length) const
                 continue;
             case '\n':
                 switch (_previous_token.type) {
-                case token::type_e::start_of_input:
-                case token::type_e::curly_open:
-                case token::type_e::exclamation:
-                case token::type_e::stm_sep:
+                case token::t::start_of_input:
+                case token::t::curly_open:
+                case token::t::exclamation:
+                case token::t::stm_sep:
                     ++ignore_offset;
                     continue;
                 default:
@@ -105,9 +105,9 @@ token tokenizer::_look_token(int& length) const
                     const auto next_tok = tok.look_next();
 
                     switch (next_tok.type) {
-                    case token::type_e::exclamation:
-                    case token::type_e::curly_close:
-                    case token::type_e::end_of_input:
+                    case token::t::exclamation:
+                    case token::t::curly_close:
+                    case token::t::end_of_input:
                         ++ignore_offset;
                         continue;
                     default:
@@ -116,7 +116,7 @@ token tokenizer::_look_token(int& length) const
                             continue;
                         }
                         
-                        return token{token::type_e::stm_sep};
+                        return token{token::t::stm_sep};
                     }
                 }
             }
@@ -130,37 +130,37 @@ token tokenizer::_look_token(int& length) const
                 continue;
             // Single-char tokens
             case '[':
-                return token{token::type_e::bracket_open};
+                return token{token::t::bracket_open};
             case '{':
-                return token{token::type_e::curly_open};
+                return token{token::t::curly_open};
             case '(':
-                return token{token::type_e::parenthesis_open};
+                return token{token::t::parenthesis_open};
             case ']':
-                return token{token::type_e::bracket_close};
+                return token{token::t::bracket_close};
             case '}':
-                return token{token::type_e::curly_close};
+                return token{token::t::curly_close};
             case ')':
-                return token{token::type_e::parenthesis_close};
+                return token{token::t::parenthesis_close};
             case ',':
-                return token{token::type_e::comma};
+                return token{token::t::comma};
             case '!':
-                return token{token::type_e::exclamation};
+                return token{token::t::exclamation};
             case ';':
-                if (_previous_token.type != token::type_e::stm_sep)
-                    return token{token::type_e::stm_sep};
+                if (_previous_token.type != token::t::stm_sep)
+                    return token{token::t::stm_sep};
                 
                 ++ignore_offset;
                 continue;
             case '$':
-                return token{token::type_e::dollar};
+                return token{token::t::dollar};
             case '~':
-                return token{token::type_e::tilde};
+                return token{token::t::tilde};
             case '@':
-                return token{token::type_e::at};
+                return token{token::t::at};
             case '|':
-                return token{token::type_e::bar};
+                return token{token::t::bar};
             case ':':
-                return token{token::type_e::colon};
+                return token{token::t::colon};
             // Special symbols
             case '?':
             case '+':
@@ -184,8 +184,8 @@ token tokenizer::_look_token(int& length) const
             // Arrow or number
             case '-':
                 if (
-                    _previous_token.type == token::type_e::number ||
-                    _previous_token.type == token::type_e::number_f
+                    _previous_token.type == token::t::number ||
+                    _previous_token.type == token::t::number_f
                 )
                     return token::symbol("-");
                 
@@ -204,7 +204,7 @@ token tokenizer::_look_token(int& length) const
                     cur_state = _state::alphanumeric_symbol;
                 else {
                     length = _remaining.size();
-                    return token{token::type_e::invalid};
+                    return token{token::t::invalid};
                 }
                 
                 continue;
@@ -228,7 +228,7 @@ token tokenizer::_look_token(int& length) const
             }
         case _state::arrow_or_negative_number:
             if (ch == '>')
-                return token{token::type_e::arrow};
+                return token{token::t::arrow};
             if (ch >= '0' && ch <= '9') {
                 cur_state = _state::number_integer_part;
                 continue;
@@ -315,6 +315,6 @@ token tokenizer::_look_token(int& length) const
     }
 
     --length;
-    return token{token::type_e::end_of_input};
+    return token{token::t::end_of_input};
 }
 

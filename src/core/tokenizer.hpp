@@ -26,7 +26,7 @@ namespace rbb
 
 struct token
 {
-    enum class type_e {
+    enum class t {
         invalid,
         
         // Delimiters
@@ -67,7 +67,7 @@ struct token
         std::string *str;
     } lexem;
 
-    token(type_e type) :
+    token(t type) :
         type{type}
     {}
     
@@ -80,7 +80,7 @@ struct token
     {
         type = other.type;
         
-        if (other.type == type_e::symbol)
+        if (other.type == t::symbol)
             lexem.str = new std::string{*other.lexem.str};
         else
             lexem = other.lexem;
@@ -89,19 +89,19 @@ struct token
     token(token &&other) :
         type{other.type}
     {
-        other.type = type_e::invalid;
+        other.type = t::invalid;
         lexem = other.lexem;
     }
 
     ~token()
     {
-        if (type == type_e::symbol)
+        if (type == t::symbol)
             delete lexem.str;
     }
 
     static token number(long integer)
     {
-        token ret{type_e::number};
+        token ret{t::number};
         ret.lexem.integer = integer;
 
         return ret;
@@ -109,7 +109,7 @@ struct token
 
     static token number_f(double floating)
     {
-        token ret{type_e::number_f};
+        token ret{t::number_f};
         ret.lexem.floating = floating;
 
         return ret;
@@ -117,7 +117,7 @@ struct token
 
     static token symbol(const std::string &str)
     {
-        token ret{type_e::symbol};
+        token ret{t::symbol};
         ret.lexem.str = new std::string{str};
 
         return ret;
@@ -129,10 +129,12 @@ struct token
             return false;
 
         switch (type) {
-        case type_e::number:
+        case t::number:
             return lexem.integer == other.lexem.integer;
-        case type_e::number_f:
+        case t::number_f:
             return lexem.floating == other.lexem.floating;
+        case t::symbol:
+            return *lexem.str == *other.lexem.str;
         default:
             return true;
         }
@@ -180,10 +182,11 @@ private:
     bool _dot_ahead(int &ignore_offset, int& length) const;
     token _look_token(int &length) const;
 
-    token _previous_token = token{token::type_e::start_of_input};
+    token _previous_token = token{token::t::start_of_input};
     std::string _remaining;
 };
 
 }
 
 #endif
+
