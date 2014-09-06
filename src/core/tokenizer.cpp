@@ -78,8 +78,10 @@ token tokenizer::_look_token(int& length) const
     int ignore_offset = 0;
     auto cur_state = _state::start;
 
-    for (; length <= _remaining.size(); ++length) {
-        auto &ch = _remaining[length - 1];
+    for (; length <= _remaining.size() + 1; ++length) {
+        const auto &ch = length <= _remaining.size()?
+            _remaining[length - 1] :
+            '\0';
 
         // Start state machine
         switch (cur_state) {
@@ -116,7 +118,7 @@ token tokenizer::_look_token(int& length) const
                             continue;
                         }
                         
-                        return token{token::t::stm_sep};
+                        return token::t::stm_sep;
                     }
                 }
             }
@@ -130,21 +132,21 @@ token tokenizer::_look_token(int& length) const
                 continue;
             // Single-char tokens
             case '[':
-                return token{token::t::bracket_open};
+                return token::t::bracket_open;
             case '{':
-                return token{token::t::curly_open};
+                return token::t::curly_open;
             case '(':
-                return token{token::t::parenthesis_open};
+                return token::t::parenthesis_open;
             case ']':
-                return token{token::t::bracket_close};
+                return token::t::bracket_close;
             case '}':
-                return token{token::t::curly_close};
+                return token::t::curly_close;
             case ')':
-                return token{token::t::parenthesis_close};
+                return token::t::parenthesis_close;
             case ',':
-                return token{token::t::comma};
+                return token::t::comma;
             case '!':
-                return token{token::t::exclamation};
+                return token::t::exclamation;
             case ';':
                 if (_previous_token.type != token::t::stm_sep)
                     return token{token::t::stm_sep};
@@ -152,15 +154,15 @@ token tokenizer::_look_token(int& length) const
                 ++ignore_offset;
                 continue;
             case '$':
-                return token{token::t::dollar};
+                return token::t::dollar;
             case '~':
-                return token{token::t::tilde};
+                return token::t::tilde;
             case '@':
-                return token{token::t::at};
+                return token::t::at;
             case '|':
-                return token{token::t::bar};
+                return token::t::bar;
             case ':':
-                return token{token::t::colon};
+                return token::t::colon;
             // Special symbols
             case '?':
             case '+':
@@ -191,6 +193,9 @@ token tokenizer::_look_token(int& length) const
                 
                 cur_state = _state::arrow_or_negative_number;
                 continue;
+            case '\0':
+                --length;
+                return token::t::end_of_input;
             default:
                 // Number
                 if (ch >= '0' && ch <= '9')
@@ -204,7 +209,7 @@ token tokenizer::_look_token(int& length) const
                     cur_state = _state::alphanumeric_symbol;
                 else {
                     length = _remaining.size();
-                    return token{token::t::invalid};
+                    return token::t::invalid;
                 }
                 
                 continue;
@@ -228,7 +233,7 @@ token tokenizer::_look_token(int& length) const
             }
         case _state::arrow_or_negative_number:
             if (ch == '>')
-                return token{token::t::arrow};
+                return token::t::arrow;
             if (ch >= '0' && ch <= '9') {
                 cur_state = _state::number_integer_part;
                 continue;
@@ -315,6 +320,6 @@ token tokenizer::_look_token(int& length) const
     }
 
     --length;
-    return token{token::t::end_of_input};
+    return token::t::end_of_input;
 }
 
