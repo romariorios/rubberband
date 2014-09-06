@@ -21,33 +21,44 @@
 
 using namespace rbb;
 
+parser::parser(const std::string &code) :
+    _tokenizer{code}
+{
+    _parse_stack.push(_state::start_beg);
+}
+
 object parser::parse()
 {
-    auto tok = _tokenizer.next();
-
-    if (tok == token{token::type_e::exclamation}) {
-        _cur_stm = &_main_block.return_statement();
-
-        for (
-            auto ret_token = _tokenizer.next();
-            ret_token != token{token::type_e::curly_close} &&
-            ret_token != token{token::type_e::end_of_input};
-            ret_token = _tokenizer.next()
-        )
-            _tok_to_literal(ret_token);
+    block_statement *cur_expr = nullptr;
+    
+    while (_tokenizer.look_next() != token::t::end_of_input) {
+        switch (_parse_stack.top()) {
+        case _state::start_beg:
+            switch (_tokenizer.look_next().type) {
+            case token::t::exclamation:
+                _push_state(_state::block_answer_beg);
+                cur_expr = &_main_block.return_statement();
+                continue;
+            }
+        case _state::block_answer_beg:
+            switch (_tokenizer.look_next().type) {
+            case token::t::number:
+                cur_expr->add_expr<literal::number>(
+                    _tokenizer.next().lexem.integer);
+                continue;
+            case token::t::number_f:
+                cur_expr->add_expr<literal::number>(
+                    _tokenizer.next().lexem.floating);
+                continue;
+            }
+        }
     }
-
+    
     return _main_block.eval();
 }
 
-void parser::_tok_to_literal(const token &tok)
+void parser::_push_state(parser::_state s)
 {
-    switch (tok.type) {
-    case token::type_e::number:
-        _cur_stm->add_expr<literal::number>(tok.lexem.integer);
-        break;
-    case token::type_e::number_f:
-        _cur_stm->add_expr<literal::number>(tok.lexem.floating);
-        break;
-    }
+    _parse_stack.push(s);
+    _token_stack.push(_tokenizer.next());
 }

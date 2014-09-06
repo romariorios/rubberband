@@ -1,22 +1,27 @@
 #include "tests_common.hpp"
 
 #include <parse.hpp>
+#include <string>
 
 using namespace rbb;
 
+#define TEST_PROGRAM(program, context, message, expected)\
+{\
+    auto prog = parser{program}.parse();\
+    auto res = prog << (context) << (message);\
+\
+    TEST_CONDITION(\
+        res == (expected),\
+        printf(\
+            "The program { %s } (interpreted as %s) returns %s (expected: %s)\n",\
+            program,\
+            prog.to_string().c_str(),\
+            res.to_string().c_str(),\
+            expected.to_string().c_str()))\
+}
+
 TESTS_INIT()
-    auto empty_program = parser{""}.parse();
-
-    TEST_CONDITION(
-        empty_program << empty() << empty() == empty(),
-        puts("An empty program should return empty"))
-
-    auto return_number = parser{"!10"}.parse();
-    auto result_number = return_number << empty() << empty();
-
-    TEST_CONDITION(
-        result_number == number(10),
-        printf(
-            "Program { !10 } returns %s\n",
-            result_number.to_string().c_str()))
+    TEST_PROGRAM("", empty(), empty(), empty())
+    TEST_PROGRAM("!10", empty(), empty(), number(10))
+    TEST_PROGRAM("!10 ", empty(), empty(), number(10))
 TESTS_END()

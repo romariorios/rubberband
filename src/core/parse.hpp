@@ -22,6 +22,7 @@
 #include "object.hpp"
 #include "tokenizer.hpp"
 
+#include <stack>
 #include <string>
 
 namespace rbb
@@ -30,17 +31,21 @@ namespace rbb
 class parser
 {
 public:
-    parser(const std::string &code) :
-        _tokenizer{code}
-    {}
-
+    parser(const std::string &code);
+    
     object parse();
 
 private:
-    void _tok_to_literal(const token &tok);
-
+    enum class _state {
+        start_beg,
+        block_answer_beg
+    };
+    
+    void _push_state(_state s);
+    
+    std::stack<_state> _parse_stack;
+    std::stack<token> _token_stack;
     tokenizer _tokenizer;
-    block_statement *_cur_stm = nullptr;
     literal::block _main_block;
 };
 
