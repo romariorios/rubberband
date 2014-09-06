@@ -11,9 +11,17 @@ then
     exit -1
 fi
 
-if [ -z $TESTS ]
+strip_suffix_from_tests()
+{
+    for t in $@
+    do
+        echo ${t:0:-8}
+    done
+}
+
+if [ -z "$TESTS" ]
 then
-    tests=$(echo *test.cpp)
+    tests=$(strip_suffix_from_tests $(echo *test.cpp))
 else
     tests=$TESTS
 fi
@@ -57,10 +65,10 @@ RUBBERBAND_PATH=$PWD/inst &&
 
 for t in $tests
 do
-    test_name=${t%\.*}-$CXX
+    test_name=${t}"test"-$CXX
     echo "--- $test_name ---"
     $CXX\
-        $t\
+        ${t}test.cpp\
         -lrubberbandcore\
         -o $test_name\
         $CXX_FLAGS\
@@ -70,5 +78,4 @@ do
     LD_LIBRARY_PATH=$RUBBERBAND_PATH/lib ./$test_name &&
     rm $test_name
 done
-
 
