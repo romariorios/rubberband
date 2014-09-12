@@ -1,0 +1,19 @@
+start          -> block_body | <empty_string>
+block_body     -> stm_list ret_stm | stm_list | ret_stm
+stm_list       -> stm <sep> stm_list | stm
+ret_stm        -> !expr_value
+stm            -> msg_send | expr_value
+msg_send       -> expr_value stm
+expr_value     -> literal | (stm)
+literal        -> empty | symbol | number | array | table | block | $ | ~ | @
+empty          -> []
+array          -> |array_body | |array_count|array_body
+array_body     -> array_elements | [array_elements] | []
+array_count    -> number | msg_send
+array_elements -> stm, array_elements | stm
+table          -> :table_body
+table_body     -> table_entries | [table_entries] | []
+table_entries  -> table_entry, table_entries | table_entry
+table_entry    -> table_index <->> stm
+table_index    -> symbol | msg_send
+block          -> { block_body } | {}
