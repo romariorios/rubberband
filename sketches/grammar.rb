@@ -21,11 +21,44 @@ class Grammar
     :block          => [[:curly_open, :block_body, :curly_close], [:curly_open, :curly_close]]
   }
 
+  def self.terminal?(symbol)
+    !@@grammar.has_key? symbol
+  end
+
   def self.first(symbol)
-    if !@@grammar.has_key? symbol
+    if Grammar.terminal? symbol
       symbol
     else
       @@grammar[symbol].map{ |r| Grammar.first(r[0]) }.flatten.uniq
+    end
+  end
+
+  def self.follow(symbol, limit = 5)
+    if Grammar.terminal? symbol or limit <= 0
+      []
+    else
+      # Select the nonterminals which produce symbol
+      @@grammar.select do |i, rules|
+        rules.any?{ |r| r.any? { |item| item == symbol } }
+
+      # Select the productions containing symbol
+      end.each_with_object({}) do |(i, rules), res|
+        res[i] = rules.select { |r| r.any? { |item| item == symbol } }
+
+      # Select follow items
+      end.map do |i, rules|
+        rules.map do |r|
+          r.each_with_index.map do |item, index|
+            if i == :start
+              :eof
+            elsif index == r.size - 1
+              Grammar.follow(i, limit - 1)
+            else
+              Grammar.first r[index + 1]
+            end
+          end
+        end
+      end.flatten.uniq
     end
   end
 end
