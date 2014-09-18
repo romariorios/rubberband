@@ -24,41 +24,43 @@ using namespace rbb;
 parser::parser(const std::string &code) :
     _tokenizer{code}
 {
-    _parse_stack.push(_state::start_beg);
+    _block_stack.push(&_main_block);
 }
 
 object parser::parse()
 {
-    block_statement *cur_expr = nullptr;
-    
     while (_tokenizer.look_next() != token::t::end_of_input) {
-        switch (_parse_stack.top()) {
-        case _state::start_beg:
-            switch (_tokenizer.look_next().type) {
-            case token::t::exclamation:
-                _push_state(_state::block_answer_beg);
-                cur_expr = &_main_block.return_statement();
-                continue;
+        switch (_cur_state) {
+        case _state::start0:
+            if (_next_tok_is(token::t::exclamation)) {
+                _cur_state = _state::ret_stm0;
+                _tokenizer.next();
+
+                auto &cur_block = *_block_stack.top();
+                _statement_stack.push(&cur_block.return_statement());
             }
-        case _state::block_answer_beg:
-            switch (_tokenizer.look_next().type) {
-            case token::t::number:
-                cur_expr->add_expr<literal::number>(
-                    _tokenizer.next().lexem.integer);
-                continue;
-            case token::t::number_f:
-                cur_expr->add_expr<literal::number>(
-                    _tokenizer.next().lexem.floating);
-                continue;
+            continue;
+        case _state::ret_stm0:
+            if (_next_tok_is(token::t::number) ||
+                _next_tok_is(token::t::number_f)
+            ) {
+                auto &cur_stm = *_statement_stack.top();
+                auto cur_tok = _tokenizer.next();
+                cur_stm.add_expr<literal::number>(
+                    cur_tok.type == token::t::number?
+                        cur_tok.lexem.integer :
+                        cur_tok.lexem.floating);
+
+                _cur_nonterminal = _nonterminal::literal;
             }
+            continue;
         }
     }
-    
+
     return _main_block.eval();
 }
 
-void parser::_push_state(parser::_state s)
+bool parser::_next_tok_is(token::t type) const
 {
-    _parse_stack.push(s);
-    _token_stack.push(_tokenizer.next());
+    return _tokenizer.look_next().type == type;
 }
