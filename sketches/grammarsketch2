@@ -1,7 +1,7 @@
 start          -> block_body | <empty_string>
 block_body     -> stm_list ret_stm | stm_list | ret_stm
 stm_list       -> stm <sep> stm_list | stm
-ret_stm        -> !expr_value
+ret_stm        -> !stm
 stm            -> msg_send | expr_value
 msg_send       -> expr_value stm
 expr_value     -> literal | (stm)
@@ -17,3 +17,115 @@ table_entries  -> table_entry, table_entries | table_entry
 table_entry    -> table_index <->> stm
 table_index    -> symbol | msg_send
 block          -> { block_body } | {}
+---
+start0:
+start -> .block_body ;; <eoi>
+block_body -> .stm_list ret_stm ;; <eoi>
+block_body -> .stm_list ;; <eoi>
+block_body -> .ret_stm ;; <eoi>
+stm_list -> .stm <sep> stm_list ;; !, <eoi>
+stm_list -> .stm ;; !, <eoi>
+ret_stm -> .!stm ;; <eoi>
+stm -> .msg_send ;; <sep>, !, <eoi>
+stm -> .expr_value ;; <sep>, !, <eoi>
+msg_send -> .expr_value stm ;; <sep>, !, <eoi>
+expr_value -> .literal ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+expr_value -> .(stm) ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .empty ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .symbol ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .number ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .array ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .block ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .$ ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .~ ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .@ ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+empty -> .[] ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array -> .|array_body ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array -> .|array_count|array_body ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table -> .:table_body ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+block -> .{ block_body } ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+---
+(start0, !)
+ret_stm0:
+ret_stm -> !.stm ;; <eoi>
+stm -> .msg_send ;; <eoi>
+stm -> .expr_value ;; <eoi>
+msg_send -> .expr_value stm ;; <eoi>
+expr_value -> .literal ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+expr_value -> .(stm) ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .empty ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .symbol ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .number ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .array ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .block ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .$ ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .~ ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+literal -> .@ ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+empty -> .[] ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array -> .|array_body ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array -> .|array_count|array_body ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table -> .:tablebody ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+block -> .{ block_body } ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+---
+(start0, ()
+expr_value0:
+expr_value -> (.stm) ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+stm -> .msg_send ;; )
+stm -> .expr_value ;; )
+msg_send -> .expr_value stm ;; )
+expr_value -> .literal ;; ), [, symbol, number, |, :, {, $, ~, @, (
+expr_value -> .(stm) ;; ), [, symbol, number, |, :, {, $, ~, @, (
+...
+---
+(start0, symbol)
+literal0:
+literal -> symbol. ;; <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+---
+...
+(same for every other literal)
+...
+---
+(start0, |)
+array0:
+array -> |.array_body ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array -> |.array_count|array_body ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array_body -> .array_elements ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array_body -> .[array_elements] ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array_body -> .[] ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+array_count -> .number ;; |
+array_count -> .msg_send ;; |
+msg_send -> .expr_value stm ;; |
+expr_value -> .literal ;; [, symbol, number, |, :, {, $, ~, @, (
+expr_value -> .(stm) ;; [, symbol, number, |, :, {, $, ~, @, (
+(literals, etc.)
+...
+---
+(start0, :)
+table0:
+table -> :.table_body ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table_body -> .table_entries ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table_body -> .[table_entries] ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table_body -> .[] ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table_entries -> .table_entry, table_entries ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table_entries -> .table_entry ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table_entry -> .table_index <->> stm ;; <,>, <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+table_index -> .symbol ;; <->>
+table_index -> .msg_send ;; <->>
+---
+(start0, {)
+block0:
+block -> { .block_body } ;; <sep>, !, <eoi>, [, symbol, number, |, :, {, $, ~, @, (
+block_body -> .stm_list ret_stm ;; }
+block_body -> .stm_list ;; }
+block_body -> .ret_stm ;; }
+stm_list -> .stm <sep> stm_list ;; }, [, symbol, number, |, :, {, $, ~, @, (
+stm_list -> .stm ;; }, [, symbol, number, |, :, {, $, ~, @, (
+stm -> .msg_send ;; <sep>, }, [, symbol, number, |, :, {, $, ~, @, (
+stm -> .expr_value ;; <sep>, }, [, symbol, number, |, :, {, $, ~, @, (
+msg_send -> .expr_value stm ;; <sep>, }, [, symbol, number, |, :, {, $, ~, @, (
+expr_value -> .literal ;; <sep>, }, [, symbol, number, |, :, {, $, ~, @, (
+expr_value -> .(stm) ;; <sep>, }, [, symbol, number, |, :, {, $, ~, @, (
+(literals, etc.)
+...
+---
+
