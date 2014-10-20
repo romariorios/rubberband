@@ -101,7 +101,6 @@ array(arr)          ::= BAR array_body(arr_a). { arr = arr_a; }
 array(arr)          ::= BAR stm BAR array_body(arr_a). { arr = arr_a; }
 array_body(arr)     ::= array_elements(arr_a). { arr = arr_a; }
 array_body(arr)     ::= BRACKET_OPEN array_elements(arr_a) BRACKET_CLOSE. { arr = arr_a; }
-array_body(arr)     ::= BRACKET_OPEN BRACKET_CLOSE. { arr = new literal::array; }
 array_elements(arr) ::= stm(e) COMMA array_elements(arr_a).
 {
     arr_a->add_element_ptr(e);
@@ -112,10 +111,10 @@ array_elements(arr) ::= stm(e).
     arr = new literal::array;
     arr->add_element_ptr(e);
 }
+array_elements(arr) ::= . { arr = new literal::array; }
 table(t)            ::= COLON table_body(t_body). { t = t_body; }
 table_body(t)       ::= table_entries(entries). { t = entries; }
 table_body(t)       ::= BRACKET_OPEN table_entries(entries) BRACKET_CLOSE. { t = entries; }
-table_body(t_body)  ::= BRACKET_OPEN BRACKET_CLOSE. { t_body = new literal::table; }
 table_entries(t)    ::= table_entries(t_a) COMMA table_entry(entry).
 {
     t_a->add_symbol_ptr(entry.index);
@@ -128,6 +127,7 @@ table_entries(t)    ::= table_entry(entry).
     t->add_symbol_ptr(entry.index);
     t->add_object_ptr(entry.object);
 }
+table_entries(t)    ::= . { t = new literal::table; }
 table_entry(entry)  ::= stm(i) ARROW stm(s).
 {
     entry.index = i;
