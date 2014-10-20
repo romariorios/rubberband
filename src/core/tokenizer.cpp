@@ -313,7 +313,7 @@ token tokenizer::_look_token(int& length) const
                 --length;
                 
                 return token::symbol(
-                    _remaining.substr(ignore_offset, length));
+                    _remaining.substr(ignore_offset, length - ignore_offset));
             }
             continue;
         }

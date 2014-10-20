@@ -226,7 +226,47 @@ TESTS_INIT()
             { ~:x -> $; ~:y -> ~x +.
             $ ! ~x * (~x) } # This is also a comment
         )"};
-        
+
         TEST_TOKENIZATION_OF(tok2.look_all(), expected)
+    }
+
+    {
+        tokenizer tok{"!|[1, 2, a] 2"};
+        std::vector<token> expected {
+            token::t::exclamation,
+            token::t::bar,
+            token::t::bracket_open,
+            token::number(1),
+            token::t::comma,
+            token::number(2),
+            token::t::comma,
+            token::symbol("a"),
+            token::t::bracket_close,
+            token::number(2)
+        };
+        auto tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
+    
+    {
+        tokenizer tok{"!:[a -> 10, b -> 20] b"};
+        std::vector<token> expected {
+            token::t::exclamation,
+            token::t::colon,
+            token::t::bracket_open,
+            token::symbol("a"),
+            token::t::arrow,
+            token::number(10),
+            token::t::comma,
+            token::symbol("b"),
+            token::t::arrow,
+            token::number(20),
+            token::t::bracket_close,
+            token::symbol("b")
+        };
+        auto tok_all = tok.look_all();
+        
+        TEST_TOKENIZATION
     }
 TESTS_END()
