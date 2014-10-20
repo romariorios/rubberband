@@ -84,6 +84,8 @@ struct token
             lexem.str = new std::string{*other.lexem.str};
         else
             lexem = other.lexem;
+
+        return *this;
     }
     
     token(token &&other) :
