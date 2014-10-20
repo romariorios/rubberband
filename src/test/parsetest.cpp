@@ -31,4 +31,6 @@ TESTS_INIT()
     TEST_PROGRAM("!:[a -> 10, b -> 20] a", empty(), empty(), number(10))
     TEST_PROGRAM("!:[a -> 10, b -> 20] b", empty(), empty(), number(20))
     TEST_PROGRAM("!:[a -> 10, b -> 20] lol", empty(), empty(), empty())
+    TEST_PROGRAM("!$", empty(), number(10), number(10));
+    TEST_PROGRAM("!~", number(10), empty(), number(10));
 TESTS_END()

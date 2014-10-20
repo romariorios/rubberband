@@ -93,8 +93,8 @@ literal(l)          ::= NUMBER(tok).
 literal(l)          ::= array(arr). { l = arr; }
 literal(l)          ::= table(t). { l = t; }
 literal(l)          ::= block(bl). { l = bl; }
-literal(l)          ::= DOLLAR. { l = new literal::context; }
-literal(l)          ::= TILDE. { l = new literal::message; }
+literal(l)          ::= DOLLAR. { l = new literal::message; }
+literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
 empty(e)            ::= BRACKET_OPEN BRACKET_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR array_body(arr_a). { arr = arr_a; }

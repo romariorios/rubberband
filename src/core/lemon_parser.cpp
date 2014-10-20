@@ -959,13 +959,13 @@ static void yy_reduce(
         break;
       case 19: /* literal ::= DOLLAR */
 #line 96 "lemon_parser.y"
-{ yygotominor.yy68 = new literal::context;   yy_destructor(yypParser,7,&yymsp[0].minor);
+{ yygotominor.yy68 = new literal::message;   yy_destructor(yypParser,7,&yymsp[0].minor);
 }
 #line 965 "lemon_parser.cpp"
         break;
       case 20: /* literal ::= TILDE */
 #line 97 "lemon_parser.y"
-{ yygotominor.yy68 = new literal::message;   yy_destructor(yypParser,8,&yymsp[0].minor);
+{ yygotominor.yy68 = new literal::context;   yy_destructor(yypParser,8,&yymsp[0].minor);
 }
 #line 971 "lemon_parser.cpp"
         break;
