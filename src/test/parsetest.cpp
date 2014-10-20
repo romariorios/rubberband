@@ -33,4 +33,30 @@ TESTS_INIT()
     TEST_PROGRAM("!:[a -> 10, b -> 20] lol", empty(), empty(), empty())
     TEST_PROGRAM("!$", empty(), number(10), number(10));
     TEST_PROGRAM("!~", number(10), empty(), number(10));
+    TEST_PROGRAM("~:x -> $ !~x * $", table({}, {}), number(10), number(100))
+    TEST_PROGRAM("~:x -> $ !~x * (~x)", table({}, {}), number(10), number(100))
+    TEST_PROGRAM(R"(
+        ~:fibnums -> |[0, 1, 1]
+        ~:n -> $
+
+        !~n <= 2?~ {
+            !~fibnums(~i)
+        } {
+            ~:i -> 2
+
+            ~:loop -> {
+                ~fibnums|0, ~fibnums 1
+                ~fibnums|1, ~fibnums 2
+                ~fibnums|2, ~fibnums 0 + (~fibnums 1)
+
+                ~:i -> ~i + 1
+                ~i < (~n)?~ {
+                    ~loop[]
+                }
+            }~
+            ~loop[]
+            
+            !~fibnums 2
+        }
+    )", table({}, {}), number(43), number(433494437))
 TESTS_END()
