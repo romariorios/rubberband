@@ -36,24 +36,7 @@ public:
     object parse();
 
 private:
-    enum class _state {
-        start0,
-        ret_stm0
-    };
-
-    enum class _nonterminal {
-        none,
-        literal
-    };
-
-    inline bool _next_tok_is(token::t type) const;
-
-    _state _cur_state = _state::start0;
-    _nonterminal _cur_nonterminal = _nonterminal::none;
-    std::stack<literal::block *> _block_stack;
-    std::stack<block_statement *> _statement_stack;
     tokenizer _tokenizer;
-    literal::block _main_block;
 };
 
 }

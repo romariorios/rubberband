@@ -18,49 +18,102 @@
 #include "parse.hpp"
 
 #include "block.hpp"
+#include "lemon_parser.h"
 
 using namespace rbb;
 
+extern void *LemonCParserAlloc(void *(*mallocProc)(size_t));
+extern void LemonCParser(void *p, int tok_num, token *tok, literal::block **bl);
+extern void *LemonCParserFree(void *p, void (*freeProc)(void *));
+
+inline int token_to_tokcode(token t)
+{
+    switch (t.type) {
+    case token::t::invalid:
+        return -1;
+    case token::t::bracket_open:
+        return BRACKET_OPEN;
+    case token::t::curly_open:
+        return CURLY_OPEN;
+    case token::t::parenthesis_open:
+        return PARENTHESIS_OPEN;
+    case token::t::end_of_input:
+        return 0;
+    case token::t::bracket_close:
+        return BRACKET_CLOSE;
+    case token::t::curly_close:
+        return CURLY_CLOSE;
+    case token::t::parenthesis_close:
+        return PARENTHESIS_CLOSE;
+    case token::t::arrow:
+        return ARROW;
+    case token::t::comma:
+        return COMMA;
+    case token::t::exclamation:
+        return EXCLAMATION;
+    case token::t::stm_sep:
+        return SEP;
+    case token::t::number:
+    case token::t::number_f:
+        return NUMBER;
+    case token::t::symbol:
+        return SYMBOL;
+    case token::t::dollar:
+        return DOLLAR;
+    case token::t::tilde:
+        return TILDE;
+    case token::t::at:
+        return AT;
+    case token::t::bar:
+        return BAR;
+    case token::t::colon:
+        return COLON;
+    }
+}
+
+class lemon_parser
+{
+public:
+    ~lemon_parser()
+    {
+        LemonCParserFree(_p, free);
+    }
+
+    inline void parse(token tok)
+    {
+        LemonCParser(_p, token_to_tokcode(tok), &tok, &_result);
+    }
+
+    inline object result()
+    {
+        if (!_result)
+            return empty();
+
+        return _result->eval();
+    }
+
+private:
+    literal::block *_result = nullptr;
+    void *_p = LemonCParserAlloc(malloc);
+};
+
 parser::parser(const std::string &code) :
     _tokenizer{code}
-{
-    _block_stack.push(&_main_block);
-}
+{}
 
 object parser::parse()
 {
-    while (_tokenizer.look_next() != token::t::end_of_input) {
-        switch (_cur_state) {
-        case _state::start0:
-            if (_next_tok_is(token::t::exclamation)) {
-                _cur_state = _state::ret_stm0;
-                _tokenizer.next();
+    lemon_parser p;
 
-                auto &cur_block = *_block_stack.top();
-                _statement_stack.push(&cur_block.return_statement());
-            }
-            continue;
-        case _state::ret_stm0:
-            if (_next_tok_is(token::t::number) ||
-                _next_tok_is(token::t::number_f)
-            ) {
-                auto &cur_stm = *_statement_stack.top();
-                auto cur_tok = _tokenizer.next();
-                cur_stm.add_expr<literal::number>(
-                    cur_tok.type == token::t::number?
-                        cur_tok.lexem.integer :
-                        cur_tok.lexem.floating);
-
-                _cur_nonterminal = _nonterminal::literal;
-            }
-            continue;
-        }
+    for (
+        auto tok = _tokenizer.next();
+        tok.type != token::t::end_of_input;
+        tok = _tokenizer.next()
+    ) {
+        p.parse(tok);
     }
 
-    return _main_block.eval();
-}
+    p.parse(token::t::end_of_input);
 
-bool parser::_next_tok_is(token::t type) const
-{
-    return _tokenizer.look_next().type == type;
+    return p.result();
 }

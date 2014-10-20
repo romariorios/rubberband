@@ -11,7 +11,10 @@ set(rubberbandcore_sources
     parse.cpp
     symbol.cpp
     to_string.cpp
-    tokenizer.cpp)
+    tokenizer.cpp
+
+    lemon_parser.cpp)
+
 set(rubberbandcore_headers
     block.hpp
     object.hpp
