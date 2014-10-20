@@ -480,6 +480,30 @@ static void yy_destructor(
     ** which appear on the RHS of the rule, but which are not used
     ** inside the C code.
     */
+      /* TERMINAL Destructor */
+    case 1: /* SEP */
+    case 2: /* EXCLAMATION */
+    case 3: /* PARENTHESIS_OPEN */
+    case 4: /* PARENTHESIS_CLOSE */
+    case 5: /* SYMBOL */
+    case 6: /* NUMBER */
+    case 7: /* DOLLAR */
+    case 8: /* TILDE */
+    case 9: /* AT */
+    case 10: /* BRACKET_OPEN */
+    case 11: /* BRACKET_CLOSE */
+    case 12: /* BAR */
+    case 13: /* COMMA */
+    case 14: /* COLON */
+    case 15: /* ARROW */
+    case 16: /* CURLY_OPEN */
+    case 17: /* CURLY_CLOSE */
+{
+#line 21 "lemon_parser.y"
+ delete (yypminor->yy0); 
+#line 505 "lemon_parser.cpp"
+}
+      break;
     default:  break;   /* If no destructor action specified: do nothing */
   }
 }
@@ -809,226 +833,270 @@ static void yy_reduce(
   **     break;
   */
       case 0: /* start ::= block_body */
-#line 42 "lemon_parser.y"
+#line 44 "lemon_parser.y"
 { *result_block = yymsp[0].minor.yy23; }
-#line 815 "lemon_parser.cpp"
+#line 839 "lemon_parser.cpp"
         break;
       case 1: /* start ::= */
-#line 43 "lemon_parser.y"
+#line 45 "lemon_parser.y"
 { *result_block = new literal::block; }
-#line 820 "lemon_parser.cpp"
+#line 844 "lemon_parser.cpp"
         break;
       case 2: /* block_body ::= stm_list ret_stm */
-#line 45 "lemon_parser.y"
+#line 47 "lemon_parser.y"
 {
     yymsp[-1].minor.yy23->set_return_statement_ptr(yymsp[0].minor.yy20);
     yygotominor.yy23 = yymsp[-1].minor.yy23;
 }
-#line 828 "lemon_parser.cpp"
+#line 852 "lemon_parser.cpp"
         break;
       case 3: /* block_body ::= stm_list */
-#line 49 "lemon_parser.y"
+#line 51 "lemon_parser.y"
 { yygotominor.yy23 = yymsp[0].minor.yy23; }
-#line 833 "lemon_parser.cpp"
+#line 857 "lemon_parser.cpp"
         break;
       case 4: /* block_body ::= ret_stm */
-#line 51 "lemon_parser.y"
+#line 53 "lemon_parser.y"
 {
     yygotominor.yy23 = new literal::block;
     yygotominor.yy23->set_return_statement_ptr(yymsp[0].minor.yy20);
 }
-#line 841 "lemon_parser.cpp"
+#line 865 "lemon_parser.cpp"
         break;
       case 5: /* stm_list ::= stm_list SEP stm */
-#line 56 "lemon_parser.y"
+#line 58 "lemon_parser.y"
 {
     yymsp[-2].minor.yy23->add_statement_ptr(yymsp[0].minor.yy20);
     yygotominor.yy23 = yymsp[-2].minor.yy23;
+  yy_destructor(yypParser,1,&yymsp[-1].minor);
 }
-#line 849 "lemon_parser.cpp"
+#line 874 "lemon_parser.cpp"
         break;
       case 6: /* stm_list ::= stm */
-#line 61 "lemon_parser.y"
+#line 63 "lemon_parser.y"
 {
     yygotominor.yy23 = new literal::block;
     yygotominor.yy23->add_statement_ptr(yymsp[0].minor.yy20);
 }
-#line 857 "lemon_parser.cpp"
+#line 882 "lemon_parser.cpp"
         break;
       case 7: /* ret_stm ::= EXCLAMATION stm */
-      case 8: /* stm ::= msg_send */ yytestcase(yyruleno==8);
-#line 65 "lemon_parser.y"
+#line 67 "lemon_parser.y"
+{ yygotominor.yy20 = yymsp[0].minor.yy20;   yy_destructor(yypParser,2,&yymsp[-1].minor);
+}
+#line 888 "lemon_parser.cpp"
+        break;
+      case 8: /* stm ::= msg_send */
+#line 68 "lemon_parser.y"
 { yygotominor.yy20 = yymsp[0].minor.yy20; }
-#line 863 "lemon_parser.cpp"
+#line 893 "lemon_parser.cpp"
         break;
       case 9: /* stm ::= expr_value */
-#line 68 "lemon_parser.y"
+#line 70 "lemon_parser.y"
 {
     yygotominor.yy20 = new block_statement;
     yygotominor.yy20->add_expr_ptr(yymsp[0].minor.yy68);
 }
-#line 871 "lemon_parser.cpp"
+#line 901 "lemon_parser.cpp"
         break;
       case 10: /* msg_send ::= expr_value stm */
-#line 73 "lemon_parser.y"
+#line 75 "lemon_parser.y"
 {
     yymsp[0].minor.yy20->add_expr_ptr(yymsp[-1].minor.yy68);
     yygotominor.yy20 = yymsp[0].minor.yy20;
 }
-#line 879 "lemon_parser.cpp"
+#line 909 "lemon_parser.cpp"
         break;
       case 11: /* expr_value ::= literal */
-#line 77 "lemon_parser.y"
+#line 79 "lemon_parser.y"
 { yygotominor.yy68 = yymsp[0].minor.yy68; }
-#line 884 "lemon_parser.cpp"
+#line 914 "lemon_parser.cpp"
         break;
       case 12: /* expr_value ::= PARENTHESIS_OPEN stm PARENTHESIS_CLOSE */
-#line 78 "lemon_parser.y"
-{ yygotominor.yy68 = yymsp[-1].minor.yy20; }
-#line 889 "lemon_parser.cpp"
+#line 80 "lemon_parser.y"
+{ yygotominor.yy68 = yymsp[-1].minor.yy20;   yy_destructor(yypParser,3,&yymsp[-2].minor);
+  yy_destructor(yypParser,4,&yymsp[0].minor);
+}
+#line 921 "lemon_parser.cpp"
         break;
       case 13: /* literal ::= empty */
-#line 79 "lemon_parser.y"
+#line 81 "lemon_parser.y"
 { yygotominor.yy68 = yymsp[0].minor.yy35; }
-#line 894 "lemon_parser.cpp"
+#line 926 "lemon_parser.cpp"
         break;
       case 14: /* literal ::= SYMBOL */
-#line 80 "lemon_parser.y"
+#line 82 "lemon_parser.y"
 { yygotominor.yy68 = new literal::symbol{std::string{*yymsp[0].minor.yy0->lexem.str}}; }
-#line 899 "lemon_parser.cpp"
+#line 931 "lemon_parser.cpp"
         break;
       case 15: /* literal ::= NUMBER */
-#line 82 "lemon_parser.y"
+#line 84 "lemon_parser.y"
 {
     if (yymsp[0].minor.yy0->type == token::t::number) {
         yygotominor.yy68 = new literal::number{yymsp[0].minor.yy0->lexem.integer};
     } else if (yymsp[0].minor.yy0->type == token::t::number_f) {
         yygotominor.yy68 = new literal::number{yymsp[0].minor.yy0->lexem.floating};
     } else {
-        yygotominor.yy68 = nullptr;
+        yygotominor.yy68 = new literal::empty;
     }
 }
-#line 912 "lemon_parser.cpp"
+#line 944 "lemon_parser.cpp"
         break;
       case 16: /* literal ::= array */
-#line 91 "lemon_parser.y"
+#line 93 "lemon_parser.y"
 { yygotominor.yy68 = yymsp[0].minor.yy31; }
-#line 917 "lemon_parser.cpp"
+#line 949 "lemon_parser.cpp"
         break;
       case 17: /* literal ::= table */
-#line 92 "lemon_parser.y"
-{ yygotominor.yy68 = yymsp[0].minor.yy56; }
-#line 922 "lemon_parser.cpp"
-        break;
-      case 18: /* literal ::= block */
-#line 93 "lemon_parser.y"
-{ yygotominor.yy68 = yymsp[0].minor.yy23; }
-#line 927 "lemon_parser.cpp"
-        break;
-      case 19: /* literal ::= DOLLAR */
 #line 94 "lemon_parser.y"
-{ yygotominor.yy68 = new literal::context; }
-#line 932 "lemon_parser.cpp"
-        break;
-      case 20: /* literal ::= TILDE */
-#line 95 "lemon_parser.y"
-{ yygotominor.yy68 = new literal::message; }
-#line 937 "lemon_parser.cpp"
-        break;
-      case 21: /* literal ::= AT */
-#line 96 "lemon_parser.y"
-{ yygotominor.yy68 = new literal::self_ref; }
-#line 942 "lemon_parser.cpp"
-        break;
-      case 22: /* empty ::= BRACKET_OPEN BRACKET_CLOSE */
-#line 97 "lemon_parser.y"
-{ yygotominor.yy35 = new literal::empty; }
-#line 947 "lemon_parser.cpp"
-        break;
-      case 23: /* array ::= BAR array_body */
-      case 24: /* array ::= BAR stm BAR array_body */ yytestcase(yyruleno==24);
-      case 25: /* array_body ::= array_elements */ yytestcase(yyruleno==25);
-#line 98 "lemon_parser.y"
-{ yygotominor.yy31 = yymsp[0].minor.yy31; }
+{ yygotominor.yy68 = yymsp[0].minor.yy56; }
 #line 954 "lemon_parser.cpp"
         break;
-      case 26: /* array_body ::= BRACKET_OPEN array_elements BRACKET_CLOSE */
-#line 101 "lemon_parser.y"
-{ yygotominor.yy31 = yymsp[-1].minor.yy31; }
+      case 18: /* literal ::= block */
+#line 95 "lemon_parser.y"
+{ yygotominor.yy68 = yymsp[0].minor.yy23; }
 #line 959 "lemon_parser.cpp"
         break;
-      case 27: /* array_body ::= BRACKET_OPEN BRACKET_CLOSE */
+      case 19: /* literal ::= DOLLAR */
+#line 96 "lemon_parser.y"
+{ yygotominor.yy68 = new literal::context;   yy_destructor(yypParser,7,&yymsp[0].minor);
+}
+#line 965 "lemon_parser.cpp"
+        break;
+      case 20: /* literal ::= TILDE */
+#line 97 "lemon_parser.y"
+{ yygotominor.yy68 = new literal::message;   yy_destructor(yypParser,8,&yymsp[0].minor);
+}
+#line 971 "lemon_parser.cpp"
+        break;
+      case 21: /* literal ::= AT */
+#line 98 "lemon_parser.y"
+{ yygotominor.yy68 = new literal::self_ref;   yy_destructor(yypParser,9,&yymsp[0].minor);
+}
+#line 977 "lemon_parser.cpp"
+        break;
+      case 22: /* empty ::= BRACKET_OPEN BRACKET_CLOSE */
+#line 99 "lemon_parser.y"
+{ yygotominor.yy35 = new literal::empty;   yy_destructor(yypParser,10,&yymsp[-1].minor);
+  yy_destructor(yypParser,11,&yymsp[0].minor);
+}
+#line 984 "lemon_parser.cpp"
+        break;
+      case 23: /* array ::= BAR array_body */
+#line 100 "lemon_parser.y"
+{ yygotominor.yy31 = yymsp[0].minor.yy31;   yy_destructor(yypParser,12,&yymsp[-1].minor);
+}
+#line 990 "lemon_parser.cpp"
+        break;
+      case 24: /* array ::= BAR stm BAR array_body */
+#line 101 "lemon_parser.y"
+{ yygotominor.yy31 = yymsp[0].minor.yy31;   yy_destructor(yypParser,12,&yymsp[-3].minor);
+  yy_destructor(yypParser,12,&yymsp[-1].minor);
+}
+#line 997 "lemon_parser.cpp"
+        break;
+      case 25: /* array_body ::= array_elements */
 #line 102 "lemon_parser.y"
-{ yygotominor.yy31 = new literal::array; }
-#line 964 "lemon_parser.cpp"
+{ yygotominor.yy31 = yymsp[0].minor.yy31; }
+#line 1002 "lemon_parser.cpp"
+        break;
+      case 26: /* array_body ::= BRACKET_OPEN array_elements BRACKET_CLOSE */
+#line 103 "lemon_parser.y"
+{ yygotominor.yy31 = yymsp[-1].minor.yy31;   yy_destructor(yypParser,10,&yymsp[-2].minor);
+  yy_destructor(yypParser,11,&yymsp[0].minor);
+}
+#line 1009 "lemon_parser.cpp"
+        break;
+      case 27: /* array_body ::= BRACKET_OPEN BRACKET_CLOSE */
+#line 104 "lemon_parser.y"
+{ yygotominor.yy31 = new literal::array;   yy_destructor(yypParser,10,&yymsp[-1].minor);
+  yy_destructor(yypParser,11,&yymsp[0].minor);
+}
+#line 1016 "lemon_parser.cpp"
         break;
       case 28: /* array_elements ::= stm COMMA array_elements */
-#line 104 "lemon_parser.y"
+#line 106 "lemon_parser.y"
 {
     yymsp[0].minor.yy31->add_element_ptr(yymsp[-2].minor.yy20);
     yygotominor.yy31 = yymsp[0].minor.yy31;
+  yy_destructor(yypParser,13,&yymsp[-1].minor);
 }
-#line 972 "lemon_parser.cpp"
+#line 1025 "lemon_parser.cpp"
         break;
       case 29: /* array_elements ::= stm */
-#line 109 "lemon_parser.y"
+#line 111 "lemon_parser.y"
 {
     yygotominor.yy31 = new literal::array;
     yygotominor.yy31->add_element_ptr(yymsp[0].minor.yy20);
 }
-#line 980 "lemon_parser.cpp"
+#line 1033 "lemon_parser.cpp"
         break;
       case 30: /* table ::= COLON table_body */
-      case 31: /* table_body ::= table_entries */ yytestcase(yyruleno==31);
-#line 113 "lemon_parser.y"
+#line 115 "lemon_parser.y"
+{ yygotominor.yy56 = yymsp[0].minor.yy56;   yy_destructor(yypParser,14,&yymsp[-1].minor);
+}
+#line 1039 "lemon_parser.cpp"
+        break;
+      case 31: /* table_body ::= table_entries */
+#line 116 "lemon_parser.y"
 { yygotominor.yy56 = yymsp[0].minor.yy56; }
-#line 986 "lemon_parser.cpp"
+#line 1044 "lemon_parser.cpp"
         break;
       case 32: /* table_body ::= BRACKET_OPEN table_entries BRACKET_CLOSE */
-#line 115 "lemon_parser.y"
-{ yygotominor.yy56 = yymsp[-1].minor.yy56; }
-#line 991 "lemon_parser.cpp"
+#line 117 "lemon_parser.y"
+{ yygotominor.yy56 = yymsp[-1].minor.yy56;   yy_destructor(yypParser,10,&yymsp[-2].minor);
+  yy_destructor(yypParser,11,&yymsp[0].minor);
+}
+#line 1051 "lemon_parser.cpp"
         break;
       case 33: /* table_body ::= BRACKET_OPEN BRACKET_CLOSE */
-#line 116 "lemon_parser.y"
-{ yygotominor.yy56 = new literal::table; }
-#line 996 "lemon_parser.cpp"
+#line 118 "lemon_parser.y"
+{ yygotominor.yy56 = new literal::table;   yy_destructor(yypParser,10,&yymsp[-1].minor);
+  yy_destructor(yypParser,11,&yymsp[0].minor);
+}
+#line 1058 "lemon_parser.cpp"
         break;
       case 34: /* table_entries ::= table_entries COMMA table_entry */
-#line 118 "lemon_parser.y"
+#line 120 "lemon_parser.y"
 {
     yymsp[-2].minor.yy56->add_symbol_ptr(yymsp[0].minor.yy38.index);
     yymsp[-2].minor.yy56->add_object_ptr(yymsp[0].minor.yy38.object);
     yygotominor.yy56 = yymsp[-2].minor.yy56;
+  yy_destructor(yypParser,13,&yymsp[-1].minor);
 }
-#line 1005 "lemon_parser.cpp"
+#line 1068 "lemon_parser.cpp"
         break;
       case 35: /* table_entries ::= table_entry */
-#line 124 "lemon_parser.y"
+#line 126 "lemon_parser.y"
 {
     yygotominor.yy56 = new literal::table;
     yygotominor.yy56->add_symbol_ptr(yymsp[0].minor.yy38.index);
     yygotominor.yy56->add_object_ptr(yymsp[0].minor.yy38.object);
 }
-#line 1014 "lemon_parser.cpp"
+#line 1077 "lemon_parser.cpp"
         break;
       case 36: /* table_entry ::= stm ARROW stm */
-#line 130 "lemon_parser.y"
+#line 132 "lemon_parser.y"
 {
     yygotominor.yy38.index = yymsp[-2].minor.yy20;
     yygotominor.yy38.object = yymsp[0].minor.yy20;
+  yy_destructor(yypParser,15,&yymsp[-1].minor);
 }
-#line 1022 "lemon_parser.cpp"
+#line 1086 "lemon_parser.cpp"
         break;
       case 37: /* block ::= CURLY_OPEN block_body CURLY_CLOSE */
-#line 134 "lemon_parser.y"
-{ yygotominor.yy23 = yymsp[-1].minor.yy23; }
-#line 1027 "lemon_parser.cpp"
+#line 136 "lemon_parser.y"
+{ yygotominor.yy23 = yymsp[-1].minor.yy23;   yy_destructor(yypParser,16,&yymsp[-2].minor);
+  yy_destructor(yypParser,17,&yymsp[0].minor);
+}
+#line 1093 "lemon_parser.cpp"
         break;
       case 38: /* block ::= CURLY_OPEN CURLY_CLOSE */
-#line 135 "lemon_parser.y"
-{ yygotominor.yy23 = new literal::block; }
-#line 1032 "lemon_parser.cpp"
+#line 137 "lemon_parser.y"
+{ yygotominor.yy23 = new literal::block;   yy_destructor(yypParser,16,&yymsp[-1].minor);
+  yy_destructor(yypParser,17,&yymsp[0].minor);
+}
+#line 1100 "lemon_parser.cpp"
         break;
       default:
         break;

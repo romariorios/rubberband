@@ -81,7 +81,7 @@ public:
 
     inline void parse(token tok)
     {
-        LemonCParser(_p, token_to_tokcode(tok), &tok, &_result);
+        LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_result);
     }
 
     inline object result()

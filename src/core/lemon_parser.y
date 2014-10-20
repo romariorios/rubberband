@@ -18,6 +18,8 @@
 %name LemonCParser
 
 %token_type {token *}
+%token_destructor { delete $$; }
+
 %extra_argument { literal::block **result_block }
 
 %type start {literal::block *}
@@ -85,7 +87,7 @@ literal(l)          ::= NUMBER(tok).
     } else if (tok->type == token::t::number_f) {
         l = new literal::number{tok->lexem.floating};
     } else {
-        l = nullptr;
+        l = new literal::empty;
     }
 }
 literal(l)          ::= array(arr). { l = arr; }
