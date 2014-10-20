@@ -149,10 +149,10 @@ std::string block::to_string() const
     if (!_p->statements.empty())
         result.erase(result.size() - 2);
 
-    auto ret_to_string = _p->return_statement.to_string();
+    auto ret_to_string = _p->return_statement->to_string();
 
     if (!ret_to_string.empty())
-        result += "!" + _p->return_statement.to_string();
+        result += "!" + ret_to_string;
 
     result += " }";
 

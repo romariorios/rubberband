@@ -21,6 +21,20 @@
 
 using namespace rbb;
 
+void expr_list::append_ptr(expr *e)
+{
+    emplace_after(list_end, e);
+}
+
+block_statement::block_statement(block_statement &&other) :
+    expressions{std::move(other.expressions)}
+{}
+
+void block_statement::add_expr_ptr(expr *e)
+{
+    expressions.append_ptr(e);
+}
+
 object block_statement::eval(literal::block* parent_block)
 {
     if (expressions.empty())
@@ -48,6 +62,11 @@ object literal::array::eval(literal::block* parent_block)
     return rbb::array(arr);
 }
 
+void literal::array::add_element_ptr(expr *e)
+{
+    _objects.append_ptr(e);
+}
+
 object literal::table::eval(literal::block* parent_block)
 {
     std::vector<object> symbols;
@@ -59,6 +78,16 @@ object literal::table::eval(literal::block* parent_block)
         objects.push_back(obj->eval(parent_block));
 
     return rbb::table(symbols, objects);
+}
+
+void literal::table::add_symbol_ptr(expr *e)
+{
+    _symbols.append_ptr(e);
+}
+
+void literal::table::add_object_ptr(expr *e)
+{
+    _objects.append_ptr(e);
 }
 
 object literal::self_ref::eval(literal::block* parent_block)
@@ -92,9 +121,20 @@ block_statement &literal::block::add_statement()
     return *_p->statements_tail;
 }
 
+void literal::block::add_statement_ptr(block_statement *stm)
+{
+    _p->statements_tail =
+        _p->statements.emplace_after(_p->statements_tail, std::move(*stm));
+}
+
 block_statement &literal::block::return_statement()
 {
-    return _p->return_statement;
+    return *_p->return_statement;
+}
+
+void literal::block::set_return_statement_ptr(block_statement *stm)
+{
+    _p->return_statement.reset(stm);
 }
 
 void literal::block::set_block_context(const object& context)
@@ -114,5 +154,5 @@ object literal::block::run()
     for (auto &cur_stm : _p->statements)
         cur_stm.eval(this);
 
-    return _p->return_statement.eval(this);
+    return _p->return_statement->eval(this);
 }

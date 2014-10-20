@@ -19,6 +19,7 @@
 #define BLOCK_PRIVATE
 
 #include <forward_list>
+#include <memory>
 
 namespace rbb
 {
@@ -34,7 +35,7 @@ namespace literal
         std::forward_list<block_statement>::iterator statements_tail =
             statements.before_begin();
 
-        block_statement return_statement;
+        std::unique_ptr<block_statement> return_statement{new block_statement};
     };
 }
 

@@ -66,6 +66,8 @@ public:
         return *static_cast<T *>(list_end->get());
     }
 
+    void append_ptr(expr *e);
+
 private:
     std::forward_list<expr::ptr>::iterator list_end = before_begin();
 };
@@ -74,11 +76,17 @@ class block_data;
 class block_statement : public expr
 {
 public:
+    block_statement() = default;
+    explicit block_statement(block_statement &&other);
+    block_statement(const block_statement &other) = delete;
+
     template <class T, class... Args>
     T &add_expr(Args&&... a)
     {
         return expressions.append<T>(a...);
     }
+
+    void add_expr_ptr(expr *e);
 
     object eval(literal::block *parent_block);
     std::string to_string() const;
@@ -139,6 +147,8 @@ namespace literal
             return _objects.append<T>(a...);
         }
 
+        void add_element_ptr(expr *e);
+
         std::string to_string() const;
 
     private:
@@ -156,11 +166,15 @@ namespace literal
             return _symbols.append<T>(a...);
         }
 
+        void add_symbol_ptr(expr *e);
+
         template <class T, class... Args>
         T &add_object(Args&&... a)
         {
             return _objects.append<T>(a...);
         }
+
+        void add_object_ptr(expr *e);
 
         std::string to_string() const;
 
@@ -199,10 +213,15 @@ namespace literal
     public:
         block();
         block(const block &other);
+
         block_statement &add_statement();
+        void add_statement_ptr(block_statement *stm);
         block_statement &return_statement();
+        void set_return_statement_ptr(block_statement *stm);
+
         void set_block_context(const object &context);
         void set_block_message(const object &msg);
+
         object eval(block * = nullptr); // blocks don't depend on their parent block
         object run();
         std::string to_string() const;
