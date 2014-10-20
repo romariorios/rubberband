@@ -1481,6 +1481,8 @@ static void handle_T_option(char *z){
   lemon_strcpy(user_templatename, z);
 }
 
+static int cppoutput = 0;
+
 /* The main program.  Parse the command line and do it... */
 int main(int argc, char **argv)
 {
@@ -1503,6 +1505,7 @@ int main(int argc, char **argv)
     {OPT_FLAG, "l", (char*)&nolinenosflag, "Do not print #line statements."},
     {OPT_FLAG, "p", (char*)&showPrecedenceConflict,
                     "Show conflicts resolved by precedence rules"},
+    {OPT_FLAG, "P", (char*)&cppoutput, "Output parser as a .cpp file."},
     {OPT_FLAG, "q", (char*)&quiet, "(Quiet) Don't print the report file."},
     {OPT_FLAG, "r", (char*)&noResort, "Do not sort or renumber states"},
     {OPT_FLAG, "s", (char*)&statistics,
@@ -3731,7 +3734,7 @@ void ReportTable(
 
   in = tplt_open(lemp);
   if( in==0 ) return;
-  out = file_open(lemp,".cpp","wb");
+  out = file_open(lemp,cppoutput?".cpp" : ".c","wb");
   if( out==0 ){
     fclose(in);
     return;
