@@ -1490,6 +1490,7 @@ int main(int argc, char **argv)
   static int rpflag = 0;
   static int basisflag = 0;
   static int compress = 0;
+  static int noconflicterror = 0;
   static int quiet = 0;
   static int statistics = 0;
   static int mhflag = 0;
@@ -1499,6 +1500,7 @@ int main(int argc, char **argv)
     {OPT_FLAG, "b", (char*)&basisflag, "Print only the basis in report."},
     {OPT_FLAG, "c", (char*)&compress, "Don't compress the action table."},
     {OPT_FSTR, "D", (char*)handle_D_option, "Define an %ifdef macro."},
+    {OPT_FLAG, "e", (char*)&noconflicterror, "Do not consider conflicts as errors."},
     {OPT_FSTR, "T", (char*)handle_T_option, "Specify a template file."},
     {OPT_FLAG, "g", (char*)&rpflag, "Print grammar without actions."},
     {OPT_FLAG, "m", (char*)&mhflag, "Output a makeheaders compatible file."},
@@ -1621,7 +1623,7 @@ int main(int argc, char **argv)
   }
 
   /* return 0 on success, 1 on failure. */
-  exitcode = ((lem.errorcnt > 0) || (lem.nconflict > 0)) ? 1 : 0;
+  exitcode = ((lem.errorcnt > 0) || (!noconflicterror && lem.nconflict > 0)) ? 1 : 0;
   exit(exitcode);
   return (exitcode);
 }
