@@ -173,7 +173,7 @@ std::string object::to_string() const
 
     switch (type) {
     case value_t::empty_t:
-        return "[]";
+        return "()";
     case value_t::integer_t:
         return std::to_string(__value.integer);
     case value_t::floating_t:
