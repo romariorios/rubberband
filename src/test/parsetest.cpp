@@ -5,6 +5,13 @@
 
 using namespace rbb;
 
+extern void LemonCParserTrace(FILE *stream, char *zPrefix);
+
+object __print(object *, const object &msg)
+{
+    puts(msg.to_string().c_str());
+}
+
 #define TEST_PROGRAM(program, context, message, expected)\
 {\
     auto prog = parser{program}.parse();\
@@ -13,14 +20,43 @@ using namespace rbb;
     TEST_CONDITION(\
         res == (expected),\
         printf(\
-            "The program { %s } (interpreted as %s) returns %s (expected: %s)\n",\
+            "The program:\n"\
+            "  { %s }\n"\
+            "interpreted as:\n"\
+            "  %s\n"\
+            "running over the context:\n"\
+            "  %s\n"\
+            "when receiving the message:\n"\
+            "  %s\n"\
+            "returns:\n"\
+            "  %s\n"\
+            "but the following was expected:\n"\
+            "  %s\n",\
             program,\
             prog.to_string().c_str(),\
+            context.to_string().c_str(),\
+            message.to_string().c_str(),\
             res.to_string().c_str(),\
             expected.to_string().c_str()))\
 }
 
+#define TEST_PARSING(__program, __to_string)\
+{\
+    auto interpreted_as = parser{__program}.parse().to_string();\
+\
+    TEST_CONDITION(\
+        interpreted_as == (__to_string),\
+        printf(\
+            "The program { %s } has been interpreted as %s (expected: %s)\n",\
+            __program,\
+            interpreted_as.c_str(),\
+            __to_string))\
+}
+
 TESTS_INIT()
+    object print;
+    print.__send_msg = __print;
+
     TEST_PROGRAM("", empty(), empty(), empty())
     TEST_PROGRAM("!10", empty(), empty(), number(10))
     TEST_PROGRAM("!10 ", empty(), empty(), number(10))
@@ -51,12 +87,41 @@ TESTS_INIT()
 
                 ~:i -> ~i + 1
                 ~i < (~n)?~ {
-                    ~loop[]
+                    ~loop()
                 }
             }~
-            ~loop[]
+            ~loop()
             
             !~fibnums 2
         }
     )", table({}, {}), number(43), number(433494437))
+    TEST_PROGRAM(R"(
+        ~:while -> {
+            ~:ctx -> $0, cond_bl -> $1, exec_bl -> $2
+
+            ~:loop -> {
+                ~cond_bl(~ctx)()?~ {
+                    ~exec_bl(~ctx)()
+
+                    ~loop()
+                }
+            }~
+            ~loop()
+        }:[]
+
+        ~:fibnums -> |0, 1, 1
+        ~:n -> $
+
+        ~while|~, { !~n > 2 }, {
+            ~fibnums|0, ~fibnums 1
+            ~fibnums|1, ~fibnums 2
+            ~fibnums|2, ~fibnums 0 + (~fibnums 1)
+    
+            ~:n -> ~n - 1
+        }
+
+        !~fibnums 2
+    )", table({}, {}), number(43), number(433494437))
+
+    TEST_PARSING("{}:[]; :a -> 10", "{ {  } :[]; :[a -> 10] }")
 TESTS_END()

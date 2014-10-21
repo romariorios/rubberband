@@ -269,4 +269,23 @@ TESTS_INIT()
         
         TEST_TOKENIZATION
     }
+    
+    {
+        tokenizer tok{"{}:[]; :a -> 10"};
+        std::vector<token> expected {
+            token::t::curly_open,
+            token::t::curly_close,
+            token::t::colon,
+            token::t::bracket_open,
+            token::t::bracket_close,
+            token::t::stm_sep,
+            token::t::colon,
+            token::symbol("a"),
+            token::t::arrow,
+            token::number(10)
+        };
+        auto tok_all = tok.look_all();
+        
+        TEST_TOKENIZATION
+    }
 TESTS_END()
