@@ -66,6 +66,9 @@ struct token
         double floating;
         std::string *str;
     } lexem;
+    
+    long line = 0;
+    long column = 0;
 
     token(t type) :
         type{type}
@@ -79,6 +82,8 @@ struct token
     token &operator=(const token &other)
     {
         type = other.type;
+        line = other.line;
+        column = other.column;
         
         if (other.type == t::symbol)
             lexem.str = new std::string{*other.lexem.str};
@@ -180,9 +185,11 @@ private:
         alphanumeric_symbol
     };
 
+    long _cur_line = 1;
+    long _cur_col = 1;
     
-    bool _dot_ahead(int &ignore_offset, int& length) const;
-    token _look_token(int &length) const;
+    bool _dot_ahead(int &ignore_offset, int& length, long &line, long &col) const;
+    token _look_token(int &length, long &line, long &col) const;
 
     token _previous_token = token{token::t::start_of_input};
     std::string _remaining;

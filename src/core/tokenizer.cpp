@@ -22,16 +22,27 @@ using namespace rbb;
 token tokenizer::next()
 {
     int length;
-    auto ret = _previous_token = _look_token(length);
+    long line = _cur_line, col = _cur_col;
+    auto ret = _previous_token = _look_token(length, line, col);
+    ret.line = _cur_line;
+    ret.column = _cur_col;
 
     _remaining.erase(_remaining.begin(), _remaining.begin() + length);
+    _cur_line = line;
+    _cur_col = col;
     return ret;
 }
 
 token tokenizer::look_next() const
 {
     int l; // unused
-    return _look_token(l);
+    long li, col;
+    
+    auto tok = _look_token(l, li, col);
+    tok.line = _cur_line;
+    tok.column = _cur_col;
+    
+    return tok;
 }
 
 std::vector<token> tokenizer::all()
@@ -51,16 +62,20 @@ std::vector<token> tokenizer::look_all() const
     return tok.all();
 }
 
-bool tokenizer::_dot_ahead(int &ignore_offset, int &length) const
+bool tokenizer::_dot_ahead(int &ignore_offset, int &length, long &line, long &col) const
 {
     for (auto &ch : _remaining.substr(length)) {
         ++length;
         ++ignore_offset;
+        ++col;
         
         switch (ch) {
         case ' ':
         case '\t':
+            continue;
         case '\n':
+            col = 1;
+            ++line;
             continue;
         case '.':
             return true;
@@ -72,13 +87,13 @@ bool tokenizer::_dot_ahead(int &ignore_offset, int &length) const
     }
 }
 
-token tokenizer::_look_token(int& length) const
+token tokenizer::_look_token(int& length, long &line, long &col) const
 {
     length = 1;
     int ignore_offset = 0;
     auto cur_state = _state::start;
 
-    for (; length <= _remaining.size() + 1; ++length) {
+    for (; length <= _remaining.size() + 1; ++length, ++col) {
         const auto &ch = length <= _remaining.size()?
             _remaining[length - 1] :
             '\0';
@@ -93,6 +108,8 @@ token tokenizer::_look_token(int& length) const
                 ++ignore_offset;
                 continue;
             case '\n':
+                col = 1;
+                ++line;
                 switch (_previous_token.type) {
                 case token::t::start_of_input:
                 case token::t::curly_open:
@@ -113,7 +130,7 @@ token tokenizer::_look_token(int& length) const
                         ++ignore_offset;
                         continue;
                     default:
-                        if (_dot_ahead(ignore_offset, length)) {
+                        if (_dot_ahead(ignore_offset, length, line, col)) {
                             cur_state = _state::merge_lines;
                             continue;
                         }
