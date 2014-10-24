@@ -14,7 +14,6 @@ add_custom_command(
     COMMAND lemon -e -P lemon_parser.y
     COMMENT "Generating parser" VERBATIM)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(rubberbandcore_sources
     block.cpp
     object.cpp

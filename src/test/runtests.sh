@@ -36,6 +36,8 @@ then
     CXX_FLAGS="-g -O0"
 fi
 
+CXX_FLAGS="-std=c++11 $CXX_FLAGS"
+
 if [ -z $RUBBERBAND_SRC ]
 then
     RUBBERBAND_SRC=$PWD/../core
