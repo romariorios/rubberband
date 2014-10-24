@@ -1,0 +1,32 @@
+Rubberband: a simple, flexible programming language
+
+This is still an early version. If you wanna try it anyway, here's what you
+need:
+ - CMake (2.8 or newer)
+ - Make
+ - g++ and gcc (4.8 or newer*, because of many c++11 features in use)
+   or
+ - clang (3.3 or newer**)
+ 
+ *  Theoretically, gcc 4.7 should work, but it failed to build when I tried, so
+    the newer, the better
+ ** I think clang 3.2 or 3.1 might both compile successfully, but I haven't
+    tested it
+
+Compiling and installing the rbbs executable:
+ - Compiling without installing (inside the src subdir):
+       cmake . && make
+   The rbbs executable will be found at the rbbs subdir and then you can just
+   use it, passing the .rbb script as an argument (there's one example at the
+   rbbs source dir)
+ - Compiling and installing:
+       cmake . -DCMAKE_INSTALL_PREFIX=<prefix> && make install
+
+Running the tests:
+ - The runtests.sh bash script uses the following environment variables:
+   CXX: The c++ compiler
+   CXX_FLAGS (default: "-g -O0" when CXX is either g++ or clang++): Flags passed to the compiler 
+   THREADS (default: 1): Number of threads of the compilation process
+   TESTS (default: all): Tests which will be run
+   RUBBERBAND_SRC(default: $PWD/../core): Directory of rubberband's core library source code
+   
