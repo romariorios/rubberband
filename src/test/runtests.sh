@@ -31,7 +31,7 @@ then
     THREADS=1
 fi
 
-if [ -z $CXX_FLAGS ] && ([ $CXX = "g++" ] || [ $CXX = "clang++" ])
+if [ -z "$CXX_FLAGS" ] && ([ $CXX = "g++" ] || [ $CXX = "clang++" ])
 then
     CXX_FLAGS="-g -O0"
 fi
@@ -57,7 +57,7 @@ cd build &&
     cmake $RUBBERBAND_SRC\
         -DCMAKE_INSTALL_PREFIX=../inst\
         -DCMAKE_CXX_COMPILER=$CXX\
-        -DCMAKE_CXX_FLAGS=$CXX_FLAGS &&
+        -DCMAKE_CXX_FLAGS="$CXX_FLAGS" &&
     make -j$THREADS install &&
 cd .. &&
 
