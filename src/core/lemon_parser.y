@@ -23,7 +23,7 @@
 
 %extra_argument { literal::block **result_block }
 
-%syntax_error { throw syntax_error{}; }
+%syntax_error { throw syntax_error{*yyminor.yy0}; }
 
 %type start {literal::block *}
 %type block_body {literal::block *}
