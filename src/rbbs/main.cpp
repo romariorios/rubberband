@@ -45,11 +45,6 @@ int main(int argc, char **argv)
         LemonCParserTrace(stdout, " -- ");
 
     auto result = parser{program}.parse();
-    if (result << symbol("error") == symbol("syntax")) {
-        puts(result.to_string().c_str());
-        return 1;
-    }
-
     if (debug_mode)
         puts(result.to_string().c_str());
 
