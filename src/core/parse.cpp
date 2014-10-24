@@ -104,13 +104,20 @@ parser::parser(const std::string &code) :
 object parser::parse()
 {
     lemon_parser p;
+    token tok = _tokenizer.next();
 
-    for (
-        auto tok = _tokenizer.next();
-        tok.type != token::t::end_of_input;
-        tok = _tokenizer.next()
-    ) {
-        p.parse(tok);
+    try {
+        for (
+            ;
+            tok.type != token::t::end_of_input;
+            tok = _tokenizer.next()
+        ) {
+            p.parse(tok);
+        }
+    } catch (syntax_error e) {
+        return table(
+            {symbol("error"), symbol("line"), symbol("column")},
+            {symbol("syntax"), number(tok.line), number(tok.column)});
     }
 
     p.parse(token::t::end_of_input);

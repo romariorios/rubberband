@@ -28,6 +28,11 @@
 namespace rbb
 {
 
+class syntax_error : public std::exception
+{
+    inline const char *what() const noexcept { return "Syntax error"; }
+};
+
 class parser
 {
 public:

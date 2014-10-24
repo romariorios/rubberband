@@ -2,6 +2,7 @@
 {
     #include "block.hpp"
     #include "object.hpp"
+    #include "parse.hpp"
     #include "tokenizer.hpp"
 
     #include <cassert>
@@ -21,6 +22,8 @@
 %token_destructor { delete $$; }
 
 %extra_argument { literal::block **result_block }
+
+%syntax_error { throw syntax_error{}; }
 
 %type start {literal::block *}
 %type block_body {literal::block *}
