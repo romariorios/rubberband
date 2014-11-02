@@ -48,13 +48,10 @@ static object create_data_object(shared_data_t *data, send_msg_function send_msg
 }
 
 // object: The base for everything
-SEND_MSG(noop)
-{
-    return empty();
-}
+SEND_MSG(empty);
 
 object::object() :
-    __send_msg(noop_send_msg)
+    __send_msg(empty_send_msg)
 {}
 
 object::object(const object &other)
@@ -174,11 +171,7 @@ SEND_MSG(empty)
 
 object rbb::empty()
 {
-    object emp;
-    emp.__value.type = value_t::empty_t;
-    emp.__send_msg = empty_send_msg;
-
-    return emp;
+    return object{};
 }
 
 // number: Numeric object

@@ -40,7 +40,7 @@ struct value_t
         boolean_t  = 0x14,
         symbol_t   = 0x15,
         data_t     = 0x20
-    } type = value_t::no_data_t;
+    } type = value_t::empty_t;
 
     union
     {
@@ -69,7 +69,7 @@ public:
     inline bool operator!=(const object &other) const { return !(other == *this); }
 
     object operator<<(const object &msg); // send_msg
-    
+
     std::string to_string() const;
 
     value_t __value;
