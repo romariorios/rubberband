@@ -91,7 +91,7 @@ TESTS_INIT()
                 }
             }~
             ~loop()
-            
+
             !~fibnums 2
         }
     )", table({}, {}), number(43), number(433494437))
@@ -116,12 +116,36 @@ TESTS_INIT()
             ~fibnums|0, ~fibnums 1
             ~fibnums|1, ~fibnums 2
             ~fibnums|2, ~fibnums 0 + (~fibnums 1)
-    
+
             ~:n -> ~n - 1
         }
 
         !~fibnums 2
     )", table({}, {}), number(43), number(433494437))
+    TEST_PROGRAM(R"(
+        ~:v -> 3|[]
+        ~v|0, 10
+        ~v|1, 20
+        ~v|2, 30
+
+        !~v 0
+    )", table({}, {}), empty(), number(10))
+    TEST_PROGRAM(R"(
+        ~:v -> 3|[]
+        ~v|0, 10
+        ~v|1, 20
+        ~v|2, 30
+
+        !~v 1
+    )", table({}, {}), empty(), number(20))
+    TEST_PROGRAM(R"(
+        ~:v -> 3|[]
+        ~v|0, 10
+        ~v|1, 20
+        ~v|2, 30
+
+        !~v 2
+    )", table({}, {}), empty(), number(30))
 
     TEST_PARSING("{}:[]; :a -> 10", "{ {  } :[]; :[a -> 10] }")
 TESTS_END()

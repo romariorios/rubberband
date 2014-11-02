@@ -24,7 +24,43 @@ bool cmp_array(rbb::object &l1, rbb::object &l2)
     return l1_eq_l2;
 }
 
+#define TEST_SIZE(__size)\
+auto size = arr << rbb::symbol("*");\
+TEST_CONDITION(\
+    size == rbb::number(__size),\
+    printf(\
+        "The array %s wasn't properly allocated\n  Expected size: %ld; actual size: %s\n",\
+        arr.to_string().c_str(),\
+        __size,\
+        size.to_string().c_str()))
+
+#define TEST_INDEX_ELEMENT(__index, __expected)\
+auto result = arr << rbb::number(__index);\
+TEST_CONDITION(\
+    result == (__expected),\
+    printf(\
+        "The array %s wasn't properly allocated\n  The element %ld was expected to be %s, but it was %s\n",\
+        arr.to_string().c_str(),\
+        __index,\
+        (__expected).to_string().c_str(),\
+        result.to_string().c_str()))
+
 TESTS_INIT()
+    {
+        auto arr = rbb::number(3) << rbb::array({});
+        arr << rbb::array({rbb::number(0), rbb::number(10)});
+
+        TEST_SIZE(3)
+        TEST_INDEX_ELEMENT(0, rbb::number(10))
+    }
+
+    {
+        auto arr = rbb::number(2) << rbb::array({rbb::number(1), rbb::number(2), rbb::number(3)});
+
+        TEST_SIZE(2)
+        TEST_INDEX_ELEMENT(2, rbb::empty())
+    }
+
     auto l = rbb::array({rbb::number(1), rbb::number(4), rbb::number(9)});
 
     TEST_CONDITION(
