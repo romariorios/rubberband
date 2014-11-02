@@ -37,11 +37,11 @@ token tokenizer::look_next() const
 {
     int l; // unused
     long li, col;
-    
+
     auto tok = _look_token(l, li, col);
     tok.line = _cur_line;
     tok.column = _cur_col;
-    
+
     return tok;
 }
 
@@ -68,7 +68,7 @@ bool tokenizer::_dot_ahead(int &ignore_offset, int &length, long &line, long &co
         ++length;
         ++ignore_offset;
         ++col;
-        
+
         switch (ch) {
         case ' ':
         case '\t':
@@ -140,7 +140,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                             cur_state = _state::merge_lines;
                             continue;
                         }
-                        
+
                         return token::t::stm_sep;
                     }
                 }
@@ -173,7 +173,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case ';':
                 if (_previous_token.type != token::t::stm_sep)
                     return token{token::t::stm_sep};
-                
+
                 ++ignore_offset;
                 continue;
             case '$':
@@ -213,7 +213,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                     _previous_token.type == token::t::number_f
                 )
                     return token::symbol("-");
-                
+
                 cur_state = _state::arrow_or_negative_number;
                 continue;
             case '\0':
@@ -234,13 +234,13 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                     length = _remaining.size();
                     return token::t::invalid;
                 }
-                
+
                 continue;
             }
         case _state::comment:
             if (ch != '\n')
                 continue;
-            
+
             --length;
             cur_state = _state::start;
         case _state::merge_lines:
@@ -263,7 +263,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 cur_state = _state::number_integer_part;
                 continue;
             }
-            
+
             --length;
             return token::symbol("-");
         case _state::number_integer_part:
@@ -297,19 +297,19 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case '=':
                 return token::symbol(">=");
             }
-            
+
             --length;
             return token::symbol(">");
         case _state::lt_char:
             if (ch == '=')
                 return token::symbol("<=");
-            
+
             --length;
             return token::symbol("<");
         case _state::eq_symbol:
             if (ch == '=')
                 return token::symbol("==");
-            
+
             --length;
             return token::symbol("=");
         case _state::slash_char:
@@ -319,13 +319,13 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case '\\':
                 return token::symbol("/\\");
             }
-            
+
             --length;
             return token::symbol("/");
         case _state::inverted_slash_char:
             if (ch == '/')
                 return token::symbol("\\/");
-            
+
             --length;
             return token::symbol("\\");
         case _state::alphanumeric_symbol:
@@ -336,7 +336,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 ch == '_'
             )) {
                 --length;
-                
+
                 return token::symbol(
                     _remaining.substr(ignore_offset, length - ignore_offset));
             }
