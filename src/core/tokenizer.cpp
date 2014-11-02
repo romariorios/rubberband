@@ -248,6 +248,8 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case ' ':
             case '\t':
             case '\n':
+                col = 1;
+                ++line;
                 continue;
             default:
                 --length;
