@@ -229,8 +229,27 @@ NUM_OPERATION(sub, -, number)
 NUM_OPERATION(mul, *, number)
 NUM_OPERATION(div, /, number)
 
+SEND_MSG(array);
+
+static object create_array_object(array_data *d)
+{
+    return create_data_object(d, array_send_msg);
+}
+
 SEND_MSG(number)
 {
+    if (msg.__value.type == value_t::value_t::data_t) {
+        auto d = dynamic_cast<array_data *>(msg.__value.data);
+        if (!d)
+            return empty();
+
+        auto new_d = new array_data{number_to_double(*thisptr)};
+        for (auto i = 0; i < d->size; ++i)
+            new_d->arr[i] = d->arr[i];
+
+        return create_array_object(new_d);
+    }
+
     if (msg.__value.type != value_t::symbol_t)
         return empty();
 
@@ -457,11 +476,6 @@ SEND_MSG(data_comparison_ne) { return data_comparison_send_msg(thisptr, msg, fal
 // array: Array of objects
 SEND_MSG(array);
 
-static object create_array_object(array_data *d)
-{
-    return create_data_object(d, array_send_msg);
-}
-
 SEND_MSG(array_concatenation)
 {
     if (msg.__value.type != value_t::data_t)
@@ -646,7 +660,7 @@ SEND_MSG(table)
             static_cast<table_data *>(msg.__value.data);
         if (!msg_d)
             return empty();
-        
+
         for (auto msg_pair : msg_d->objtree) {
             d->objtree[msg_pair.first] = msg_pair.second;
         }
