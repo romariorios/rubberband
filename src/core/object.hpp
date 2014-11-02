@@ -44,7 +44,7 @@ struct value_t
 
     union
     {
-        long integer;
+        long long integer;
         double floating;
         bool boolean;
         symbol_node *symbol;

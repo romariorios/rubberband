@@ -185,7 +185,7 @@ double rbb::number_to_double(const object &num)
 }
 
 static object num_operation(const object &thisobj, const object &msg,
-                            object (*int_operation)(long, long),
+                            object (*int_operation)(long long, long long),
                             object (*float_operation)(double, double))
 {
     object obj = static_cast<object_data *>(thisobj.__value.data)->obj;
@@ -206,7 +206,7 @@ static object num_operation(const object &thisobj, const object &msg,
 }
 
 #define NUM_OPERATION(operation, symbol, ret_obj)\
-object num_int_operation_##operation(long a, long b)\
+object num_int_operation_##operation(long long a, long long b)\
 { return ret_obj(a symbol b); }\
 object num_float_operation_##operation(double a, double b)\
 { return ret_obj(a symbol b); }\
