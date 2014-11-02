@@ -130,8 +130,10 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                     const auto next_tok = tok.look_next();
 
                     switch (next_tok.type) {
-                    case token::t::exclamation:
+                    case token::t::bracket_close:
                     case token::t::curly_close:
+                    case token::t::parenthesis_close:
+                    case token::t::exclamation:
                     case token::t::end_of_input:
                         ++ignore_offset;
                         continue;
