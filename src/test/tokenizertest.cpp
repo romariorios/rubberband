@@ -334,4 +334,32 @@ TESTS_INIT()
 
         TEST_TOKENIZATION
     }
+
+    {
+        tokenizer tok{R"(
+            ~fun:[
+                stuff -> 10,
+                more_stuff -> 20
+            ]()
+        )"};
+        std::vector<token> expected{
+            token::t::tilde,
+            token::symbol("fun"),
+            token::t::colon,
+            token::t::bracket_open,
+            token::symbol("stuff"),
+            token::t::arrow,
+            token::number(10),
+            token::t::comma,
+            token::symbol("more_stuff"),
+            token::t::arrow,
+            token::number(20),
+            token::t::bracket_close,
+            token::t::parenthesis_open,
+            token::t::parenthesis_close
+        };
+        auto tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
 TESTS_END()
