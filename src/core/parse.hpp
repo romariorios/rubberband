@@ -35,11 +35,11 @@ public:
     inline const char *what() const noexcept
     {
         return ("Syntax error at line " + std::to_string(_tok.line) +
-            ", column " + std::to_string(_tok.line)).c_str();
+            ", column " + std::to_string(_tok.column)).c_str();
     }
-    
+
     inline const token &t() const { return _tok; }
-    
+
 private:
     token _tok;
 };
