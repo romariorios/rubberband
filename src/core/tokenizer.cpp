@@ -112,9 +112,15 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 ++line;
                 switch (_previous_token.type) {
                 case token::t::start_of_input:
+                case token::t::bracket_open:
                 case token::t::curly_open:
+                case token::t::parenthesis_open:
+                case token::t::arrow:
+                case token::t::comma:
                 case token::t::exclamation:
                 case token::t::stm_sep:
+                case token::t::bar:
+                case token::t::colon:
                     ++ignore_offset;
                     continue;
                 default:
