@@ -37,9 +37,11 @@
 %type array {literal::array *}
 %type array_body {literal::array *}
 %type array_elements {literal::array *}
+%type maybe_empty_a {literal::array *}
 %type table {literal::table *}
 %type table_body {literal::table *}
 %type table_entries {literal::table *}
+%type maybe_empty_t {literal::table *}
 %type table_entry {__table_entry}
 %type table_index {block_statement *}
 %type block {literal::block *}
@@ -101,9 +103,8 @@ literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR array_body(arr_a). { arr = arr_a; }
-array(arr)          ::= BAR stm BAR array_body(arr_a). { arr = arr_a; }
 array_body(arr)     ::= array_elements(arr_a). { arr = arr_a; }
-array_body(arr)     ::= BRACKET_OPEN array_elements(arr_a) BRACKET_CLOSE. { arr = arr_a; }
+array_body(arr)     ::= BRACKET_OPEN maybe_empty_a(arr_a) BRACKET_CLOSE. { arr = arr_a; }
 array_elements(arr) ::= stm(e) COMMA array_elements(arr_a).
 {
     arr_a->add_element_ptr(e);
@@ -114,10 +115,11 @@ array_elements(arr) ::= stm(e).
     arr = new literal::array;
     arr->add_element_ptr(e);
 }
-array_elements(arr) ::= . { arr = new literal::array; }
+maybe_empty_a(arr)    ::= . { arr = new literal::array; }
+maybe_empty_a(arr)    ::= array_elements(arr_a). { arr = arr_a; }
 table(t)            ::= COLON table_body(t_body). { t = t_body; }
 table_body(t)       ::= table_entries(entries). { t = entries; }
-table_body(t)       ::= BRACKET_OPEN table_entries(entries) BRACKET_CLOSE. { t = entries; }
+table_body(t)       ::= BRACKET_OPEN maybe_empty_t(entries) BRACKET_CLOSE. { t = entries; }
 table_entries(t)    ::= table_entries(t_a) COMMA table_entry(entry).
 {
     t_a->add_symbol_ptr(entry.index);
@@ -130,7 +132,8 @@ table_entries(t)    ::= table_entry(entry).
     t->add_symbol_ptr(entry.index);
     t->add_object_ptr(entry.object);
 }
-table_entries(t)    ::= . { t = new literal::table; }
+maybe_empty_t(t)    ::= . { t = new literal::table; }
+maybe_empty_t(t)    ::= table_entries(t_a). { t = t_a; }
 table_entry(entry)  ::= stm(i) ARROW stm(s).
 {
     entry.index = i;
