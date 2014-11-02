@@ -41,7 +41,7 @@ void print_token(const token &tok)
         cout << "symbol (" << *tok.lexem.str << ")";
         break;
     }
-    
+
     cout << "; ";
 }
 
@@ -52,12 +52,12 @@ void print_tokenization(
     cout
     << "Unexpected tokenization (expected length: " << expected.size()
     << ", actual length: " << actual.size() << ")" << endl;
-    
+
     cout << "Expected tokens:" << endl << "  ";
     for (auto &tok : expected)
         print_token(tok);
     cout << endl << endl;
-    
+
     cout << "Actual tokens:" << endl << "  ";
     for (auto &tok : actual)
         print_token(tok);
@@ -115,7 +115,7 @@ TESTS_INIT()
             tok.look_next() == expected[3],
             puts("Next token by next() isn't }"))
     }
-    
+
     {
         tokenizer t{"!10"};
         std::vector<token> expected {
@@ -123,7 +123,7 @@ TESTS_INIT()
             token::number(10)
         };
         auto tok_all = t.all();
-        
+
         TEST_TOKENIZATION
     }
 
@@ -184,7 +184,7 @@ TESTS_INIT()
 
         TEST_TOKENIZATION
     }
-    
+
     {
         tokenizer tok{R"(
             # This is a comment
@@ -218,9 +218,9 @@ TESTS_INIT()
             token::t::curly_close
         };
         auto tok_all = tok.look_all();
-        
+
         TEST_TOKENIZATION
-        
+
         tokenizer tok2{R"(
             # This is a comment
             { ~:x -> $; ~:y -> ~x +.
@@ -248,7 +248,7 @@ TESTS_INIT()
 
         TEST_TOKENIZATION
     }
-    
+
     {
         tokenizer tok{"!:[a -> 10, b -> 20] b"};
         std::vector<token> expected {
@@ -266,10 +266,10 @@ TESTS_INIT()
             token::symbol("b")
         };
         auto tok_all = tok.look_all();
-        
+
         TEST_TOKENIZATION
     }
-    
+
     {
         tokenizer tok{"{}:[]; :a -> 10"};
         std::vector<token> expected {
@@ -285,7 +285,53 @@ TESTS_INIT()
             token::number(10)
         };
         auto tok_all = tok.look_all();
-        
+
+        TEST_TOKENIZATION
+    }
+
+    {
+        tokenizer tok{R"(
+            ~uncurry:
+                args -> (~argc)|[],
+                i -> 1,
+                argc -> ~argc,
+                context -> ~context,
+                fun -> $
+        )"};
+        std::vector<token> expected {
+            token::t::tilde,
+            token::symbol("uncurry"),
+            token::t::colon,
+            token::symbol("args"),
+            token::t::arrow,
+            token::t::parenthesis_open,
+            token::t::tilde,
+            token::symbol("argc"),
+            token::t::parenthesis_close,
+            token::t::bar,
+            token::t::bracket_open,
+            token::t::bracket_close,
+            token::t::comma,
+            token::symbol("i"),
+            token::t::arrow,
+            token::number(1),
+            token::t::comma,
+            token::symbol("argc"),
+            token::t::arrow,
+            token::t::tilde,
+            token::symbol("argc"),
+            token::t::comma,
+            token::symbol("context"),
+            token::t::arrow,
+            token::t::tilde,
+            token::symbol("context"),
+            token::t::comma,
+            token::symbol("fun"),
+            token::t::arrow,
+            token::t::dollar
+        };
+        auto tok_all = tok.look_all();
+
         TEST_TOKENIZATION
     }
 TESTS_END()
