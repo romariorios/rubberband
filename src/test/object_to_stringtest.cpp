@@ -11,7 +11,7 @@
             std::string{expected}.c_str(), object.to_string().c_str()))
 
 TESTS_INIT()
-    TEST_STRINGFICATION(rbb::empty(), "[]")
+    TEST_STRINGFICATION(rbb::empty(), "()")
     TEST_STRINGFICATION(rbb::number(10), "10")
     TEST_STRINGFICATION(rbb::number(1000.12), std::to_string(1000.12))
     TEST_STRINGFICATION(rbb::symbol("valhalla"), "valhalla")
