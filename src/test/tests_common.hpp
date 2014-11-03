@@ -3,7 +3,7 @@
 
 #include <cstdio>
 
-#include <object.hpp>
+#include <rbb/object.hpp>
 
 #define TESTS_INIT()\
 int main() {\

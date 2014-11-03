@@ -1,6 +1,6 @@
 #include "tests_common.hpp"
-#include <block.hpp>
-#include <error.hpp>
+#include <rbb/block.hpp>
+#include <rbb/error.hpp>
 
 TESTS_INIT()
 

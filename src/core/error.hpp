@@ -18,8 +18,8 @@
 #ifndef ERROR_HPP
 #define ERROR_HPP
 
-#include <object.hpp>
-#include <tokenizer.hpp>
+#include "object.hpp"
+#include "tokenizer.hpp"
 
 #include <stdexcept>
 

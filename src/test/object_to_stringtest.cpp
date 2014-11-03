@@ -1,7 +1,6 @@
 #include "tests_common.hpp"
 
-#include <block.hpp>
-#include <parse.hpp>
+#include <rbb/block.hpp>
 
 #define TEST_STRINGFICATION(object, expected)\
     TEST_CONDITION(\

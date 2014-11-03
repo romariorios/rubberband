@@ -1,6 +1,6 @@
 #include "tests_common.hpp"
 
-#include <error.hpp>
+#include <rbb/error.hpp>
 #include <vector>
 
 bool array_contains(rbb::object l, rbb::object obj)

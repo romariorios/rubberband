@@ -36,4 +36,4 @@ add_library(rubberbandcore SHARED ${rubberbandcore_sources})
 
 install(TARGETS rubberbandcore
     LIBRARY DESTINATION lib)
-install(FILES ${rubberbandcore_headers} DESTINATION include)
+install(FILES ${rubberbandcore_headers} DESTINATION include/rbb)

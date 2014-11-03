@@ -1,6 +1,6 @@
 #include "tests_common.hpp"
 
-#include <block.hpp>
+#include <rbb/block.hpp>
 
 TESTS_INIT()
     rbb::literal::block bl;
@@ -97,10 +97,10 @@ TESTS_INIT()
 
     auto &c_x_eq_arg_pl_x = bll6.add_statement();
     c_x_eq_arg_pl_x.add_expr<rbb::literal::context>();
-    
+
     auto &t6 = c_x_eq_arg_pl_x.add_expr<rbb::literal::table>();
     t6.add_symbol<rbb::literal::symbol>("x");
-    
+
     auto &arg_pl_x = t6.add_object<rbb::block_statement>();
     arg_pl_x.add_expr<rbb::literal::message>();
     arg_pl_x.add_expr<rbb::literal::symbol>("+");
@@ -148,11 +148,11 @@ TESTS_INIT()
 
     auto &stm_self_is_self_ref = bll7.add_statement();
     stm_self_is_self_ref.add_expr<rbb::literal::context>();
-    
+
     auto &self_is_self_ref_table = stm_self_is_self_ref.add_expr<rbb::literal::table>();
     self_is_self_ref_table.add_symbol<rbb::literal::symbol>("self");
     self_is_self_ref_table.add_object<rbb::literal::self_ref>();
-    
+
     auto &stm_if_i_lt_1000_then_increment = bll7.add_statement();
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::context>();
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("i");
@@ -160,11 +160,11 @@ TESTS_INIT()
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::number>(1000);
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("?");
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::context>();
-    
+
     auto &bll_increment = stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::block>();
     auto &stm_increment = bll_increment.add_statement();
     stm_increment.add_expr<rbb::literal::context>();
-    
+
     auto &tbl_increment = stm_increment.add_expr<rbb::literal::table>();
     tbl_increment.add_symbol<rbb::literal::symbol>("i");
     auto &increment_expr = tbl_increment.add_object<rbb::block_statement>();
@@ -172,17 +172,17 @@ TESTS_INIT()
     increment_expr.add_expr<rbb::literal::symbol>("i");
     increment_expr.add_expr<rbb::literal::symbol>("+");
     increment_expr.add_expr<rbb::literal::number>(1);
-    
+
     auto &stm_self_call = bll_increment.add_statement();
     stm_self_call.add_expr<rbb::literal::context>();
     stm_self_call.add_expr<rbb::literal::symbol>("self");
     stm_self_call.add_expr<rbb::literal::context>();
     stm_self_call.add_expr<rbb::literal::empty>();
-    
+
     auto &expr_bll7_ans = bll7.return_statement();
     expr_bll7_ans.add_expr<rbb::literal::context>();
     expr_bll7_ans.add_expr<rbb::literal::symbol>("i");
-    
+
     auto context7 = rbb::table({
         rbb::symbol("i")
     }, {

@@ -1,7 +1,7 @@
 #include "tests_common.hpp"
 
 #include <iostream>
-#include <tokenizer.hpp>
+#include <rbb/tokenizer.hpp>
 
 using namespace rbb;
 using namespace std;
@@ -71,7 +71,6 @@ TEST_CONDITION(\
 
 #define TEST_TOKENIZATION TEST_TOKENIZATION_OF(tok_all, expected)
 
-#include <tokenizer.hpp>
 #include <vector>
 
 TESTS_INIT()

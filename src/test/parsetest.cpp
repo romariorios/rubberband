@@ -1,6 +1,6 @@
 #include "tests_common.hpp"
 
-#include <parse.hpp>
+#include <rbb/parse.hpp>
 #include <string>
 
 using namespace rbb;
