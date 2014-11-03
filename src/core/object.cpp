@@ -237,6 +237,8 @@ static object create_array_object(array_data *d)
     return create_data_object(d, array_send_msg);
 }
 
+static long long get_index_from_obj(const object &);
+
 SEND_MSG(number)
 {
     if (msg.__value.type == value_t::value_t::data_t) {
@@ -244,7 +246,7 @@ SEND_MSG(number)
         if (!d)
             throw message_not_recognized_error{*thisptr, msg};
 
-        auto new_d = new array_data{number_to_double(*thisptr)};
+        auto new_d = new array_data{get_index_from_obj(*thisptr)};
         for (auto i = 0; i < d->size; ++i)
             new_d->arr[i] = d->arr[i];
 
@@ -549,12 +551,12 @@ SEND_MSG(array_slicing)
     return create_array_object(new_d);
 }
 
-static int get_index_from_obj(const object &obj)
+static long long get_index_from_obj(const object &obj)
 {
     if (!is_numeric(obj.__value))
         return -1;
 
-    int ind;
+    long long ind;
     if (obj.__value.type == value_t::floating_t)
         return obj.__value.floating;
 
