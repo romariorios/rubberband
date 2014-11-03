@@ -16,6 +16,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "block.hpp"
+#include "error.hpp"
 
 #include "block_private.hpp"
 
@@ -39,10 +40,10 @@ object block_statement::eval(literal::block* parent_block)
 {
     if (expressions.empty())
         return empty();
-    
+
     auto cur_expr = expressions.begin();
     auto cur_obj = (*cur_expr)->eval(parent_block);
-    
+
     cur_expr++;
 
     for (; cur_expr != expressions.end(); cur_expr++)
@@ -72,7 +73,7 @@ object literal::table::eval(literal::block* parent_block)
     std::vector<object> symbols;
     for (auto &sym : _symbols)
         symbols.push_back(sym->eval(parent_block));
-    
+
     std::vector<object> objects;
     for (auto &obj : _objects)
         objects.push_back(obj->eval(parent_block));
