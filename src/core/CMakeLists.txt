@@ -26,6 +26,7 @@ set(rubberbandcore_sources
 
 set(rubberbandcore_headers
     block.hpp
+    error.hpp
     object.hpp
     parse.hpp
     symbol.hpp

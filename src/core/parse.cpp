@@ -18,6 +18,7 @@
 #include "parse.hpp"
 
 #include "block.hpp"
+#include "error.hpp"
 #include "lemon_parser.h"
 
 using namespace rbb;

@@ -1,6 +1,7 @@
 %include
 {
     #include "block.hpp"
+    #include "error.hpp"
     #include "object.hpp"
     #include "parse.hpp"
     #include "tokenizer.hpp"

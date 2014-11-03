@@ -28,22 +28,6 @@
 namespace rbb
 {
 
-class syntax_error : public std::exception
-{
-public:
-    inline explicit syntax_error(const token &t) : _tok{t} {}
-    inline const char *what() const noexcept
-    {
-        return ("Syntax error at line " + std::to_string(_tok.line) +
-            ", column " + std::to_string(_tok.column)).c_str();
-    }
-
-    inline const token &t() const { return _tok; }
-
-private:
-    token _tok;
-};
-
 class parser
 {
 public:
