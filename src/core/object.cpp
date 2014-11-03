@@ -18,6 +18,7 @@
 #include "object.hpp"
 
 #include "block.hpp"
+#include "error.hpp"
 #include "object_private.hpp"
 #include "symbol.hpp"
 
@@ -164,7 +165,7 @@ SEND_MSG(empty)
     else if (msg == symbol("!="))
         cmp.__send_msg = empty_cmp_ne_send_msg;
     else
-        return empty();
+        throw message_not_recognized_error{*thisptr, msg};
 
     return cmp;
 }
@@ -241,7 +242,7 @@ SEND_MSG(number)
     if (msg.__value.type == value_t::value_t::data_t) {
         auto d = dynamic_cast<array_data *>(msg.__value.data);
         if (!d)
-            return empty();
+            throw message_not_recognized_error{*thisptr, msg};
 
         auto new_d = new array_data{number_to_double(*thisptr)};
         for (auto i = 0; i < d->size; ++i)
@@ -251,7 +252,7 @@ SEND_MSG(number)
     }
 
     if (msg.__value.type != value_t::symbol_t)
-        return empty();
+        throw message_not_recognized_error{*thisptr, msg};
 
     object comp = create_data_object(new object_data(*thisptr));
 
@@ -276,7 +277,7 @@ SEND_MSG(number)
     else if (msg == symbol("/"))
         comp.__send_msg = num_op_div_send_msg;
     else
-        return empty();
+        throw message_not_recognized_error{*thisptr, msg};
 
     return comp;
 }
@@ -314,15 +315,16 @@ SEND_MSG(symbol_comp_ne) { return symbol_comp_send_msg(thisptr, msg, false); }
 SEND_MSG(symbol)
 {
     if (msg.__value.type != value_t::symbol_t)
-        return empty();
+        throw message_not_recognized_error{*thisptr, msg};
 
     object cmp_op = create_data_object(new object_data(*thisptr));
 
     if (msg.__value.symbol == symbol_node::retrieve("=="))
         cmp_op.__send_msg = symbol_comp_eq_send_msg;
-
-    if (msg.__value.symbol == symbol_node::retrieve("!="))
+    else if (msg.__value.symbol == symbol_node::retrieve("!="))
         cmp_op.__send_msg = symbol_comp_ne_send_msg;
+    else
+        throw message_not_recognized_error{*thisptr, msg};
 
     return cmp_op;
 }
@@ -362,16 +364,21 @@ public:
     object true_result;
 };
 
+static constexpr const char block_name[] = "Block";
+
 SEND_MSG(boolean_get_iffalse_block)
 {
     if (msg.__value.type != value_t::data_t)
-        return empty();
+        throw wrong_type_error<block_name>{*thisptr, msg};
 
     boolean_decision_data *d = static_cast<boolean_decision_data *>(thisptr->__value.data);
     if (!d)
         return empty();
 
     object block = msg;
+    if (!dynamic_cast<block_data *>(msg.__value.data))
+        throw wrong_type_error<block_name>{*thisptr, msg};
+
     return d->boolean_obj.__value.boolean?
         d->true_result :
         block << d->context << empty();
@@ -380,7 +387,7 @@ SEND_MSG(boolean_get_iffalse_block)
 SEND_MSG(boolean_get_iftrue_block)
 {
     if (msg.__value.type != value_t::data_t)
-        return empty();
+        throw wrong_type_error<block_name>{*thisptr, msg};
 
     boolean_decision_data *d = static_cast<boolean_decision_data *>(thisptr->__value.data);
     if (!d)
@@ -389,6 +396,9 @@ SEND_MSG(boolean_get_iftrue_block)
     boolean_decision_data *d_ret = new boolean_decision_data(d->context, d->boolean_obj);
 
     object block = msg;
+    if (!dynamic_cast<block_data *>(msg.__value.data))
+        throw wrong_type_error<block_name>{*thisptr, msg};
+
     if (d->boolean_obj.__value.boolean)
         d_ret->true_result = block << d->context << empty();
 
@@ -425,7 +435,7 @@ BOOLEAN_DO(OR, ||)
 SEND_MSG(boolean)
 {
     if (msg.__value.type != value_t::symbol_t)
-        return empty();
+        throw message_not_recognized_error{*thisptr, msg};
 
     object comp_block = create_object(value_t::no_data_t, boolean_comp_send_msg);
 
@@ -445,7 +455,7 @@ SEND_MSG(boolean)
         return create_data_object(new object_data(*thisptr), boolean_get_context_send_msg);
     }
 
-    return empty();
+    throw message_not_recognized_error{*thisptr, msg};
 }
 
 object rbb::boolean(bool val)
@@ -476,17 +486,19 @@ SEND_MSG(data_comparison_ne) { return data_comparison_send_msg(thisptr, msg, fal
 // array: Array of objects
 SEND_MSG(array);
 
+static constexpr const char array_name[] = "Array";
+
 SEND_MSG(array_concatenation)
 {
     if (msg.__value.type != value_t::data_t)
-        return empty();
+        throw wrong_type_error<array_name>{*thisptr, msg};
 
     object d_obj = static_cast<object_data *>(thisptr->__value.data)->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data);
-    array_data *msg_d = static_cast<array_data *>(msg.__value.data);
+    array_data *msg_d = dynamic_cast<array_data *>(msg.__value.data);
 
     if (!msg_d)
-        return empty();
+        throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *new_d = new array_data(d->size + msg_d->size);
 
@@ -499,27 +511,32 @@ SEND_MSG(array_concatenation)
     return create_array_object(new_d);
 }
 
-static int get_index_from_obj(const object &obj);
+static constexpr const char number_name[] = "Number";
 
 SEND_MSG(array_slicing)
 {
     if (msg.__value.type != value_t::data_t)
-        return empty();
+        throw wrong_type_error<array_name>{*thisptr, msg};
 
     object d_obj = static_cast<object_data *>(thisptr->__value.data)->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data);
-    array_data *msg_d = static_cast<array_data *>(msg.__value.data);
+    array_data *msg_d = dynamic_cast<array_data *>(msg.__value.data);
 
-    if (!msg_d || msg_d->size < 2)
-        return empty();
+    if (!msg_d)
+        throw wrong_type_error<array_name>{*thisptr, msg};
 
-    int pos = get_index_from_obj(msg_d->arr[0]);
-    int size = get_index_from_obj(msg_d->arr[1]);
+    if (msg_d->size < 2)
+        throw semantic_error{"Wrong number of arguments for array slicing", *thisptr, msg};
 
-    if (pos < 0 || size < 0)
-        return empty();
+    if (
+        !is_numeric(msg_d->arr[0].__value) ||
+        !is_numeric(msg_d->arr[1].__value)
+    )
+        throw wrong_type_error<number_name>{*thisptr, msg};
 
-    int this_len = d->size;
+    auto pos = get_index_from_obj(msg_d->arr[0]);
+    auto size = get_index_from_obj(msg_d->arr[1]);
+    auto this_len = d->size;
 
     if (pos + size > this_len)
         return empty();
@@ -561,21 +578,29 @@ SEND_MSG(array)
 
         if (msg == symbol("=="))
             symb_ret.__send_msg = data_comparison_eq_send_msg;
-        if (msg == symbol("!="))
+        else if (msg == symbol("!="))
             symb_ret.__send_msg = data_comparison_ne_send_msg;
-        if (msg == symbol("+"))
+        else if (msg == symbol("+"))
             symb_ret.__send_msg = array_concatenation_send_msg;
-        if (msg == symbol("/"))
+        else if (msg == symbol("/"))
             symb_ret.__send_msg = array_slicing_send_msg;
+        else
+            throw message_not_recognized_error{*thisptr, msg};
 
         return symb_ret;
     } else if (msg.__value.type == value_t::data_t) {
-        array_data *msg_d = static_cast<array_data *>(msg.__value.data);
-        if (!msg_d || msg_d->size < 2)
-            return empty();
+        array_data *msg_d = dynamic_cast<array_data *>(msg.__value.data);
+        if (!msg_d)
+            throw message_not_recognized_error{*thisptr, msg};
 
-        int msg_ind = get_index_from_obj(msg_d->arr[0]);
+        if (msg_d->size < 2)
+            throw semantic_error{"Wrong number of arguments for array assignment", *thisptr, msg};
 
+        auto index = msg_d->arr[0];
+        if (!is_numeric(index.__value))
+            throw wrong_type_error<number_name>{*thisptr, msg};
+
+        auto msg_ind = get_index_from_obj(index);
         if (!in_bounds(d, msg_ind))
             return empty();
 
@@ -584,10 +609,7 @@ SEND_MSG(array)
         return empty();
     }
 
-    int ind = get_index_from_obj(msg);
-    if (ind < 0)
-        return empty();
-
+    auto ind = get_index_from_obj(msg);
     if (!in_bounds(d, ind))
         return empty();
 
@@ -608,11 +630,11 @@ object rbb::array(const std::vector<object> &objects)
 // Generic object: Basically, a map from symbols to objects
 SEND_MSG(table_merge)
 {
-    if (msg.__value.type != value_t::data_t)
-        return empty();
-
-    if (!static_cast<table_data *>(msg.__value.data))
-        return empty();
+    if (
+        msg.__value.type != value_t::data_t ||
+        !dynamic_cast<table_data *>(msg.__value.data)
+    )
+        throw wrong_type_error<block_name>{*thisptr, msg};
 
     object table = rbb::table();
     table << static_cast<object_data *>(thisptr->__value.data)->obj;
@@ -657,9 +679,9 @@ SEND_MSG(table)
     } else if (msg.__value.type == value_t::data_t) {
         table_data *d = static_cast<table_data *>(thisptr->__value.data);
         table_data *msg_d =
-            static_cast<table_data *>(msg.__value.data);
+            dynamic_cast<table_data *>(msg.__value.data);
         if (!msg_d)
-            return empty();
+            throw message_not_recognized_error{*thisptr, msg};
 
         for (auto msg_pair : msg_d->objtree) {
             d->objtree[msg_pair.first] = msg_pair.second;
@@ -668,7 +690,7 @@ SEND_MSG(table)
         return *thisptr;
     }
 
-    return empty();
+    throw message_not_recognized_error{*thisptr, msg};
 }
 
 object rbb::table(
