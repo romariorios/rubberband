@@ -1,5 +1,6 @@
 #include "tests_common.hpp"
 
+#include <error.hpp>
 #include <vector>
 
 bool array_contains(rbb::object l, rbb::object obj)
@@ -62,9 +63,15 @@ TESTS_INIT()
     TEST_CONDITION(
         table << rbb::symbol("d") == rbb::empty(),
         puts("Generic object should answer empty for a non-existing field"))
+    bool thrown = false;
+    try {
+        table << rbb::number(100);
+    } catch (rbb::message_not_recognized_error) {
+        thrown = true;
+    }
     TEST_CONDITION(
-        table << rbb::number(100) == rbb::empty(),
-        puts("Generic object should answer empty for invalid field names (number 100)"))
+        thrown,
+        puts("Table should raise exception for invalid field names (number 100)"))
 
     auto fields = rbb::array({rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c")});
 

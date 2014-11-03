@@ -1,5 +1,6 @@
 #include "tests_common.hpp"
 #include <block.hpp>
+#include <error.hpp>
 
 TESTS_INIT()
 
@@ -12,7 +13,13 @@ TESTS_INIT()
     TEST_CONDITION((true_obj << equals << true_obj).__value.type == rbb::value_t::boolean_t,
                    puts("The comparison block isn't returning a boolean"))
     TEST_CONDITION(true_obj << equals << true_obj == true_obj, puts("(true == true) != true"))
-    TEST_CONDITION(true_obj << true_obj == rbb::empty(), puts("Boolean responds to a boolean message (it shouldn't)"))
+    bool thrown = false;
+    try {
+        true_obj << true_obj;
+    } catch (rbb::message_not_recognized_error) {
+        thrown = true;
+    }
+    TEST_CONDITION(thrown, puts("Boolean responds to a boolean message (it shouldn't)"))
 
     TEST_OPERATOR_EQ(true_obj, false_obj)
     TEST_OPERATOR_EQ(true_obj, rbb::empty())
