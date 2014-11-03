@@ -72,10 +72,7 @@ bool tokenizer::_dot_ahead(int &ignore_offset, int &length, long &line, long &co
         switch (ch) {
         case ' ':
         case '\t':
-            continue;
         case '\n':
-            col = 1;
-            ++line;
             continue;
         case '.':
             return true;
@@ -98,6 +95,11 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             _remaining[length - 1] :
             '\0';
 
+        if (ch == '\n') {
+            col = 0;
+            ++line;
+        }
+
         // Start state machine
         switch (cur_state) {
         case _state::start:
@@ -108,8 +110,6 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 ++ignore_offset;
                 continue;
             case '\n':
-                col = 1;
-                ++line;
                 switch (_previous_token.type) {
                 case token::t::start_of_input:
                 case token::t::bracket_open:
@@ -247,11 +247,9 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             cur_state = _state::start;
         case _state::merge_lines:
             switch (ch) {
+            case '\n':
             case ' ':
             case '\t':
-            case '\n':
-                col = 1;
-                ++line;
                 continue;
             default:
                 --length;
