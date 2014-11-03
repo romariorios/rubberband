@@ -3,23 +3,26 @@
 # ~uncurry|[x, y]{ !$x + $y }~
 ~:uncurry ->
 {
-    ~:args -> $, block_args -> :[]
+    ~:args -> $
     !{
         ~:block -> $
         !{
-            ~:context -> $, i -> 0
-            ~:loop -> {
-                ~block_args:(~args(~i)) -> $
+            ~:context -> $
+            !{
+                ~:first_arg -> $
+                ~:loop -> {
+                    ~block_args:(~args(~i)) -> $
 
-                !~i < (~args* - 1)?~ {
-                    ~:i -> ~i + 1
-                    !~loop~
-                } {
-                    !~block(~context)(~block_args)
+                    !~i < (~args* - 1)?~ {
+                        ~:i -> ~i + 1
+                        !~loop~
+                    } {
+                        !~block(~context)(~block_args)
+                    }
                 }
-            }
 
-            !~loop~
+                !~loop(~ + :i -> 1, block_args -> :[(~args 0) -> ~first_arg])
+            }~
         }~
     }~
 }:[]
@@ -27,7 +30,20 @@
 # While
 # ~while~ { !~i < 20 } { ~print(~i) }
 ~:while -> ~uncurry|[context, condition, block] {
-    $condition($context)()?~ {
-        // TODO
+    ~$
+    ~:loop -> {
+        ~condition(~context)()?~ {
+            ~block(~context)()
+            ~loop~()
+        }
     }
+    ~loop(~ + :[])()
 }:[]
+
+~:i -> 0
+~while~ { ~:i -> ~i + 1 !~i < 5 } {
+    ~:j -> 0
+    ~while~ { ~:j -> ~j + 1 !~j < 5 } { ~print|~i, ~j }
+    ~:k -> 0
+    ~while~ { ~:k -> ~k + 2 !~k < 7 } { ~print|~i, ~k }
+}

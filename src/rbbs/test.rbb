@@ -10,7 +10,7 @@
         }
     }
 
-    ~loop(~ + :loop -> ~loop)()
+    ~loop(~ + :[])()
 }:[]
 
 ~while|~:[cur_n -> 3], { !~cur_n <= 91 }, {
@@ -18,7 +18,7 @@
     ~:n -> ~cur_n + 1
 
     ~while|~, { !~n > 2 }, {
-        ~:n -> ~n - 1 
+        ~:n -> ~n - 1
 
         ~fibnums|0, ~fibnums 1
         ~fibnums|1, ~fibnums 2
@@ -26,6 +26,6 @@
     }
 
     ~print(~fibnums 2)
-    ~:cur_n -> ~cur_n + 1 
+    ~:cur_n -> ~cur_n + 1
 }
 
