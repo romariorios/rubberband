@@ -678,6 +678,8 @@ SEND_MSG(table)
         }
 
         return answer;
+
+    // Attribution (merging)
     } else if (msg.__value.type == value_t::data_t) {
         table_data *d = static_cast<table_data *>(thisptr->__value.data);
         table_data *msg_d =
@@ -686,6 +688,11 @@ SEND_MSG(table)
             throw message_not_recognized_error{*thisptr, msg};
 
         for (auto msg_pair : msg_d->objtree) {
+            if (msg_pair.second == object{}) {
+                d->objtree.erase(msg_pair.first);
+                continue;
+            }
+
             d->objtree[msg_pair.first] = msg_pair.second;
         }
 
