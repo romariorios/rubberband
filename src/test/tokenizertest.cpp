@@ -29,6 +29,7 @@ void print_token(const token &tok)
     CASE_TOKEN(dollar)
     CASE_TOKEN(tilde)
     CASE_TOKEN(at)
+    CASE_TOKEN(percent)
     CASE_TOKEN(bar)
     CASE_TOKEN(colon)
     case token::t::number:
@@ -356,6 +357,39 @@ TESTS_INIT()
             token::t::bracket_close,
             token::t::parenthesis_open,
             token::t::parenthesis_close
+        };
+        auto tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
+
+    {
+        tokenizer tok{R"(
+            %^~math
+            ~:good_stuff -> :[]
+            %^(~good_stuff)external
+        )"};
+        vector<token> expected{
+            token::t::percent,
+            token::symbol("^"),
+            token::t::tilde,
+            token::symbol("math"),
+            token::t::stm_sep,
+            token::t::tilde,
+            token::t::colon,
+            token::symbol("good_stuff"),
+            token::t::arrow,
+            token::t::colon,
+            token::t::bracket_open,
+            token::t::bracket_close,
+            token::t::stm_sep,
+            token::t::percent,
+            token::symbol("^"),
+            token::t::parenthesis_open,
+            token::t::tilde,
+            token::symbol("good_stuff"),
+            token::t::parenthesis_close,
+            token::symbol("external")
         };
         auto tok_all = tok.look_all();
 

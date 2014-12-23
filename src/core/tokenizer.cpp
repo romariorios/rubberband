@@ -184,6 +184,8 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 return token::t::tilde;
             case '@':
                 return token::t::at;
+            case '%':
+                return token::t::percent;
             case '|':
                 return token::t::bar;
             case ':':
@@ -192,6 +194,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case '?':
             case '+':
             case '*':
+            case '^':
                 return token::symbol(std::string{ch});
             case '>':
                 cur_state = _state::gt_char;

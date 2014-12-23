@@ -55,6 +55,7 @@ struct token
         dollar,
         tilde,
         at,
+        percent,
 
         // Triggers
         bar,
