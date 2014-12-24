@@ -138,12 +138,12 @@ void literal::block::set_return_statement_ptr(block_statement *stm)
     _p->return_statement.reset(stm);
 }
 
-void literal::block::set_block_context(const object& context)
+void literal::block::set_context(const object& context)
 {
     _context = context;
 }
 
-void literal::block::set_block_message(const object& msg)
+void literal::block::set_message(const object& msg)
 {
     _message = msg;
 }

@@ -724,7 +724,7 @@ object rbb::table(
 SEND_MSG(block)
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data);
-    d->block_l->set_block_message(msg);
+    d->block_l->set_message(msg);
 
     return d->block_l->run();
 }
@@ -733,7 +733,7 @@ SEND_MSG(block_body)
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data);
     auto block_l = new literal::block(*d->block_l);
-    block_l->set_block_context(msg);
+    block_l->set_context(msg);
 
     return create_data_object(new block_data(block_l), block_send_msg);
 }

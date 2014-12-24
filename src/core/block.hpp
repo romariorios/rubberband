@@ -219,8 +219,8 @@ namespace literal
         block_statement &return_statement();
         void set_return_statement_ptr(block_statement *stm);
 
-        void set_block_context(const object &context);
-        void set_block_message(const object &msg);
+        void set_context(const object &context);
+        void set_message(const object &msg);
 
         object eval(block * = nullptr); // blocks don't depend on their parent block
         object run();
