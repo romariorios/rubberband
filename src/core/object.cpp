@@ -738,7 +738,11 @@ SEND_MSG(block_body)
     return create_data_object(new block_data(block_l), block_send_msg);
 }
 
-object rbb::literal::block::eval(literal::block*)
+object rbb::literal::block::eval(literal::block *parent)
 {
-    return create_data_object(new block_data(new block(*this)), block_body_send_msg);
+    auto block_l = new block{*this};
+    if (parent)
+        block_l->set_master(parent->_master);
+
+    return create_data_object(new block_data(block_l), block_body_send_msg);
 }

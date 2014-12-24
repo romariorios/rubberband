@@ -2,6 +2,8 @@
 
 #include <rbb/block.hpp>
 
+using namespace rbb;
+
 TESTS_INIT()
     rbb::literal::block bl;
 
@@ -195,4 +197,43 @@ TESTS_INIT()
     TEST_CONDITION(
         result7 == rbb::number(1000),
         printf("{ ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:[i => 10][] == %lld (should be 1000)\n", result7.__value.integer))
+
+    // { !%a } # (being % :a -> 100)
+    {
+        literal::block block_lit_;
+        block_lit_.set_master(table({symbol("a")}, {number(100)}));
+
+        auto &block_ret_ = block_lit_.return_statement();
+        block_ret_.add_expr<literal::master>();
+        block_ret_.add_expr<literal::symbol>("a");
+
+        auto block_ = block_lit_.eval();
+        auto result_ = block_ << empty() << empty();
+
+        TEST_CONDITION(
+            result_ == number(100),
+            printf("Number is %s (expected 100)\n", result_.to_string().c_str()))
+    }
+
+    // { !{ !%$ }()1 } # (being % |10, 12)
+    {
+        literal::block block_lit_;
+        block_lit_.set_master(rbb::array({number(10), number(12)}));
+
+        auto &block_ret_ = block_lit_.return_statement();
+        auto &inner_block = block_ret_.add_expr<literal::block>();
+        block_ret_.add_expr<literal::empty>();
+        block_ret_.add_expr<literal::number>(1);
+
+        auto &inner_ret = inner_block.return_statement();
+        inner_ret.add_expr<literal::master>();
+        inner_ret.add_expr<literal::message>();
+
+        auto block_ = block_lit_.eval();
+        auto result_ = block_ << empty() << empty();
+
+        TEST_CONDITION(
+            result_ == number(12),
+            printf("Number is %s (expected 12)\n", result_.to_string().c_str()))
+    }
 TESTS_END()

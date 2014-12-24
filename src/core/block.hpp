@@ -23,6 +23,8 @@
 #include <forward_list>
 #include <memory>
 
+using namespace std;
+
 namespace rbb
 {
 
@@ -183,6 +185,14 @@ namespace literal
         expr_list _objects;
     };
 
+    class master : public expr
+    {
+    public:
+        inline master() {}
+        object eval(block *parent_block);
+        inline string to_string() const { return "%"; }
+    };
+
     class self_ref : public expr
     {
     public:
@@ -221,14 +231,17 @@ namespace literal
 
         void set_context(const object &context);
         void set_message(const object &msg);
+        void set_master(const object &master);
 
-        object eval(block * = nullptr); // blocks don't depend on their parent block
+        object eval(block *parent = nullptr); // blocks depend on their parent block for the
+                                              // master object
         object run();
         std::string to_string() const;
 
         std::shared_ptr<block_private> _p;
         object _context;
         object _message;
+        object _master;
     };
 }
 
