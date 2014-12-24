@@ -120,27 +120,27 @@ TESTS_INIT()
 
     TEST_CONDITION(
         result6_1 == rbb::number(20),
-        printf("{ ~:x => $ + (~x) !~x }:[ x => 13 ] 7  ==  %ld (should be 20)\n", result6_1.__value.integer))
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 13 ] 7  ==  %lld (should be 20)\n", result6_1.__value.integer))
 
     rbb::object result6_2 = block_instance6 << rbb::number(7);
 
     TEST_CONDITION(
         result6_2 == rbb::number(27),
-        printf("{ ~:x => $ + (~x) !~x }:[ x => 20 ] 7  ==  %ld (should be 27)\n", result6_2.__value.integer))
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 20 ] 7  ==  %lld (should be 27)\n", result6_2.__value.integer))
 
     auto block_instance6_1 = block6 << rbb::table({ rbb::symbol("x") }, { rbb::number(10) });
     rbb::object result6_1_1 = block_instance6_1 << rbb::number(7);
 
     TEST_CONDITION(
         result6_1_1 == rbb::number(17),
-        printf("{ ~:x => $ + (~x) !~x }:[ x => 10 ] 7 == %ld (should be 17)\n",
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 10 ] 7 == %lld (should be 17)\n",
             result6_1_1.__value.integer))
 
     rbb::object result6_3 = block_instance6 << rbb::number(7);
 
     TEST_CONDITION(
         result6_3 == rbb::number(34),
-        printf("{ ~:x => $ + (~x) !~x }:[ x => 27 ] 7 == %ld (should be 34)\n",
+        printf("{ ~:x => $ + (~x) !~x }:[ x => 27 ] 7 == %lld (should be 34)\n",
             result6_3.__value.integer))
 
     // { ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:i => 10
@@ -194,5 +194,5 @@ TESTS_INIT()
 
     TEST_CONDITION(
         result7 == rbb::number(1000),
-        printf("{ ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:[i => 10][] == %ld (should be 1000)\n", result7.__value.integer))
+        printf("{ ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:[i => 10][] == %lld (should be 1000)\n", result7.__value.integer))
 TESTS_END()
