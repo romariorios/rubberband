@@ -669,7 +669,7 @@ SEND_MSG(table)
                 l_el.push_back(sym);
             }
 
-            return array(l_el);
+            return rbb::array(l_el);
         } else {
             table_data *d = static_cast<table_data *>(thisptr->__value.data);
 

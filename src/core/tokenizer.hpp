@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+
 namespace rbb
 {
 
@@ -152,6 +154,9 @@ struct token
     {
         return !(*this == other);
     }
+
+    // Defined in to_string.cpp
+    string to_string() const;
 };
 
 class tokenizer

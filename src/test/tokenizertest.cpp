@@ -6,46 +6,6 @@
 using namespace rbb;
 using namespace std;
 
-#define CASE_TOKEN(tok__)\
-    case token::t::tok__:\
-        cout << #tok__;\
-        break;
-
-void print_token(const token &tok)
-{
-    switch (tok.type) {
-    CASE_TOKEN(invalid)
-    CASE_TOKEN(bracket_open)
-    CASE_TOKEN(curly_open)
-    CASE_TOKEN(parenthesis_open)
-    CASE_TOKEN(end_of_input)
-    CASE_TOKEN(bracket_close)
-    CASE_TOKEN(curly_close)
-    CASE_TOKEN(parenthesis_close)
-    CASE_TOKEN(arrow)
-    CASE_TOKEN(comma)
-    CASE_TOKEN(exclamation)
-    CASE_TOKEN(stm_sep)
-    CASE_TOKEN(dollar)
-    CASE_TOKEN(tilde)
-    CASE_TOKEN(at)
-    CASE_TOKEN(percent)
-    CASE_TOKEN(bar)
-    CASE_TOKEN(colon)
-    case token::t::number:
-        cout << "number (" << tok.lexem.integer << ")";
-        break;
-    case token::t::number_f:
-        cout << "number (" << tok.lexem.floating << ")";
-        break;
-    case token::t::symbol:
-        cout << "symbol (" << *tok.lexem.str << ")";
-        break;
-    }
-
-    cout << "; ";
-}
-
 void print_tokenization(
     const std::vector<token> &expected,
     const std::vector<token> &actual)
@@ -56,12 +16,12 @@ void print_tokenization(
 
     cout << "Expected tokens:" << endl << "  ";
     for (auto &tok : expected)
-        print_token(tok);
+        cout << tok.to_string() << "; ";
     cout << endl << endl;
 
     cout << "Actual tokens:" << endl << "  ";
     for (auto &tok : actual)
-        print_token(tok);
+        cout << tok.to_string() << "; ";
     cout << endl << endl;
 }
 
