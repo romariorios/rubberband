@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -237,7 +237,7 @@ static object create_array_object(array_data *d)
     return create_data_object(d, array_send_msg);
 }
 
-static long long get_index_from_obj(const object &);
+static int get_index_from_obj(const object &);
 
 SEND_MSG(number)
 {
@@ -551,12 +551,11 @@ SEND_MSG(array_slicing)
     return create_array_object(new_d);
 }
 
-static long long get_index_from_obj(const object &obj)
+static int get_index_from_obj(const object &obj)
 {
     if (!is_numeric(obj.__value))
         return -1;
 
-    long long ind;
     if (obj.__value.type == value_t::floating_t)
         return obj.__value.floating;
 
