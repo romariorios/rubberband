@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -20,6 +20,8 @@
 
 #include <map>
 
+#include "shared_data_t.hpp"
+
 namespace rbb
 {
 
@@ -32,23 +34,6 @@ namespace literal
 }
 
 object empty();
-
-class shared_data_t
-{
-public:
-    shared_data_t() :
-        refc(1)
-    {}
-
-    virtual ~shared_data_t()
-    {}
-    
-    virtual std::string to_string() const {
-        return "[unknown data]";
-    }
-
-    int refc;
-};
 
 class array_data : public shared_data_t
 {

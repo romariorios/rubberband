@@ -29,6 +29,7 @@ set(rubberbandcore_headers
     error.hpp
     object.hpp
     parse.hpp
+    shared_data_t.hpp
     symbol.hpp
     tokenizer.hpp)
 
