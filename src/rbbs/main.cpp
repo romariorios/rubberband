@@ -15,17 +15,30 @@ object __print(object *, const object &msg)
     return empty();
 }
 
-int main(int argc, char **argv)
-{
-    if (argc < 2 && argc > 3) {
-        puts("No rubberband file defined");
-        return 1;
-    }
+object program_from_file(const string &filename);
 
-    ifstream file{argv[1]};
+class rbbs_master
+{
+public:
+    inline object set_context(const object &obj)
+    {
+        _context = obj;
+    }
+    
+    inline object load(const string &str)
+    {
+        return program_from_file(str + ".rbb") << _context << object{};
+    }
+    
+private:
+    object _context;
+};
+
+object program_from_file(const string &filename)
+{
+    ifstream file{filename};
     if (!file) {
-        puts("Could not open file");
-        return 1;
+        throw "Could not open file " + filename;
     }
 
     string program;
@@ -36,6 +49,16 @@ int main(int argc, char **argv)
         program += tmp;
         program += "\n";
     }
+    
+    return parser<rbbs_master>{program}.parse();
+}
+
+int main(int argc, char **argv)
+{
+    if (argc < 2 || argc > 3) {
+        puts("No rubberband file defined");
+        return 1;
+    }
 
     object print;
     print.__send_msg = __print;
@@ -44,7 +67,7 @@ int main(int argc, char **argv)
     if (debug_mode)
         LemonCParserTrace(stdout, " -- ");
 
-    auto result = parser{program}.parse();
+    auto result = program_from_file(argv[1]);
     if (debug_mode)
         puts(result.to_string().c_str());
 
