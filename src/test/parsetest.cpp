@@ -1,48 +1,101 @@
 #include "tests_common.hpp"
 
+#include <rbb/error.hpp>
 #include <rbb/parse.hpp>
 #include <string>
 
 using namespace rbb;
+using namespace std;
 
 extern void LemonCParserTrace(FILE *stream, char *zPrefix);
 
 object __print(object *, const object &msg)
 {
     puts(msg.to_string().c_str());
+    
+    return object{};
+}
+
+class dummy_master
+{
+public:
+    object load(const string &str) { return object{}; }
+    void set_context(const object &obj) {}
+};
+
+class test_master
+{
+public:
+    object load(const string &str)
+    {
+        if (str != "__parsetestmodule")
+            return {};
+        
+        auto block = parser<test_master>{R"(
+            ~:a -> 10
+        )"}.parse();
+        
+        return block << _context << object{};
+    }
+    
+    inline void set_context(const object &obj)
+    {
+        _context = obj;
+    }
+    
+private:
+    object _context;
+};
+
+#define TEST_PARSER(__master, program, context, message, expected)\
+{\
+    try {\
+        auto prog = parser<__master>{program}.parse();\
+        auto res = prog << (context) << (message);\
+\
+        TEST_CONDITION(\
+            res == (expected),\
+            printf(\
+                "The program:\n"\
+                "  { %s }\n"\
+                "interpreted as:\n"\
+                "  %s\n"\
+                "running over the context:\n"\
+                "  %s\n"\
+                "when receiving the message:\n"\
+                "  %s\n"\
+                "returns:\n"\
+                "  %s\n"\
+                "but the following was expected:\n"\
+                "  %s\n",\
+                program,\
+                prog.to_string().c_str(),\
+                context.to_string().c_str(),\
+                message.to_string().c_str(),\
+                res.to_string().c_str(),\
+                expected.to_string().c_str()))\
+    } catch (syntax_error e) {\
+        TEST_CONDITION(\
+            false,\
+            printf(\
+                "The program:\n"\
+                "  { %s }\n"\
+                "has a syntax error at line %s, column %s (token: %s)\n",\
+                program,\
+                to_string(e.t().line).c_str(),\
+                to_string(e.t().column).c_str(),\
+                e.t().to_string().c_str()))\
+    }\
 }
 
 #define TEST_PROGRAM(program, context, message, expected)\
 {\
-    auto prog = parser{program}.parse();\
-    auto res = prog << (context) << (message);\
-\
-    TEST_CONDITION(\
-        res == (expected),\
-        printf(\
-            "The program:\n"\
-            "  { %s }\n"\
-            "interpreted as:\n"\
-            "  %s\n"\
-            "running over the context:\n"\
-            "  %s\n"\
-            "when receiving the message:\n"\
-            "  %s\n"\
-            "returns:\n"\
-            "  %s\n"\
-            "but the following was expected:\n"\
-            "  %s\n",\
-            program,\
-            prog.to_string().c_str(),\
-            context.to_string().c_str(),\
-            message.to_string().c_str(),\
-            res.to_string().c_str(),\
-            expected.to_string().c_str()))\
+    TEST_PARSER(dummy_master, program, context, message, expected)\
 }
 
 #define TEST_PARSING(__program, __to_string)\
 {\
-    auto interpreted_as = parser{__program}.parse().to_string();\
+    auto interpreted_as = parser<dummy_master>{__program}.parse().to_string();\
 \
     TEST_CONDITION(\
         interpreted_as == (__to_string),\
@@ -146,6 +199,11 @@ TESTS_INIT()
 
         !~v 2
     )", table({}, {}), empty(), number(30))
+    
+    TEST_PARSER(test_master, R"(
+        %^~__parsetestmodule
+        !~a
+    )", table({}, {}), empty(), number(10))
 
     TEST_PARSING("{}:[]; :a -> 10", "{ {  } :[]; :[a -> 10] }")
 TESTS_END()

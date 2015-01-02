@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -65,6 +65,8 @@ inline int token_to_tokcode(token t)
         return TILDE;
     case token::t::at:
         return AT;
+    case token::t::percent:
+        return PERCENT;
     case token::t::bar:
         return BAR;
     case token::t::colon:
@@ -72,49 +74,25 @@ inline int token_to_tokcode(token t)
     }
 }
 
-class lemon_parser
-{
-public:
-    ~lemon_parser()
-    {
-        LemonCParserFree(_p, free);
-    }
-
-    inline void parse(token tok)
-    {
-        LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_result);
-    }
-
-    inline object result()
-    {
-        if (!_result)
-            return empty();
-
-        return _result->eval();
-    }
-
-private:
-    literal::block *_result = nullptr;
-    void *_p = LemonCParserAlloc(malloc);
-};
-
-parser::parser(const std::string &code) :
-    _tokenizer{code}
+____rbb_internal::lemon_parser::lemon_parser() :
+    _p{LemonCParserAlloc(malloc)}
 {}
 
-object parser::parse()
+____rbb_internal::lemon_parser::~lemon_parser()
 {
-    lemon_parser p;
-    
-    for (
-        auto tok = _tokenizer.next();
-        tok.type != token::t::end_of_input;
-        tok = _tokenizer.next()
-    ) {
-        p.parse(tok);
-    }
+    LemonCParserFree(_p, free);
+}
 
-    p.parse(token::t::end_of_input);
+void ____rbb_internal::lemon_parser::parse(token tok)
+{
+    LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_result);
+}
 
-    return p.result();
+object ____rbb_internal::lemon_parser::result(const object& master)
+{
+    if (!_result)
+        return empty();
+
+    _result->set_master(master);
+    return _result->eval();
 }

@@ -102,6 +102,7 @@ literal(l)          ::= block(bl). { l = bl; }
 literal(l)          ::= DOLLAR. { l = new literal::message; }
 literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
+literal(l)          ::= PERCENT. { l = new literal::master; }
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR array_body(arr_a). { arr = arr_a; }
 array_body(arr)     ::= array_elements(arr_a). { arr = arr_a; }
