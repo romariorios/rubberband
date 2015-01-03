@@ -31,9 +31,9 @@ public:
         if (str != "__parsetestmodule")
             return {};
         
-        auto block = parser<test_master>{R"(
+        auto block = parse<test_master>(R"(
             ~:a -> 10
-        )"}.parse();
+        )");
         
         return block << _context << object{};
     }
@@ -50,7 +50,7 @@ private:
 #define TEST_PARSER(__master, program, context, message, expected)\
 {\
     try {\
-        auto prog = parser<__master>{program}.parse();\
+        auto prog = parse<__master>(program);\
         auto res = prog << (context) << (message);\
 \
         TEST_CONDITION(\
@@ -95,7 +95,7 @@ private:
 
 #define TEST_PARSING(__program, __to_string)\
 {\
-    auto interpreted_as = parser<dummy_master>{__program}.parse().to_string();\
+    auto interpreted_as = parse<dummy_master>(__program).to_string();\
 \
     TEST_CONDITION(\
         interpreted_as == (__to_string),\

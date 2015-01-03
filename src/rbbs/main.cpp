@@ -63,7 +63,7 @@ object program_from_file(const string &filename)
         program += "\n";
     }
     
-    return parser<rbbs_master>{program}.parse();
+    return parse<rbbs_master>(program);
 }
 
 int main(int argc, char **argv)

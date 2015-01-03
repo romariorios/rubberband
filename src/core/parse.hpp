@@ -106,39 +106,29 @@ namespace rbb
     }
 
 template <class master_t>
-class parser
+object parse(const string &code)
 {
-public:
-    parser(const std::string &code) :
-        _tokenizer{code}
-    {}
-
-    object parse()
-    {
-        ____rbb_internal::lemon_parser p;
-        
-        for (
-            auto tok = _tokenizer.next();
-            tok.type != token::t::end_of_input;
-            tok = _tokenizer.next()
-        ) {
-            p.parse(tok);
-        }
-
-        p.parse(token::t::end_of_input);
-
-        object master_object;
-        master_object.__value.type = value_t::data_t;
-        master_object.__value.data = new ____rbb_internal::master_data<master_t>;
-        master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
-
-        return p.result(master_object);
+    tokenizer tokenizer{code};
+    
+    ____rbb_internal::lemon_parser p;
+    
+    for (
+        auto tok = tokenizer.next();
+        tok.type != token::t::end_of_input;
+        tok = tokenizer.next()
+    ) {
+        p.parse(tok);
     }
 
-private:    
-    tokenizer _tokenizer;
-    master_t _master;
-};
+    p.parse(token::t::end_of_input);
+
+    object master_object;
+    master_object.__value.type = value_t::data_t;
+    master_object.__value.data = new ____rbb_internal::master_data<master_t>;
+    master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
+
+    return p.result(master_object);
+}
 
 }
 
