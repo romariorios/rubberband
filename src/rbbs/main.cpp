@@ -3,6 +3,7 @@
 #include <parse.hpp>
 #include <string>
 #include <tclap/CmdLine.h>
+#include <vector>
 
 using namespace rbb;
 using namespace std;
@@ -19,6 +20,8 @@ object __print(object *, const object &msg)
 
 object program_from_file(const string &filename);
 
+vector<string> module_paths;
+
 class rbbs_master
 {
 public:
@@ -27,9 +30,18 @@ public:
         _context = obj;
     }
     
-    inline object load(const string &str)
+    object load(const string &str)
     {
-        return program_from_file(str + ".rbb") << _context << object{};
+        auto file_with_path = str + ".rbb";
+        
+        for (auto path : module_paths) {
+            if (ifstream{file_with_path}.good())
+                break;
+            
+            file_with_path = path + "/" + str + ".rbb";
+        }
+        
+        return program_from_file(file_with_path) << _context << object{};
     }
     
 private:
@@ -81,6 +93,11 @@ int main(int argc, char **argv)
         "Enable debug mode (Show parse trace and resulting program)"};
     cmd.add(debug_arg);
     
+    MultiArg<string> paths_args{
+        "p", "path", "Module lookup path",
+        false, "Absolute or relative path"};
+    cmd.add(paths_args);
+    
     cmd.parse(argc, argv);
 
     object print;
@@ -93,6 +110,8 @@ int main(int argc, char **argv)
     auto result = program_from_file(file_arg.getValue());
     if (debug_mode)
         puts(result.to_string().c_str());
+    
+    module_paths = paths_args.getValue();
 
     result << table({symbol("print")}, {print}) << empty();
 
