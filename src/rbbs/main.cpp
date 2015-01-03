@@ -34,11 +34,24 @@ private:
     object _context;
 };
 
+class could_not_open_file : public exception
+{
+public:
+    could_not_open_file(const string &f) : _f{f} {}
+    inline const char *what() const noexcept
+    {
+        return string{"Could not open file \"" + _f + "\""}.c_str();
+    }
+    
+private:
+    string _f;
+};
+
 object program_from_file(const string &filename)
 {
     ifstream file{filename};
     if (!file) {
-        throw "Could not open file " + filename;
+        throw could_not_open_file{filename};
     }
 
     string program;
