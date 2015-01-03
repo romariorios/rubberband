@@ -2,9 +2,11 @@
 #include <fstream>
 #include <parse.hpp>
 #include <string>
+#include <tclap/CmdLine.h>
 
 using namespace rbb;
 using namespace std;
+using namespace TCLAP;
 
 extern void LemonCParserTrace(FILE *stream, char *zPrefix);
 
@@ -68,19 +70,27 @@ object program_from_file(const string &filename)
 
 int main(int argc, char **argv)
 {
-    if (argc < 2 || argc > 3) {
-        puts("No rubberband file defined");
-        return 1;
-    }
+    CmdLine cmd{"Rubbeband script"};
+    UnlabeledValueArg<string> file_arg{
+        "File", "Load program from script file",
+        true, "", "Script filename"};
+    cmd.add(file_arg);
+    
+    SwitchArg debug_arg{
+        "d", "debug",
+        "Enable debug mode (Show parse trace and resulting program)"};
+    cmd.add(debug_arg);
+    
+    cmd.parse(argc, argv);
 
     object print;
     print.__send_msg = __print;
 
-    auto debug_mode = argc == 3 && string{argv[2]} == "-d";
+    auto debug_mode = debug_arg.getValue();
     if (debug_mode)
         LemonCParserTrace(stdout, " -- ");
 
-    auto result = program_from_file(argv[1]);
+    auto result = program_from_file(file_arg.getValue());
     if (debug_mode)
         puts(result.to_string().c_str());
 
