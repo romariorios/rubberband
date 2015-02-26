@@ -4,29 +4,33 @@
 # ~:g -> ~f a b c   # returns :a -> a, b -> b, c -> c
 ~:curry ->
 {
-  ~:context -> $
   !{
     ~:args -> $
     !{
       ~:block -> $
       !{
         ~:first_arg -> $
-        ~:loop -> {
-          ~block_args:(~args(~i)) -> $
 
-          !~i < (~args* - 1)?~ {
-            ~:i -> ~i + 1
-            !~loop~
-          } {
-            !~block(~context)(~block_args)
+        !~args* <= 1?~ {
+          !~block(~context):(~args 0) -> ~first_arg
+        } {
+          ~:loop -> {
+            ~block_args:(~args(~i)) -> $
+
+            !~i < (~args* - 1)?~ {
+              ~:i -> ~i + 1
+              !~loop~
+            } {
+              !~block(~context)(~block_args)
+            }
           }
-        }
 
-        !~loop(~ + :i -> 1, block_args -> :[(~args 0) -> ~first_arg])
+          !~loop(~ + :i -> 1, block_args -> :[(~args 0) -> ~first_arg])
+        }
       }~
     }~
-  }~
-}:[]
+  }:context -> $
+}()
 
 # while will loop until the condition becomes false. Ex.:
 # ~:i -> 0
@@ -40,4 +44,41 @@
     }
   }
   ~loop(~ + :[])()
+}
+
+# fn_ctx grabs the external context while not allowing
+# the internal context to "leak". Ex.:
+# ~:a -> 10
+# ~:b -> 20
+# ~:ctx -> ~fn_ctx~
+# ~ctx a  # 10
+# ~ctx b  # 20
+# ~ctx:c -> 30
+# ~c      # ()
+~:fn_ctx -> {
+  !{
+    !$ == ____clear_locals?(~:_a -> $) {
+      ~:local -> :[]
+    } {
+      ~:res -> ~local (~_a)
+
+      !~res == ()?~ {
+        !~external (~_a)
+      } {
+        !~res
+      }
+    }
+  }:local -> :[], external -> $
+}()
+
+# ~fn~ fac|[n] { !~n <= 1?~ { !1 } { !~n * (~fac(~n - 1)) } }
+# ~fac 4   # Returns 24
+~:fn -> ~curry~ |[ctx, fn_name, arg_names, blk] {
+  ~:($fn_name) -> ~curry:[blk -> $blk, ctx -> ~fn_ctx($ctx)]($arg_names){
+    ~ctx $
+    ~:____ret -> ~blk(~ctx)()
+    ~ctx ____clear_locals
+
+    !~____ret
+  }
 }
