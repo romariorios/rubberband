@@ -69,9 +69,6 @@ struct token
         double floating;
         std::string *str;
     } lexem;
-    
-    long line = 0;
-    long column = 0;
 
     token(t type) :
         type{type}
@@ -85,8 +82,6 @@ struct token
     token &operator=(const token &other)
     {
         type = other.type;
-        line = other.line;
-        column = other.column;
         
         if (other.type == t::symbol)
             lexem.str = new std::string{*other.lexem.str};
@@ -174,6 +169,9 @@ public:
     token look_next() const;
     std::vector<token> all();
     std::vector<token> look_all() const;
+    
+    inline long cur_line() const { return _cur_line; }
+    inline long cur_col() const { return _cur_col; }
 
 private:
     enum class _state {

@@ -24,8 +24,6 @@ token tokenizer::next()
     int length;
     long line = _cur_line, col = _cur_col;
     auto ret = _previous_token = _look_token(length, line, col);
-    ret.line = _cur_line;
-    ret.column = _cur_col;
 
     _remaining.erase(_remaining.begin(), _remaining.begin() + length);
     _cur_line = line;
@@ -38,11 +36,7 @@ token tokenizer::look_next() const
     int l; // unused
     long li, col;
 
-    auto tok = _look_token(l, li, col);
-    tok.line = _cur_line;
-    tok.column = _cur_col;
-
-    return tok;
+    return _look_token(l, li, col);
 }
 
 std::vector<token> tokenizer::all()

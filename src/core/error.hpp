@@ -29,14 +29,17 @@ namespace rbb
 class syntax_error : public std::exception
 {
 public:
+    syntax_error(const syntax_error &other) = default;
     inline explicit syntax_error(const token &t) : _tok{t} {}
     inline const char *what() const noexcept
     {
-        return ("Syntax error at line " + std::to_string(_tok.line) +
-            ", column " + std::to_string(_tok.column)).c_str();
+        return ("Syntax error at line " + std::to_string(line) +
+            ", column " + std::to_string(column)).c_str();
     }
 
     inline const token &t() const { return _tok; }
+    long line;
+    long column;
 
 private:
     token _tok;

@@ -112,12 +112,18 @@ object parse(const string &code)
     
     ____rbb_internal::lemon_parser p;
     
-    for (
-        auto tok = tokenizer.next();
-        tok.type != token::t::end_of_input;
-        tok = tokenizer.next()
-    ) {
-        p.parse(tok);
+    try {
+        for (
+            auto tok = tokenizer.next();
+            tok.type != token::t::end_of_input;
+            tok = tokenizer.next()
+        ) {
+            p.parse(tok);
+        }
+    } catch (syntax_error e) {
+        e.line = tokenizer.cur_line();
+        e.column = tokenizer.cur_col();
+        throw e;
     }
 
     p.parse(token::t::end_of_input);

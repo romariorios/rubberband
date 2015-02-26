@@ -1,5 +1,6 @@
 #include <cstdio>
 #include <fstream>
+#include <error.hpp>
 #include <parse.hpp>
 #include <string>
 #include <tclap/CmdLine.h>
@@ -61,6 +62,23 @@ private:
     string _f;
 };
 
+class rbbs_syntax_error : public syntax_error
+{
+public:
+    rbbs_syntax_error(const syntax_error &other, const string &filename) :
+        syntax_error{other},
+        _f{filename}
+    {}
+    
+    inline const char *what() const noexcept
+    {
+        return (string{syntax_error::what()} + " of file " + _f).c_str();
+    }
+    
+private:
+    string _f;
+};
+
 object program_from_file(const string &filename)
 {
     ifstream file{filename};
@@ -77,7 +95,11 @@ object program_from_file(const string &filename)
         program += "\n";
     }
     
-    return parse<rbbs_master>(program);
+    try {
+        return parse<rbbs_master>(program);
+    } catch (syntax_error e) {
+        throw rbbs_syntax_error{e, filename};
+    }
 }
 
 int main(int argc, char **argv)
