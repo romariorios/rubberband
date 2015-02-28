@@ -628,7 +628,7 @@ object rbb::array(const std::vector<object> &objects)
     return create_array_object(d);
 }
 
-// Generic object: Basically, a map from symbols to objects
+// Table: Basically, a map from symbols to objects
 SEND_MSG(table_merge)
 {
     if (
@@ -644,6 +644,25 @@ SEND_MSG(table_merge)
     return table;
 }
 
+static constexpr const char symbol_name[] = "Symbol";
+
+SEND_MSG(del_element)
+{
+    if (msg.__value.type != value_t::symbol_t)
+        throw wrong_type_error<symbol_name>{*thisptr, msg};
+
+    auto &objtree =
+        static_cast<table_data *>(
+            static_cast<object_data *>(
+                thisptr->__value.data)
+            ->obj.__value.data)
+        ->objtree;
+
+    objtree.erase(msg.__value.symbol);
+
+    return {};
+}
+
 SEND_MSG(table)
 {
     if (msg.__value.type == value_t::symbol_t) {
@@ -655,6 +674,8 @@ SEND_MSG(table)
             answer.__send_msg = data_comparison_ne_send_msg;
         else if (msg == rbb::symbol("+"))
             answer.__send_msg = table_merge_send_msg;
+        else if (msg == rbb::symbol("-"))
+            answer.__send_msg = del_element_send_msg;
         else if (msg == rbb::symbol("*")) {
             table_data *d = static_cast<table_data *>(thisptr->__value.data);
 
@@ -686,14 +707,8 @@ SEND_MSG(table)
         if (!msg_d)
             throw message_not_recognized_error{*thisptr, msg};
 
-        for (auto msg_pair : msg_d->objtree) {
-            if (msg_pair.second == object{}) {
-                d->objtree.erase(msg_pair.first);
-                continue;
-            }
-
+        for (auto msg_pair : msg_d->objtree)
             d->objtree[msg_pair.first] = msg_pair.second;
-        }
 
         return *thisptr;
     }
