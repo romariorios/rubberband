@@ -26,12 +26,7 @@ vector<string> module_paths;
 class rbbs_master
 {
 public:
-    inline object set_context(const object &obj)
-    {
-        _context = obj;
-    }
-    
-    object load(const string &str)
+    static object load(const object &context, const string &str)
     {
         auto file_with_path = str + ".rbb";
         
@@ -42,11 +37,8 @@ public:
             file_with_path = path + "/" + str + ".rbb";
         }
         
-        return program_from_file(file_with_path) << _context << object{};
+        return program_from_file(file_with_path) << context << object{};
     }
-    
-private:
-    object _context;
 };
 
 class could_not_open_file : public exception

@@ -34,37 +34,33 @@ namespace rbb
     namespace ____rbb_internal
     {
     
-    template <class master_t>
-    class master_data : public shared_data_t
+    class load_data : public shared_data_t
     {
     public:
-        master_data() = default;
-        master_data(const master_data<master_t> &other) = default;
+        load_data(const object &ctx) :
+            context{ctx}
+        {}
 
-        master_t master;
+        object context;
     };
 
     template <class master_t>
     object master_load_send_msg(object *thisptr, const object &msg)
     {
-        auto d = static_cast<master_data<master_t> *>(thisptr->__value.data);
+        auto d = static_cast<load_data *>(thisptr->__value.data);
 
         if (msg.__value.type != value_t::symbol_t)
             throw semantic_error{"Symbol expected", *thisptr, msg};
 
-        return d->master.load(msg.to_string());
+        return master_t::load(d->context, msg.to_string());
     }
     
     template <class master_t>
     object master_set_context_send_msg(object *thisptr, const object &msg)
     {
-        auto d = static_cast<master_data<master_t> *>(thisptr->__value.data);
-        
-        d->master.set_context(msg);
-        
         object load;
         load.__value.type = value_t::data_t;
-        load.__value.data = new master_data<master_t>{*d};
+        load.__value.data = new load_data{msg};
         load.__send_msg = master_load_send_msg<master_t>;
         
         return load;
@@ -73,12 +69,10 @@ namespace rbb
     template <class master_t>
     object master_send_msg(object *thisptr, const object &msg)
     {
-        auto d = static_cast<master_data<master_t> *>(thisptr->__value.data);
-
         if (msg == symbol("^")) {
             object load;
-            load.__value.type = value_t::data_t;
-            load.__value.data = new master_data<master_t>{*d};
+            load.__value.type = value_t::no_data_t;
+            load.__value.data = nullptr;
             load.__send_msg = master_set_context_send_msg<master_t>;
 
             return load;
@@ -129,8 +123,8 @@ object parse(const string &code)
     p.parse(token::t::end_of_input);
 
     object master_object;
-    master_object.__value.type = value_t::data_t;
-    master_object.__value.data = new ____rbb_internal::master_data<master_t>;
+    master_object.__value.type = value_t::no_data_t;
+    master_object.__value.data = nullptr;
     master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
 
     return p.result(master_object);

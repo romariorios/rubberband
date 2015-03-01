@@ -19,14 +19,13 @@ object __print(object *, const object &msg)
 class dummy_master
 {
 public:
-    object load(const string &str) { return object{}; }
-    void set_context(const object &obj) {}
+    static object load(const object &obj, const string &str) { return object{}; }
 };
 
 class test_master
 {
 public:
-    object load(const string &str)
+    static object load(const object &obj, const string &str)
     {
         if (str != "__parsetestmodule")
             return {};
@@ -35,16 +34,8 @@ public:
             ~:a -> 10
         )");
         
-        return block << _context << object{};
+        return block << obj << object{};
     }
-    
-    inline void set_context(const object &obj)
-    {
-        _context = obj;
-    }
-    
-private:
-    object _context;
 };
 
 #define TEST_PARSER(__master, program, context, message, expected)\
@@ -82,8 +73,8 @@ private:
                 "  { %s }\n"\
                 "has a syntax error at line %s, column %s (token: %s)\n",\
                 program,\
-                to_string(e.t().line).c_str(),\
-                to_string(e.t().column).c_str(),\
+                to_string(e.line).c_str(),\
+                to_string(e.column).c_str(),\
                 e.t().to_string().c_str()))\
     }\
 }
