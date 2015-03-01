@@ -112,6 +112,12 @@ int main(int argc, char **argv)
         false, "Absolute or relative path"};
     cmd.add(paths_args);
     
+    MultiArg<string> modules_args{
+        "m", "module", "Load module",
+        false, "Module name"
+    };
+    cmd.add(modules_args);
+    
     cmd.parse(argc, argv);
 
     object print;
@@ -126,8 +132,12 @@ int main(int argc, char **argv)
         puts(result.to_string().c_str());
     
     module_paths = paths_args.getValue();
+    
+    auto main_context = table({symbol("print")}, {print});
+    for (auto module : modules_args.getValue())
+        rbbs_master::load(main_context, module);
 
-    result << table({symbol("print")}, {print}) << empty();
+    result << main_context << empty();
 
     return 0;
 }
