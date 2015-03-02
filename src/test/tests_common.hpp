@@ -5,6 +5,9 @@
 
 #include <rbb/object.hpp>
 
+using namespace rbb;
+using namespace std;
+
 #define TESTS_INIT()\
 int main() {\
     int errors = 0;\
@@ -44,5 +47,11 @@ bool test_operator_eq(const rbb::object &obj1, const rbb::object &obj2)
     printf("Result: %d tests, %d failures (%.0f%%).\n", tests, errors, error_rate);\
     return errors;\
 }
+
+class dummy_master
+{
+public:
+    static object load(const object &obj, const string &str) { return {}; }
+};
 
 #endif // TESTS_COMMON

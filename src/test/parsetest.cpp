@@ -4,9 +4,6 @@
 #include <rbb/parse.hpp>
 #include <string>
 
-using namespace rbb;
-using namespace std;
-
 extern void LemonCParserTrace(FILE *stream, char *zPrefix);
 
 object __print(object *, const object &msg)
@@ -15,12 +12,6 @@ object __print(object *, const object &msg)
     
     return object{};
 }
-
-class dummy_master
-{
-public:
-    static object load(const object &obj, const string &str) { return object{}; }
-};
 
 class test_master
 {

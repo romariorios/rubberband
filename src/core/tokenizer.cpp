@@ -78,6 +78,15 @@ bool tokenizer::_dot_ahead(int &ignore_offset, int &length, long &line, long &co
     }
 }
 
+static void rewind(int &length, long &line, long &col, long prevcol, char ch)
+{
+    --length;
+    if (ch == '\n') {
+        --line;
+        col = prevcol;
+    }
+}
+
 token tokenizer::_look_token(int& length, long &line, long &col) const
 {
     length = 1;
@@ -88,9 +97,10 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
         const auto &ch = length <= _remaining.size()?
             _remaining[length - 1] :
             '\0';
+        const auto prevcol = col;
 
         if (ch == '\n') {
-            col = 0;
+            col = 1;
             ++line;
         }
 
@@ -216,7 +226,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 cur_state = _state::arrow_or_negative_number;
                 continue;
             case '\0':
-                --length;
+                rewind(length, line, col, prevcol, ch);
                 return token::t::end_of_input;
             default:
                 // Number
@@ -240,7 +250,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             if (ch != '\n')
                 continue;
 
-            --length;
+            rewind(length, line, col, prevcol, ch);
             cur_state = _state::start;
         case _state::merge_lines:
             switch (ch) {
@@ -249,7 +259,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case '\t':
                 continue;
             default:
-                --length;
+                rewind(length, line, col, prevcol, ch);
                 cur_state = _state::start;
                 continue;
             }
@@ -261,7 +271,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 continue;
             }
 
-            --length;
+            rewind(length, line, col, prevcol, ch);
             return token::symbol("-");
         case _state::number_integer_part:
             switch (ch) {
@@ -270,7 +280,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 continue;
             default:
                 if (!(ch >= '0' && ch <= '9')) {
-                    --length;
+                    rewind(length, line, col, prevcol, ch);
 
                     return token::number(
                         std::stol(
@@ -280,7 +290,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             }
         case _state::number_fractional_part:
             if (!(ch >= '0' && ch <= '9')) {
-                --length;
+                rewind(length, line, col, prevcol, ch);
 
                 return token::number_f(
                     std::stod(
@@ -295,19 +305,19 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 return token::symbol(">=");
             }
 
-            --length;
+            rewind(length, line, col, prevcol, ch);
             return token::symbol(">");
         case _state::lt_char:
             if (ch == '=')
                 return token::symbol("<=");
 
-            --length;
+            rewind(length, line, col, prevcol, ch);
             return token::symbol("<");
         case _state::eq_symbol:
             if (ch == '=')
                 return token::symbol("==");
 
-            --length;
+            rewind(length, line, col, prevcol, ch);
             return token::symbol("=");
         case _state::slash_char:
             switch (ch) {
@@ -317,13 +327,13 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 return token::symbol("/\\");
             }
 
-            --length;
+            rewind(length, line, col, prevcol, ch);
             return token::symbol("/");
         case _state::inverted_slash_char:
             if (ch == '/')
                 return token::symbol("\\/");
 
-            --length;
+            rewind(length, line, col, prevcol, ch);
             return token::symbol("\\");
         case _state::alphanumeric_symbol:
             if (!(
@@ -332,7 +342,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 (ch >= '0' && ch <= '9') ||
                 ch == '_'
             )) {
-                --length;
+                rewind(length, line, col, prevcol, ch);
 
                 return token::symbol(
                     _remaining.substr(ignore_offset, length - ignore_offset));
