@@ -66,6 +66,24 @@ namespace rbb
         return load;
     }
 
+    class custom_operation_data : public shared_data_t
+    {
+    public:
+        explicit custom_operation_data(const object &sym) :
+            symbol{sym}
+        {}
+
+        object symbol;
+    };
+
+    template <class master_t>
+    object master_custom_operation_send_msg(object *thisptr, const object &msg)
+    {
+        auto d = static_cast<custom_operation_data *>(thisptr->__value.data);
+
+        return master_t::custom_operation(d->symbol.to_string(), msg);
+    }
+
     template <class master_t>
     object master_send_msg(object *thisptr, const object &msg)
     {
@@ -76,6 +94,13 @@ namespace rbb
             load.__send_msg = master_set_context_send_msg<master_t>;
 
             return load;
+        } else if (msg.__value.type == value_t::symbol_t) {
+            object custom;
+            custom.__value.type = value_t::data_t;
+            custom.__value.data = new custom_operation_data{msg};
+            custom.__send_msg = master_custom_operation_send_msg<master_t>;
+
+            return custom;
         } else {
             throw semantic_error{
                 "Unknown operation by master object",

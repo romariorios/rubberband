@@ -12,13 +12,6 @@ using namespace TCLAP;
 
 extern void LemonCParserTrace(FILE *stream, char *zPrefix);
 
-object __print(object *, const object &msg)
-{
-    puts(msg.to_string().c_str());
-
-    return empty();
-}
-
 object program_from_file(const string &filename);
 
 vector<string> module_paths;
@@ -38,6 +31,14 @@ public:
         }
         
         return program_from_file(file_with_path) << context << object{};
+    }
+
+    static object custom_operation(const string &name, const object &obj)
+    {
+        if (name == "inspect_object")
+            puts(obj.to_string().c_str());
+
+        return {};
     }
 };
 
@@ -120,9 +121,6 @@ int main(int argc, char **argv)
     
     cmd.parse(argc, argv);
 
-    object print;
-    print.__send_msg = __print;
-
     auto debug_mode = debug_arg.getValue();
     if (debug_mode)
         LemonCParserTrace(stdout, " -- ");
@@ -133,7 +131,7 @@ int main(int argc, char **argv)
     
     module_paths = paths_args.getValue();
     
-    auto main_context = table({symbol("print")}, {print});
+    auto main_context = table();
     for (auto module : modules_args.getValue())
         rbbs_master::load(main_context, module);
 

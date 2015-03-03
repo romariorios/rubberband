@@ -27,6 +27,11 @@ public:
         
         return block << obj << object{};
     }
+
+    static object custom_operation(const string &name, const object &obj)
+    {
+        return {};
+    }
 };
 
 #define TEST_PARSER(__master, program, context, message, expected)\

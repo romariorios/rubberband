@@ -52,6 +52,7 @@ class dummy_master
 {
 public:
     static object load(const object &obj, const string &str) { return {}; }
+    static object custom_operation(const string &name, const object &obj) { return {}; }
 };
 
 #endif // TESTS_COMMON
