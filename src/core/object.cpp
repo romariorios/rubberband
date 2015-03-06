@@ -113,8 +113,122 @@ bool object::operator==(const object& other) const
     return false;
 }
 
+class object_data : public shared_data_t
+{
+public:
+    object_data(const object &obj) :
+        obj(obj)
+    {}
+
+    object obj;
+};
+
+// static symbols
+namespace s_symb
+{
+    static auto &&double_lt = symbol("<<");
+}
+
+static bool in_bounds(array_data *, int);
+
+SEND_MSG(responds_to)
+{
+    auto &object = static_cast<object_data *>(thisptr->__value.data)->obj;
+    
+    if (msg == symbol("==") || msg == symbol("!="))
+        switch (object.__value.type) {
+        case value_t::empty_t:
+        case value_t::integer_t:
+        case value_t::floating_t:
+        case value_t::symbol_t:
+        case value_t::boolean_t:
+        case value_t::data_t:
+            return boolean(true);
+        default:
+            return boolean(false);
+        }
+        
+    
+    switch (object.__value.type)
+    {
+    case value_t::integer_t:
+    case value_t::floating_t:
+        return boolean(
+            msg == symbol("<")  ||
+            msg == symbol(">")  ||
+            msg == symbol("<=") ||
+            msg == symbol(">=") ||
+            msg == symbol("+")  ||
+            msg == symbol("-")  ||
+            msg == symbol("*")  ||
+            msg == symbol("/")  ||
+            (
+                msg.__value.type == value_t::data_t &&
+                dynamic_cast<array_data *>(msg.__value.data)
+            ));
+    case value_t::boolean_t:
+        return boolean(
+            msg == symbol("?")   ||
+            msg == symbol("><")  ||
+            msg == symbol("\\/") ||
+            msg == symbol("/\\"));
+    case value_t::data_t:
+    {
+        auto d = object.__value.data;
+        if (dynamic_cast<array_data *>(d)) {
+            auto arr_d = dynamic_cast<array_data *>(d);
+            
+            switch (msg.__value.type) {
+            case value_t::symbol_t:
+                return boolean(
+                    msg == symbol("*") ||
+                    msg == symbol("+") ||
+                    msg == symbol("/"));
+            case value_t::integer_t:
+                return boolean(in_bounds(arr_d, msg.__value.integer));
+            case value_t::floating_t:
+                return boolean(in_bounds(arr_d, msg.__value.floating));
+            case value_t::data_t:
+            {
+                auto msg_d = dynamic_cast<array_data *>(msg.__value.data);
+                return boolean(
+                    msg_d &&
+                    msg_d->size == 2 &&
+                    (
+                        (
+                            msg_d->arr[0].__value.type == value_t::integer_t &&
+                            in_bounds(arr_d, msg_d->arr[0].__value.integer)
+                        ) || (
+                            msg_d->arr[0].__value.type == value_t::floating_t &&
+                            in_bounds(arr_d, msg_d->arr[0].__value.floating)
+                        )
+                    ));
+            }
+            default:
+                return boolean(false);
+            }
+        }
+    }       
+    default:
+        return boolean(false);
+    }
+}
+
 object object::operator<<(const object &msg)
 {
+    if (msg == s_symb::double_lt) {
+        // In this case, this object is the responds_to method already
+        if (__send_msg == responds_to_send_msg)
+            return boolean(true);
+        
+        object responds_to_obj;
+        responds_to_obj.__value.type = value_t::data_t;
+        responds_to_obj.__value.data = new object_data{*this};
+        responds_to_obj.__send_msg = responds_to_send_msg;
+        
+        return responds_to_obj;
+    }
+    
     return __send_msg(this, msg);
 }
 
@@ -137,16 +251,6 @@ int object::deref()
 
     return 1;
 }
-
-class object_data : public shared_data_t
-{
-public:
-    object_data(const object &obj) :
-        obj(obj)
-    {}
-
-    object obj;
-};
 
 // empty: Empty object
 SEND_MSG(empty_cmp_eq) { return boolean(msg.__value.type == value_t::empty_t); }
