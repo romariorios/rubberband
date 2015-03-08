@@ -208,6 +208,23 @@ SEND_MSG(responds_to)
                 return boolean(false);
             }
         }
+        
+        if (dynamic_cast<table_data *>(d)) {
+            auto table_d = dynamic_cast<table_data *>(d);
+            
+            switch (msg.__value.type) {
+            case value_t::symbol_t:
+                return boolean(
+                    msg == symbol("+") ||
+                    msg == symbol("-") ||
+                    msg == symbol("*") ||
+                    table_d->objtree.find(msg.__value.symbol) != table_d->objtree.end());
+            case value_t::data_t:
+                return boolean(dynamic_cast<table_data *>(msg.__value.data));
+            default:
+                return boolean(false);
+            }
+        }
     }       
     default:
         return boolean(false);

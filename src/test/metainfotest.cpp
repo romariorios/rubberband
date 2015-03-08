@@ -81,4 +81,22 @@ TESTS_INIT()
         TEST_RESPONDS_TO(array({number(12), number(12), number(12)}), false)
         TEST_RESPONDS_TO(array({number(3), number(100)}), false)
     }
+    
+    {
+        auto &&obj = table(
+            {symbol("a"), symbol("b"), symbol("c")},
+            {number(10), number(20), number(30)});
+        TEST_RESPONDS_TO(symbol("=="), true)
+        TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("*"), true)
+        TEST_RESPONDS_TO(symbol("/"), false)
+        TEST_RESPONDS_TO(symbol("^"), false)
+        TEST_RESPONDS_TO(symbol("a"), true)
+        TEST_RESPONDS_TO(symbol("D"), false)
+        TEST_RESPONDS_TO(symbol("-"), true)
+        TEST_RESPONDS_TO(array({number(10), number(20)}), false)
+        TEST_RESPONDS_TO(
+            table({symbol("d")}, {number(10)}),
+            true)
+    }
 TESTS_END()
