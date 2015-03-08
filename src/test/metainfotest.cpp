@@ -1,5 +1,6 @@
 #include "tests_common.hpp"
 
+#include <rbb/block.hpp>
 #include <rbb/error.hpp>
 
 #define TEST_RESPONDS_TO(message, expected)\
@@ -28,7 +29,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("!="), true)
-        TEST_RESPONDS_TO(array({number(10), number(20), number(30)}), true)
+        TEST_RESPONDS_TO(rbb::array({number(10), number(20), number(30)}), true)
         TEST_RESPONDS_TO(
             table({symbol("valhalla"), symbol("lol")}, {number(10), number(20)}),
             false)
@@ -46,7 +47,7 @@ TESTS_INIT()
     {
         auto &&obj = symbol("valhalla");
         TEST_RESPONDS_TO(symbol("lol"), false)
-        TEST_RESPONDS_TO(array({object{}, symbol("a"), number(15)}), false)
+        TEST_RESPONDS_TO(rbb::array({object{}, symbol("a"), number(15)}), false)
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("!="), true)
         TEST_RESPONDS_TO(symbol("<"), false)
@@ -66,7 +67,7 @@ TESTS_INIT()
     }
     
     {
-        auto &&obj = array({number(10), number(20), symbol("a")});
+        auto &&obj = rbb::array({number(10), number(20), symbol("a")});
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("!="), true)
         TEST_RESPONDS_TO(number(0), true)
@@ -75,11 +76,11 @@ TESTS_INIT()
         TEST_RESPONDS_TO(number(3), false)
         TEST_RESPONDS_TO(symbol("-"), false)
         TEST_RESPONDS_TO(symbol("/"), true)
-        TEST_RESPONDS_TO(array({number(0), number(30)}), true)
-        TEST_RESPONDS_TO(array({symbol("a"), number(12)}), false)
-        TEST_RESPONDS_TO(array({number(2)}), false)
-        TEST_RESPONDS_TO(array({number(12), number(12), number(12)}), false)
-        TEST_RESPONDS_TO(array({number(3), number(100)}), false)
+        TEST_RESPONDS_TO(rbb::array({number(0), number(30)}), true)
+        TEST_RESPONDS_TO(rbb::array({symbol("a"), number(12)}), false)
+        TEST_RESPONDS_TO(rbb::array({number(2)}), false)
+        TEST_RESPONDS_TO(rbb::array({number(12), number(12), number(12)}), false)
+        TEST_RESPONDS_TO(rbb::array({number(3), number(100)}), false)
     }
     
     {
@@ -94,9 +95,31 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("a"), true)
         TEST_RESPONDS_TO(symbol("D"), false)
         TEST_RESPONDS_TO(symbol("-"), true)
-        TEST_RESPONDS_TO(array({number(10), number(20)}), false)
+        TEST_RESPONDS_TO(rbb::array({number(10), number(20)}), false)
         TEST_RESPONDS_TO(
             table({symbol("d")}, {number(10)}),
             true)
+    }
+    
+    literal::block bl;
+    auto &return_stm = bl.return_statement();
+    return_stm.add_expr<literal::number>(10);
+    return_stm.add_expr<literal::symbol>("+");
+    return_stm.add_expr<literal::number>(10);
+    
+    {
+        auto &&obj = bl.eval();
+        TEST_RESPONDS_TO(symbol("pretty_much_anything"), true)
+    }
+    
+    {
+        auto &&obj = bl.eval() << object{};
+        auto &&ans = obj << symbol("<<") << symbol("pretty_much_anything");
+        
+        TEST_CONDITION(
+            ans == object{},
+            printf(
+                "Block instance reports it knows what it responds to (responded %s)\n",
+                ans.to_string().c_str()))
     }
 TESTS_END()

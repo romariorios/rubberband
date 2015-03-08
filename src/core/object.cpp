@@ -225,7 +225,15 @@ SEND_MSG(responds_to)
                 return boolean(false);
             }
         }
-    }       
+        
+        if (dynamic_cast<block_data *>(d)) {
+            auto block_d = dynamic_cast<block_data *>(d);
+            if (!block_d->block_l->_context_set)
+                return boolean(true);
+        }
+        
+        return {};
+    }
     default:
         return boolean(false);
     }

@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -147,6 +147,7 @@ void literal::block::set_return_statement_ptr(block_statement *stm)
 void literal::block::set_context(const object& context)
 {
     _context = context;
+    _context_set = true;
 }
 
 void literal::block::set_message(const object& msg)

@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -239,6 +239,7 @@ namespace literal
         std::string to_string() const;
 
         std::shared_ptr<block_private> _p;
+        bool _context_set = false;
         object _context;
         object _message;
         object _master;
