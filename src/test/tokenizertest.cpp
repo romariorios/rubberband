@@ -355,4 +355,38 @@ TESTS_INIT()
 
         TEST_TOKENIZATION
     }
+    
+    {
+        tokenizer tok{R"(
+            ~:a -> 10
+            ~a << +
+            ~a << -
+            ~a << *
+        )"};
+        vector<token> expected{
+            token::t::tilde,
+            token::t::colon,
+            token::symbol("a"),
+            token::t::arrow,
+            token::number(10),
+            token::t::stm_sep,
+            token::t::tilde,
+            token::symbol("a"),
+            token::symbol("<<"),
+            token::symbol("+"),
+            token::t::stm_sep,
+            token::t::tilde,
+            token::symbol("a"),
+            token::symbol("<<"),
+            token::symbol("-"),
+            token::t::stm_sep,
+            token::t::tilde,
+            token::symbol("a"),
+            token::symbol("<<"),
+            token::symbol("*")
+        };
+        auto &&tok_all = tok.look_all();
+        
+        TEST_TOKENIZATION
+    }
 TESTS_END()

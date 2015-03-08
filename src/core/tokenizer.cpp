@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -308,8 +308,12 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             rewind(length, line, col, prevcol, ch);
             return token::symbol(">");
         case _state::lt_char:
-            if (ch == '=')
+            switch (ch) {
+            case '=':
                 return token::symbol("<=");
+            case '<':
+                return token::symbol("<<");
+            }
 
             rewind(length, line, col, prevcol, ch);
             return token::symbol("<");
