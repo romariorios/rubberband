@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,7 @@ struct value_t
         floating_t = 0x13,
         boolean_t  = 0x14,
         symbol_t   = 0x15,
+        iface_n_t  = 0x16,
         data_t     = 0x20
     } type = value_t::empty_t;
 
@@ -87,6 +88,7 @@ object number(double val);
 double number_to_double(const object &num);
 
 object symbol(const std::string &val);
+object interface_name(const std::string &name);
 
 object boolean(bool val);
 

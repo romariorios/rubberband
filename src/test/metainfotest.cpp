@@ -1,23 +1,24 @@
 #include "tests_common.hpp"
 
 #include <rbb/block.hpp>
-#include <rbb/error.hpp>
 
 #define TEST_RESPONDS_TO(message, expected)\
-    try {\
-        TEST_CONDITION(\
-            obj << symbol("<<") << message == boolean(expected),\
-            printf(\
-                "Object %s reports it %s to %s\n",\
-                obj.to_string().c_str(),\
-                expected? "doesn't respond" : "responds",\
-                message.to_string().c_str()))\
-    } catch (message_not_recognized_error e) {\
-        ++errors;\
+    TEST_CONDITION_WITH_EXCEPTION(\
+        obj << symbol("<<") << message == boolean(expected),\
         printf(\
-            "The object %s doesn't recognize the \"responds to\" message\n",\
-            e.receiver.to_string().c_str());\
-    }
+            "Object %s reports it %s to %s\n",\
+            obj.to_string().c_str(),\
+            expected? "doesn't respond" : "responds",\
+            message.to_string().c_str()))
+    
+#define TEST_INTERFACE(ifacename, expected)\
+    TEST_CONDITION_WITH_EXCEPTION(\
+        obj << symbol("<<?") << interface_name(ifacename) == boolean(expected),\
+        printf(\
+            "Object %s reports it %s interface %s\n",\
+            obj.to_string().c_str(),\
+            expected? "doesn't follow" : "follows",\
+            ifacename))
 
 TESTS_INIT()
     {
@@ -33,6 +34,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(
             table({symbol("valhalla"), symbol("lol")}, {number(10), number(20)}),
             false)
+        
+        TEST_INTERFACE("<-0", true)
     }
     
     {
@@ -42,6 +45,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("+"), false)
         TEST_RESPONDS_TO(object{}, false)
+        
+        TEST_INTERFACE("<-()", true)
     }
     
     {
@@ -52,6 +57,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("!="), true)
         TEST_RESPONDS_TO(symbol("<"), false)
         TEST_RESPONDS_TO(symbol("<<"), true)
+        
+        TEST_INTERFACE("<-a", true)
     }
     
     {
@@ -64,6 +71,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("/\\"), true)
         TEST_RESPONDS_TO(symbol("+"), false)
         TEST_RESPONDS_TO(number(12), false)
+        
+        TEST_INTERFACE("<-?", true)
     }
     
     {
@@ -81,6 +90,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(rbb::array({number(2)}), false)
         TEST_RESPONDS_TO(rbb::array({number(12), number(12), number(12)}), false)
         TEST_RESPONDS_TO(rbb::array({number(3), number(100)}), false)
+        
+        TEST_INTERFACE("<-|", true)
     }
     
     {
@@ -99,6 +110,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(
             table({symbol("d")}, {number(10)}),
             true)
+        
+        TEST_INTERFACE("<-:", true)
     }
     
     literal::block bl;
@@ -110,6 +123,8 @@ TESTS_INIT()
     {
         auto &&obj = bl.eval();
         TEST_RESPONDS_TO(symbol("pretty_much_anything"), true)
+        
+        TEST_INTERFACE("<-{}", true)
     }
     
     {
@@ -121,5 +136,11 @@ TESTS_INIT()
             printf(
                 "Block instance reports it knows what it responds to (responded %s)\n",
                 ans.to_string().c_str()))
+        
+        auto &&iface = obj << symbol("<<?") << interface_name("<-{}");
+        
+        TEST_CONDITION(
+            iface == object{},
+            puts("Block instance report it knows whether it follows the <-{} interface"))
     }
 TESTS_END()

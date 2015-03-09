@@ -105,6 +105,7 @@ bool object::operator==(const object& other) const
     case value_t::boolean_t:
         return __value.boolean == other.__value.boolean;
     case value_t::symbol_t:
+    case value_t::iface_n_t:
         return __value.symbol == other.__value.symbol;
     default:
         return __value.data == other.__value.data;
@@ -127,6 +128,7 @@ public:
 namespace s_symb
 {
     static auto &&double_lt = symbol("<<");
+    static auto &&double_lt_question = symbol("<<?");
 }
 
 static bool in_bounds(array_data *, int);
@@ -239,6 +241,41 @@ SEND_MSG(responds_to)
     }
 }
 
+SEND_MSG(follows_interface)
+{
+    auto &obj = static_cast<object_data *>(thisptr->__value.data)->obj;
+    
+    switch (obj.__value.type) {
+    case value_t::integer_t:
+    case value_t::floating_t:
+        return boolean(msg == interface_name("<-0"));
+    case value_t::empty_t:
+        return boolean(msg == interface_name("<-()"));
+    case value_t::symbol_t:
+        return boolean(msg == interface_name("<-a"));
+    case value_t::boolean_t:
+        return boolean(msg == interface_name("<-?"));
+    case value_t::data_t:
+    {
+        auto d = obj.__value.data;
+        
+        if (dynamic_cast<array_data *>(d))
+            return boolean(msg == interface_name("<-|"));
+        
+        if (dynamic_cast<table_data *>(d))
+            return boolean(msg == interface_name("<-:"));
+        
+        auto block_d = dynamic_cast<block_data *>(d);
+        if (block_d && !block_d->block_l->_context_set)
+            return boolean(msg == interface_name("<-{}"));
+        
+        return {};
+    }
+    default:
+        return {};
+    }
+}
+
 object object::operator<<(const object &msg)
 {
     if (msg == s_symb::double_lt) {
@@ -252,6 +289,15 @@ object object::operator<<(const object &msg)
         responds_to_obj.__send_msg = responds_to_send_msg;
         
         return responds_to_obj;
+    }
+    
+    if (msg == s_symb::double_lt_question) {
+        object follows_interface_obj;
+        follows_interface_obj.__value.type = value_t::data_t;
+        follows_interface_obj.__value.data = new object_data{*this};
+        follows_interface_obj.__send_msg = follows_interface_send_msg;
+        
+        return follows_interface_obj;
     }
     
     return __send_msg(this, msg);
@@ -468,6 +514,14 @@ object rbb::symbol(const std::string &val)
     symb.__value.symbol = symbol_node::retrieve(val);
 
     return symb;
+}
+
+object rbb::interface_name(const string &name)
+{
+    auto &&sym = symbol(name);
+    sym.__value.type = value_t::iface_n_t;
+
+    return sym;
 }
 
 // boolean: Boolean object

@@ -3,6 +3,7 @@
 
 #include <cstdio>
 
+#include <rbb/error.hpp>
 #include <rbb/object.hpp>
 
 using namespace rbb;
@@ -20,6 +21,17 @@ int main() {\
         ++errors;\
         printf("Test %d: ", tests);\
         message;\
+    }
+
+#define TEST_CONDITION_WITH_EXCEPTION(__condition, __message)\
+    try {\
+        TEST_CONDITION(__condition, __message)\
+    } catch (message_not_recognized_error e) {\
+        ++errors;\
+        printf(\
+            "The object %s doesn't recognize the %s message\n",\
+            e.receiver.to_string().c_str(),\
+            e.message.to_string().c_str());\
     }
 
 // this assumes obj1 and obj2 are different
