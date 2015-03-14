@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,40 @@
 
 namespace rbb
 {
+
+class tokenization_error : public std::exception
+{
+public:
+    tokenization_error(const tokenization_error &) = default;
+    tokenization_error(
+        long line,
+        long column,
+        const std::string &lexem,
+        const std::string &extra_message = {}) :
+        _line{line},
+        _column{column},
+        _lexem{lexem},
+        _extra_message{extra_message}
+    {}
+    
+    inline long line() const { return _line; }
+    inline long column() const { return _column; }
+    inline const std::string &lexem() const { return _lexem; }
+    inline const std::string &extra_message() const { return _extra_message; }
+    inline const char *what() const noexcept
+    {
+        return (
+            "Invalid token (" + _lexem + ") at line " + std::to_string(_line) +
+            ", column " + std::to_string(_column) + " (" + _extra_message + ")"
+        ).c_str();
+    }
+    
+private:
+    long _line;
+    long _column;
+    std::string _lexem;
+    std::string _extra_message;
+};
 
 class syntax_error : public std::exception
 {

@@ -17,6 +17,8 @@
 
 #include "tokenizer.hpp"
 
+#include "error.hpp"
+
 using namespace rbb;
 
 token tokenizer::next()
@@ -34,7 +36,7 @@ token tokenizer::next()
 token tokenizer::look_next() const
 {
     int l; // unused
-    long li, col;
+    long li = _cur_line, col = _cur_col;
 
     return _look_token(l, li, col);
 }
@@ -85,6 +87,20 @@ static void rewind(int &length, long &line, long &col, long prevcol, char ch)
         --line;
         col = prevcol;
     }
+}
+
+static void throw_invalid_interface_error(
+    long line,
+    long col,
+    const string &remaining,
+    int ignore_offset,
+    int length)
+{
+    throw tokenization_error{
+        line,
+        col,
+        remaining.substr(ignore_offset, length - ignore_offset),
+        "Invalid interface name"};
 }
 
 token tokenizer::_look_token(int& length, long &line, long &col) const
@@ -312,7 +328,11 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case '=':
                 return token::symbol("<=");
             case '<':
-                return token::symbol("<<");
+                cur_state = _state::double_lt;
+                continue;
+            case '-':
+                cur_state = _state::left_arrow;
+                continue;
             }
 
             rewind(length, line, col, prevcol, ch);
@@ -352,10 +372,48 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                     _remaining.substr(ignore_offset, length - ignore_offset));
             }
             continue;
+        case _state::double_lt:
+            if (ch == '?')
+                return token::symbol("<<?");
+            
+            rewind(length, line, col, prevcol, ch);
+            return token::symbol("<<");
+        case _state::left_arrow:
+            switch (ch) {
+            case '0':
+                return token::interface_name("<-0");
+            case '(':
+                cur_state = _state::left_arrow_open_par;
+                continue;
+            case 'a':
+                return token::interface_name("<-a");
+            case '?':
+                return token::interface_name("<-?");
+            case '|':
+                return token::interface_name("<-|");
+            case ':':
+                return token::interface_name("<-:");
+            case '{':
+                cur_state = _state::left_arrow_open_curly;
+                continue;
+            case '<':
+                return token::interface_name("<-<");
+            }
+
+            throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
+        case _state::left_arrow_open_par:
+            if (ch == ')')
+                return token::interface_name("<-()");
+            
+            throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
+        case _state::left_arrow_open_curly:
+            if (ch == '}')
+                return token::interface_name("<-{}");
+            
+            throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
         }
     }
 
     --length;
     return token::t::end_of_input;
 }
-

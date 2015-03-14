@@ -30,6 +30,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(rbb::array({number(10), number(20), number(30)}), true)
         TEST_RESPONDS_TO(
             table({symbol("valhalla"), symbol("lol")}, {number(10), number(20)}),
@@ -43,6 +44,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("!="), true)
         TEST_RESPONDS_TO(symbol("<<"), true)
+        TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(symbol("+"), false)
         TEST_RESPONDS_TO(object{}, false)
         
@@ -57,6 +59,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("!="), true)
         TEST_RESPONDS_TO(symbol("<"), false)
         TEST_RESPONDS_TO(symbol("<<"), true)
+        TEST_RESPONDS_TO(symbol("<<?"), true)
         
         TEST_INTERFACE("<-a", true)
     }
@@ -70,6 +73,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("\\/"), true)
         TEST_RESPONDS_TO(symbol("/\\"), true)
         TEST_RESPONDS_TO(symbol("+"), false)
+        TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(number(12), false)
         
         TEST_INTERFACE("<-?", true)
@@ -85,6 +89,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(number(3), false)
         TEST_RESPONDS_TO(symbol("-"), false)
         TEST_RESPONDS_TO(symbol("/"), true)
+        TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(rbb::array({number(0), number(30)}), true)
         TEST_RESPONDS_TO(rbb::array({symbol("a"), number(12)}), false)
         TEST_RESPONDS_TO(rbb::array({number(2)}), false)
@@ -106,6 +111,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("a"), true)
         TEST_RESPONDS_TO(symbol("D"), false)
         TEST_RESPONDS_TO(symbol("-"), true)
+        TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(rbb::array({number(10), number(20)}), false)
         TEST_RESPONDS_TO(
             table({symbol("d")}, {number(10)}),
@@ -142,5 +148,12 @@ TESTS_INIT()
         TEST_CONDITION(
             iface == object{},
             puts("Block instance report it knows whether it follows the <-{} interface"))
+    }
+    
+    {
+        auto &&obj = interface_name("<-()");
+        TEST_RESPONDS_TO(symbol("<<?"), true)
+        
+        TEST_INTERFACE("<-<", true)
     }
 TESTS_END()

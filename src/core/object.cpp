@@ -253,6 +253,8 @@ SEND_MSG(follows_interface)
         return boolean(msg == interface_name("<-()"));
     case value_t::symbol_t:
         return boolean(msg == interface_name("<-a"));
+    case value_t::iface_n_t:
+        return boolean(msg == interface_name("<-<"));
     case value_t::boolean_t:
         return boolean(msg == interface_name("<-?"));
     case value_t::data_t:
@@ -292,6 +294,9 @@ object object::operator<<(const object &msg)
     }
     
     if (msg == s_symb::double_lt_question) {
+        if (__send_msg == responds_to_send_msg)
+            return boolean(true);
+        
         object follows_interface_obj;
         follows_interface_obj.__value.type = value_t::data_t;
         follows_interface_obj.__value.data = new object_data{*this};

@@ -54,6 +54,7 @@ struct token
         number,
         number_f,
         symbol,
+        interface_name,
         dollar,
         tilde,
         at,
@@ -83,7 +84,7 @@ struct token
     {
         type = other.type;
         
-        if (other.type == t::symbol)
+        if (other.type == t::symbol || type == t::interface_name)
             lexem.str = new std::string{*other.lexem.str};
         else
             lexem = other.lexem;
@@ -100,7 +101,7 @@ struct token
 
     ~token()
     {
-        if (type == t::symbol)
+        if (type == t::symbol || type == t::interface_name)
             delete lexem.str;
     }
 
@@ -126,6 +127,14 @@ struct token
         ret.lexem.str = new std::string{str};
 
         return ret;
+    }
+    
+    static token interface_name(const std::string &name)
+    {
+        auto &&iface_name = symbol(name);
+        iface_name.type = t::interface_name;
+        
+        return iface_name;
     }
 
     bool operator==(const token &other) const
@@ -186,7 +195,11 @@ private:
         lt_char,
         slash_char,
         inverted_slash_char,
-        alphanumeric_symbol
+        alphanumeric_symbol,
+        double_lt,
+        left_arrow,
+        left_arrow_open_par,
+        left_arrow_open_curly
     };
 
     long _cur_line = 1;
