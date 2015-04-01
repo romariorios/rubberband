@@ -105,7 +105,6 @@ bool object::operator==(const object& other) const
     case value_t::boolean_t:
         return __value.boolean == other.__value.boolean;
     case value_t::symbol_t:
-    case value_t::iface_n_t:
         return __value.symbol == other.__value.symbol;
     default:
         return __value.data == other.__value.data;
@@ -248,28 +247,26 @@ SEND_MSG(follows_interface)
     switch (obj.__value.type) {
     case value_t::integer_t:
     case value_t::floating_t:
-        return boolean(msg == interface_name("<-0"));
+        return boolean(msg == symbol("<-0"));
     case value_t::empty_t:
-        return boolean(msg == interface_name("<-()"));
+        return boolean(msg == symbol("<-()"));
     case value_t::symbol_t:
-        return boolean(msg == interface_name("<-a"));
-    case value_t::iface_n_t:
-        return boolean(msg == interface_name("<-<"));
+        return boolean(msg == symbol("<-a"));
     case value_t::boolean_t:
-        return boolean(msg == interface_name("<-?"));
+        return boolean(msg == symbol("<-?"));
     case value_t::data_t:
     {
         auto d = obj.__value.data;
         
         if (dynamic_cast<array_data *>(d))
-            return boolean(msg == interface_name("<-|"));
+            return boolean(msg == symbol("<-|"));
         
         if (dynamic_cast<table_data *>(d))
-            return boolean(msg == interface_name("<-:"));
+            return boolean(msg == symbol("<-:"));
         
         auto block_d = dynamic_cast<block_data *>(d);
         if (block_d && !block_d->block_l->_context_set)
-            return boolean(msg == interface_name("<-{}"));
+            return boolean(msg == symbol("<-{}"));
         
         return {};
     }
@@ -519,14 +516,6 @@ object rbb::symbol(const std::string &val)
     symb.__value.symbol = symbol_node::retrieve(val);
 
     return symb;
-}
-
-object rbb::interface_name(const string &name)
-{
-    auto &&sym = symbol(name);
-    sym.__value.type = value_t::iface_n_t;
-
-    return sym;
 }
 
 // boolean: Boolean object

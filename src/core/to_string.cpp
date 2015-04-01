@@ -227,9 +227,6 @@ string token::to_string() const
     case token::t::symbol:
         res += "symbol (" + *lexem.str + ")";
         break;
-    case token::t::interface_name:
-        res += "interface (" + *lexem.str + ")";
-        break;
     }
 
     return res;

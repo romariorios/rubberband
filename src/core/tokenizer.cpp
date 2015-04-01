@@ -381,34 +381,34 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
         case _state::left_arrow:
             switch (ch) {
             case '0':
-                return token::interface_name("<-0");
+                return token::symbol("<-0");
             case '(':
                 cur_state = _state::left_arrow_open_par;
                 continue;
             case 'a':
-                return token::interface_name("<-a");
+                return token::symbol("<-a");
             case '?':
-                return token::interface_name("<-?");
+                return token::symbol("<-?");
             case '|':
-                return token::interface_name("<-|");
+                return token::symbol("<-|");
             case ':':
-                return token::interface_name("<-:");
+                return token::symbol("<-:");
             case '{':
                 cur_state = _state::left_arrow_open_curly;
                 continue;
             case '<':
-                return token::interface_name("<-<");
+                return token::symbol("<-<");
             }
 
             throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
         case _state::left_arrow_open_par:
             if (ch == ')')
-                return token::interface_name("<-()");
+                return token::symbol("<-()");
             
             throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
         case _state::left_arrow_open_curly:
             if (ch == '}')
-                return token::interface_name("<-{}");
+                return token::symbol("<-{}");
             
             throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
         }

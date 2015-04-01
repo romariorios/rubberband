@@ -409,19 +409,19 @@ TESTS_INIT()
             token::t::tilde,
             token::symbol("a"),
             token::symbol("<<?"),
-            token::interface_name("<-|"),
+            token::symbol("<-|"),
             token::t::stm_sep,
-            token::interface_name("<-:"),
-            token::interface_name("<-()"),
-            token::interface_name("<-{}"),
+            token::symbol("<-:"),
+            token::symbol("<-()"),
+            token::symbol("<-{}"),
             token::t::stm_sep,
             token::t::tilde,
             token::t::colon,
             token::symbol("b"),
             token::t::arrow,
-            token::interface_name("<-()"),
+            token::symbol("<-()"),
             token::symbol("<<?"),
-            token::interface_name("<-<")
+            token::symbol("<-<")
         };
         auto &&tok_all = tok.look_all();
         

@@ -13,7 +13,7 @@
     
 #define TEST_INTERFACE(ifacename, expected)\
     TEST_CONDITION_WITH_EXCEPTION(\
-        obj << symbol("<<?") << interface_name(ifacename) == boolean(expected),\
+        obj << symbol("<<?") << symbol(ifacename) == boolean(expected),\
         printf(\
             "Object %s reports it %s interface %s\n",\
             obj.to_string().c_str(),\
@@ -143,7 +143,7 @@ TESTS_INIT()
                 "Block instance reports it knows what it responds to (responded %s)\n",
                 ans.to_string().c_str()))
         
-        auto &&iface = obj << symbol("<<?") << interface_name("<-{}");
+        auto &&iface = obj << symbol("<<?") << symbol("<-{}");
         
         TEST_CONDITION(
             iface == object{},
@@ -151,9 +151,9 @@ TESTS_INIT()
     }
     
     {
-        auto &&obj = interface_name("<-()");
+        auto &&obj = symbol("<-()");
         TEST_RESPONDS_TO(symbol("<<?"), true)
         
-        TEST_INTERFACE("<-<", true)
+        TEST_INTERFACE("<-a", true)
     }
 TESTS_END()
