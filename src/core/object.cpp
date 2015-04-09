@@ -480,9 +480,6 @@ object rbb::number(double val)
 // symbol: Symbol object
 static object symbol_comp_send_msg(object *thisptr, const object &msg, bool eq)
 {
-    if (msg.__value.type != value_t::symbol_t)
-        return empty();
-
     return static_cast<object_data *>(thisptr->__value.data)->obj == msg?
         boolean(eq) : boolean(!eq);
 }
