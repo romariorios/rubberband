@@ -5,8 +5,24 @@
 ~:curry ->
 {
   !{
+    $ <<? <-| >< ^:
+      error -> expecting_array,
+      from -> curry,
+      arg_name -> args,
+      got -> $
+    $* == 0 ^:
+      error -> empty_array,
+      from -> curry,
+      arg_name -> args
+
     ~:args -> $
     !{
+      $ <<? <-{} >< ^:
+        error -> expecting_block,
+        from -> curried_function,
+        arg_name -> block,
+        got -> $
+
       ~:block -> $
       !{
         ~:first_arg -> $
@@ -36,6 +52,17 @@
 # ~:i -> 0
 # ~while~ { !~i < 10 } { ~print (~i); ~:i -> ~i + 10 }
 ~:while -> ~curry:[] |[context, condition, block] {
+  $condition <<? <-{} >< ^:
+    error -> expecting_block,
+    from -> while,
+    arg_name -> condition,
+    got -> $condition
+  $block <<? <-{} >< ^:
+    error -> expecting_block,
+    from -> while,
+    arg_name -> block,
+    got -> $block
+
   ~$
   ~:loop -> {
     ~condition(~context)()?~ {
@@ -57,28 +84,72 @@
 # ~c      # ()
 ~:fn_ctx -> {
   !{
-    !$ == ____clear_locals?(~:_a -> $) {
-      ~:local -> :[]
-    } {
-      ~:res -> ~local (~_a)
+    $ <<? <-a \/ ($ <<? <-:) >< ^:
+      error -> expecting_symbol_or_table,
+      from -> fn_ctx_instance,
+      got -> $
 
-      !~res == ()?~ {
-        !~external (~_a)
+    !$ <<? <-:?(~:_a -> $) {
+      !~local(~_a)
+    } {
+      !~_a == ____clear_locals?~ {
+        ~:local -> :[]
       } {
-        !~res
+        ~:res -> ~local(~_a)
+
+        !~res <<? <-()?~ {
+          !~external(~_a)
+        } {
+          !~res
+        }
       }
     }
   }:local -> :[], external -> $
 }()
 
-# ~fn~ fac|[n] { !~n <= 1?~ { !1 } { !~n * (~fac(~n - 1)) } }
+# ~:fac -> ~fn~ |[n] { !~n <= 1?~ { !1 } { !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
-~:fn -> ~curry~ |[ctx, fn_name, arg_names, blk] {
-  ~:($fn_name) -> ~curry:[blk -> $blk, ctx -> ~fn_ctx($ctx)]($arg_names){
+~:fn -> ~curry~ |[ctx, arg_names, blk] {
+  $arg_names <<? <-| >< ^:
+    error -> expecting_array,
+    from -> fn,
+    arg_name -> arg_names,
+    got -> $arg_names
+  $blk <<? <-{} >< ^:
+    error -> expecting_block,
+    from -> fn,
+    got -> $blk
+
+  !~curry:[blk -> $blk, ctx -> ~fn_ctx($ctx)]($arg_names){
     ~ctx $
     ~:____ret -> ~blk(~ctx)()
     ~ctx ____clear_locals
 
     !~____ret
   }
+}
+
+# ~:list -> ~map~ |[1, 2, 3, 4, 5] { !$ * $ }
+# # ~list will be |[1, 4, 9, 16, 25]
+~:map -> ~fn~ |[ctx, array, blk] {
+  ~array <<? <-| >< ^:
+    error -> expecting_array,
+    from -> map,
+    arg_name -> array,
+    got -> ~array
+  ~blk <<? <-{} >< ^:
+    error -> expecting_block,
+    from -> map,
+    arg_name -> blk,
+    got -> ~blk
+
+  ~:result -> ~array*|[]
+
+  ~:i -> 0
+  ~while~ { !~i < (~array*) } {
+    ~result|~i, ~blk(~ctx)(~array(~i))
+    ~:i -> ~i + 1
+  }
+
+  !~result
 }
