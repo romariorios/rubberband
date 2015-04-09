@@ -611,6 +611,16 @@ SEND_MSG(boolean_do_##op)\
 BOOLEAN_DO(AND, &&)
 BOOLEAN_DO(OR, ||)
 
+SEND_MSG(boolean_raise)
+{
+    auto boolean_obj = static_cast<object_data *>(thisptr->__value.data)->obj;
+
+    if (boolean_obj == boolean(true))
+        throw rbb::runtime_error{msg};
+
+    return {};
+}
+
 SEND_MSG(boolean)
 {
     if (msg.__value.type != value_t::symbol_t)
@@ -632,6 +642,8 @@ SEND_MSG(boolean)
         return boolean(!thisptr->__value.boolean);
     } else if (msg == symbol("?")) {
         return create_data_object(new object_data(*thisptr), boolean_get_context_send_msg);
+    } else if (msg == symbol("^")) {
+        return create_data_object(new object_data{*thisptr}, boolean_raise_send_msg);
     }
 
     throw message_not_recognized_error{*thisptr, msg};

@@ -115,6 +115,21 @@ public:
     {}
 };
 
+class runtime_error : public std::exception
+{
+public:
+    runtime_error(const object &error_obj) :
+        error_obj{error_obj}
+    {}
+
+    inline const char *what() const noexcept
+    {
+        return ("Runtime error (error object: " + error_obj.to_string() + ")").c_str();
+    }
+
+    object error_obj;
+};
+
 }
 
 #endif

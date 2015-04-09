@@ -83,4 +83,26 @@ TESTS_INIT()
              << block_true
              << block_false == rbb::number(5),
         puts("Flow control isn't working."))
+
+    {
+        bool error_raised = false;
+        bool right_error_object = false;
+        object error_obj;
+
+        try {
+            boolean(true) << symbol("^") << symbol("error");
+        } catch (rbb::runtime_error e) {
+            error_raised = true;
+            error_obj = e.error_obj;
+            if (e.error_obj == symbol("error"))
+                right_error_object = true;
+        }
+
+        TEST_CONDITION(error_raised, puts("Couldn't raise error"))
+        TEST_CONDITION(
+            error_raised && right_error_object,
+            printf(
+                "Error object is \"%s\" (expected \"error\")\n",
+                error_obj.to_string().c_str()))
+    }
 TESTS_END()
