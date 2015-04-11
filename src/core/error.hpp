@@ -115,6 +115,17 @@ public:
     {}
 };
 
+class in_statement_error : public std::logic_error
+{
+public:
+    in_statement_error(const std::string &stm, const semantic_error &e) :
+        logic_error{"In statement \"" + stm + "\": " + e.what()},
+        internal_error{e}
+    {}
+
+    const semantic_error &internal_error;
+};
+
 class runtime_error : public std::runtime_error
 {
 public:

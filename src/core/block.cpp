@@ -42,16 +42,21 @@ object block_statement::eval(literal::block* parent_block)
         return empty();
 
     auto cur_expr = expressions.begin();
-    auto cur_obj = (*cur_expr)->eval(parent_block);
 
-    cur_expr++;
+    try {
+        auto cur_obj = (*cur_expr)->eval(parent_block);
 
-    for (; cur_expr != expressions.end(); cur_expr++)
-    {
-        cur_obj = cur_obj << (*cur_expr)->eval(parent_block);
+        cur_expr++;
+
+        for (; cur_expr != expressions.end(); cur_expr++)
+        {
+            cur_obj = cur_obj << (*cur_expr)->eval(parent_block);
+        }
+
+        return cur_obj;
+    } catch (const semantic_error &e) {
+        throw in_statement_error{to_string(), e};
     }
-
-    return cur_obj;
 }
 
 object literal::array::eval(literal::block* parent_block)
