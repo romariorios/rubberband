@@ -240,6 +240,16 @@ SEND_MSG(responds_to)
     }
 }
 
+object ask_if_obj_follows_interface(object &obj, const object &msg)
+{
+    auto &&follows_interface_obj = obj.__send_msg(&obj, symbol("<<?"));
+    return boolean(
+        follows_interface_obj.__send_msg(
+            &follows_interface_obj,
+            msg) ==
+        boolean(true));
+}
+
 SEND_MSG(follows_interface)
 {
     auto &obj = static_cast<object_data *>(thisptr->__value.data)->obj;
@@ -268,10 +278,17 @@ SEND_MSG(follows_interface)
         if (block_d && !block_d->block_l->_context_set)
             return boolean(msg == symbol("<-{}"));
         
-        return {};
+        // otherwise, delegate the question to the object itself
+        try {
+            return ask_if_obj_follows_interface(obj, msg);
+        // FIXME maybe catching *all* exceptions isn't a good idea
+        } catch (...) {
+            return boolean(false);
+        }
     }
     default:
-        return {};
+        // do same thing here
+        return ask_if_obj_follows_interface(obj, msg);
     }
 }
 
