@@ -153,3 +153,61 @@
 
   !~result
 }
+
+# ~:val -> ~accum~ |[1, 2, 3, 4, 5, 6]:init -> { !1 }, step -> { !$e * ($val) }
+# # ~val will be 720
+~:accum -> ~fn~ |[ctx, array, blks] {
+  ~array <<? <-| >< ^:
+    error -> expecting_array,
+    from -> accum,
+    arg_name -> array,
+    got -> ~array
+  ~blks step <<? <-{} >< ^:
+    error -> expecting_block,
+    from -> accum,
+    arg_name -> step,
+    got -> ~blks step
+  ~blks init <<? <-{} >< ^:
+    error -> expecting_block,
+    from -> accum,
+    arg_name -> init,
+    got -> ~blks init
+
+  ~:res -> ~blks init(~ctx)()
+  ~map~ (~array) { ~:res -> ~blks step(~ctx):e -> $, val -> ~res }
+  !~res
+}
+
+~:range -> ~fn~ |[args] {
+  ~(~args)  # Merges args and the current context
+  ~to <<? <-0 >< ^:
+    error -> expecting_number,
+    from -> range,
+    arg_name -> to,
+    got -> ~to
+
+  ~from <<? <-()?~ {
+    ~:from -> 0
+  } {
+    ~from <<? <-0 >< ^:
+      error -> expecting_number,
+      from -> range,
+      arg_name -> from,
+      got -> ~from
+  }
+
+  ~step <<? <-()?~ {
+    ~:step -> 1
+  } {
+    ~step <<? <-0 >< ^:
+      error -> expecting_number,
+      from -> range,
+      arg_name -> step,
+      got -> ~step
+  }
+
+  ~:range_size -> ~to - (~from) / (~step) + 1
+
+  ~:val -> ~from
+  !~map~ (~range_size|[]) { ~:ret -> ~val; ~:val -> ~val + (~step) !~ret }
+}
