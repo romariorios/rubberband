@@ -104,9 +104,7 @@ literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
 literal(l)          ::= PERCENT. { l = new literal::master; }
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
-array(arr)          ::= BAR array_body(arr_a). { arr = arr_a; }
-array_body(arr)     ::= array_elements(arr_a). { arr = arr_a; }
-array_body(arr)     ::= BRACKET_OPEN maybe_empty_a(arr_a) BRACKET_CLOSE. { arr = arr_a; }
+array(arr)          ::= BAR maybe_empty_a(arr_a). { arr = arr_a; }
 array_elements(arr) ::= stm(e) COMMA array_elements(arr_a).
 {
     arr_a->add_element_ptr(e);
@@ -119,9 +117,7 @@ array_elements(arr) ::= stm(e).
 }
 maybe_empty_a(arr)    ::= . { arr = new literal::array; }
 maybe_empty_a(arr)    ::= array_elements(arr_a). { arr = arr_a; }
-table(t)            ::= COLON table_body(t_body). { t = t_body; }
-table_body(t)       ::= table_entries(entries). { t = entries; }
-table_body(t)       ::= BRACKET_OPEN maybe_empty_t(entries) BRACKET_CLOSE. { t = entries; }
+table(t)            ::= COLON maybe_empty_t(t_body). { t = t_body; }
 table_entries(t)    ::= table_entries(t_a) COMMA table_entry(entry).
 {
     t_a->add_symbol_ptr(entry.index);

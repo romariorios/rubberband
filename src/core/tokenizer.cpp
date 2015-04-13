@@ -132,7 +132,6 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case '\n':
                 switch (_previous_token.type) {
                 case token::t::start_of_input:
-                case token::t::bracket_open:
                 case token::t::curly_open:
                 case token::t::parenthesis_open:
                 case token::t::arrow:
@@ -150,7 +149,6 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                     const auto next_tok = tok.look_next();
 
                     switch (next_tok.type) {
-                    case token::t::bracket_close:
                     case token::t::curly_close:
                     case token::t::parenthesis_close:
                     case token::t::exclamation:
@@ -176,14 +174,10 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 cur_state = _state::merge_lines;
                 continue;
             // Single-char tokens
-            case '[':
-                return token::t::bracket_open;
             case '{':
                 return token::t::curly_open;
             case '(':
                 return token::t::parenthesis_open;
-            case ']':
-                return token::t::bracket_close;
             case '}':
                 return token::t::curly_close;
             case ')':

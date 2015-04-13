@@ -32,16 +32,12 @@ inline int token_to_tokcode(token t)
     switch (t.type) {
     case token::t::invalid:
         return -1;
-    case token::t::bracket_open:
-        return BRACKET_OPEN;
     case token::t::curly_open:
         return CURLY_OPEN;
     case token::t::parenthesis_open:
         return PARENTHESIS_OPEN;
     case token::t::end_of_input:
         return 0;
-    case token::t::bracket_close:
-        return BRACKET_CLOSE;
     case token::t::curly_close:
         return CURLY_CLOSE;
     case token::t::parenthesis_close:

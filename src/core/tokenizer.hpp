@@ -34,13 +34,11 @@ struct token
         // Delimiters
         //  Openers
         start_of_input,
-        bracket_open,
         curly_open,
         parenthesis_open,
 
         //  Closers
         end_of_input,
-        bracket_close,
         curly_close,
         parenthesis_close,
 

@@ -39,7 +39,7 @@ std::string symbol_node::to_string() const
 
 std::string array_data::to_string() const
 {
-    std::string result{"|["};
+    std::string result{"(|"};
 
     for (int i = 0; i < size; ++i) {
         result += arr[i].to_string();
@@ -48,14 +48,14 @@ std::string array_data::to_string() const
             result += ", ";
     }
 
-    result += "]";
+    result += ")";
 
     return result;
 }
 
 std::string table_data::to_string() const
 {
-    std::string result{":["};
+    std::string result{"(:"};
 
     for (auto &entry : objtree) {
         result += entry.first->to_string() + " -> " + entry.second.to_string();
@@ -65,7 +65,7 @@ std::string table_data::to_string() const
     if (!objtree.empty())
         result.erase(result.size() - 2);
 
-    result += "]";
+    result += ")";
 
     return result;
 }
@@ -99,7 +99,7 @@ namespace literal
 
 std::string array::to_string() const
 {
-    std::string result{"|["};
+    std::string result{"(|"};
 
     for (auto &element : _objects) {
         result += element->to_string() + ", ";
@@ -108,14 +108,14 @@ std::string array::to_string() const
     if (!_objects.empty())
         result.erase(result.size() - 2);
 
-    result += "]";
+    result += ")";
 
     return result;
 }
 
 std::string table::to_string() const
 {
-    std::string result{":["};
+    std::string result{"(:"};
 
     for (
         auto sym = _symbols.cbegin(), obj = _objects.cbegin();
@@ -134,7 +134,7 @@ std::string table::to_string() const
             result += ", ";
     }
 
-    result += "]";
+    result += ")";
 
     return result;
 }
@@ -201,11 +201,9 @@ string token::to_string() const
 
     switch (type) {
     CASE_TOKEN(invalid)
-    CASE_TOKEN(bracket_open)
     CASE_TOKEN(curly_open)
     CASE_TOKEN(parenthesis_open)
     CASE_TOKEN(end_of_input)
-    CASE_TOKEN(bracket_close)
     CASE_TOKEN(curly_close)
     CASE_TOKEN(parenthesis_close)
     CASE_TOKEN(arrow)

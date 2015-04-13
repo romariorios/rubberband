@@ -1,6 +1,6 @@
 # curry will turn the arguments from a curried function
 # into a table inside the function. Ex.:
-# ~:f -> ~curry~ |[a, b, c] { !:a -> $a, b -> $b, c -> $c }
+# ~:f -> ~curry~ (|a, b, c) { !:a -> $a, b -> $b, c -> $c }
 # ~:g -> ~f a b c   # returns :a -> a, b -> b, c -> c
 ~:curry ->
 {
@@ -41,7 +41,7 @@
             }
           }
 
-          !~loop(~ + :i -> 1, block_args -> :[(~args 0) -> ~first_arg])
+          !~loop(~ + :i -> 1, block_args -> (:(~args 0) -> ~first_arg))
         }
       }~
     }~
@@ -51,7 +51,7 @@
 # while will loop until the condition becomes false. Ex.:
 # ~:i -> 0
 # ~while~ { !~i < 10 } { ~print (~i); ~:i -> ~i + 10 }
-~:while -> ~curry:[] |[context, condition, block] {
+~:while -> ~curry(:) (|context, condition, block) {
   $condition <<? <-{} >< ^:
     error -> expecting_block,
     from -> while,
@@ -70,7 +70,7 @@
       ~loop~()
     }
   }
-  ~loop(~ + :[])()
+  ~loop(~ + :)()
 }
 
 # fn_ctx grabs the external context while not allowing
@@ -93,7 +93,7 @@
       !~local(~_a)
     } {
       !~_a == ____clear_locals?~ {
-        ~:local -> :[]
+        ~:local -> (:)
       } {
         ~:res -> ~local(~_a)
 
@@ -104,12 +104,12 @@
         }
       }
     }
-  }:local -> :[], external -> $
+  }:local -> (:), external -> $
 }()
 
-# ~:fac -> ~fn~ |[n] { !~n <= 1?~ { !1 } { !~n * (~fac(~n - 1)) } }
+# ~:fac -> ~fn~ (|n) { !~n <= 1?~ { !1 } { !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
-~:fn -> ~curry~ |[ctx, arg_names, blk] {
+~:fn -> ~curry~ (|ctx, arg_names, blk) {
   $arg_names <<? <-| >< ^:
     error -> expecting_array,
     from -> fn,
@@ -120,7 +120,7 @@
     from -> fn,
     got -> $blk
 
-  !~curry:[blk -> $blk, ctx -> ~fn_ctx($ctx)]($arg_names){
+  !~curry(:blk -> $blk, ctx -> ~fn_ctx($ctx))($arg_names){
     ~ctx $
     ~:____ret -> ~blk(~ctx)()
     ~ctx ____clear_locals
@@ -129,9 +129,9 @@
   }
 }
 
-# ~:list -> ~map~ |[1, 2, 3, 4, 5] { !$ * $ }
-# # ~list will be |[1, 4, 9, 16, 25]
-~:map -> ~fn~ |[ctx, array, blk] {
+# ~:list -> ~map~ (|1, 2, 3, 4, 5) { !$ * $ }
+# # ~list will be (|1, 4, 9, 16, 25)
+~:map -> ~fn~ (|ctx, array, blk) {
   ~array <<? <-| >< ^:
     error -> expecting_array,
     from -> map,
@@ -143,7 +143,7 @@
     arg_name -> blk,
     got -> ~blk
 
-  ~:result -> ~array*|[]
+  ~:result -> ~array*(|)
 
   ~:i -> 0
   ~while~ { !~i < (~array*) } {
@@ -154,9 +154,9 @@
   !~result
 }
 
-# ~:val -> ~accum~ |[1, 2, 3, 4, 5, 6]:init -> { !1 }, step -> { !$e * ($val) }
+# ~:val -> ~accum~ (|1, 2, 3, 4, 5, 6):init -> { !1 }, step -> { !$e * ($val) }
 # # ~val will be 720
-~:accum -> ~fn~ |[ctx, array, blks] {
+~:accum -> ~fn~ (|ctx, array, blks) {
   ~array <<? <-| >< ^:
     error -> expecting_array,
     from -> accum,
@@ -173,7 +173,7 @@
   !~res
 }
 
-~:range -> ~fn~ |[args] {
+~:range -> ~fn~ (|args) {
   ~(~args)  # Merges args and the current context
   ~to <<? <-0 >< ^:
     error -> expecting_number,
@@ -204,5 +204,5 @@
   ~:range_size -> ~to - (~from) / (~step) + 1
 
   ~:val -> ~from
-  !~map~ (~range_size|[]) { ~:ret -> ~val; ~:val -> ~val + (~step) !~ret }
+  !~map~ (~range_size(|)) { ~:ret -> ~val; ~:val -> ~val + (~step) !~ret }
 }
