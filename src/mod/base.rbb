@@ -167,13 +167,8 @@
     from -> accum,
     arg_name -> step,
     got -> ~blks step
-  ~blks init <<? <-{} >< ^:
-    error -> expecting_block,
-    from -> accum,
-    arg_name -> init,
-    got -> ~blks init
 
-  ~:res -> ~blks init(~ctx)()
+  ~:res -> ~blks init
   ~map~ (~array) { ~:res -> ~blks step(~ctx):e -> $, val -> ~res }
   !~res
 }
