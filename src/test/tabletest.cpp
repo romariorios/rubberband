@@ -141,11 +141,25 @@ TESTS_INIT()
     auto tabl4 = table(
         {symbol("a"), symbol("b"), symbol("c")},
         {number(10), number(20), number(30)});
-    tabl4 << table({symbol("c")}, {empty()});
+    tabl4 << symbol("-") << symbol("c");
 
     TEST_CONDITION(
         tabl4 << symbol("*") << symbol("*") == number(2),
         printf(
             "Object at index c wasn't deleted (table is now %s)\n",
             tabl4.to_string().c_str()))
+
+    {
+        auto atable = table(
+            {symbol("a"), symbol("b"), symbol("c")},
+            {number(10), number(20), number(30)}
+        );
+
+        auto result = atable << array({symbol("a"), symbol("b")});
+        TEST_CONDITION(
+            result << symbol("*") << symbol("*") == number(2) &&
+            result << symbol("a") == number(10) &&
+            result << symbol("b") == number(20),
+            puts("Can't get table slice"))
+    }
 TESTS_END()

@@ -905,15 +905,36 @@ SEND_MSG(table)
     // Attribution (merging)
     } else if (msg.__value.type == value_t::data_t) {
         table_data *d = static_cast<table_data *>(thisptr->__value.data);
-        table_data *msg_d =
-            dynamic_cast<table_data *>(msg.__value.data);
-        if (!msg_d)
-            throw message_not_recognized_error{*thisptr, msg};
 
-        for (auto msg_pair : msg_d->objtree)
-            d->objtree[msg_pair.first] = msg_pair.second;
+        table_data *msg_table_d = dynamic_cast<table_data *>(msg.__value.data);
+        if (msg_table_d) {
+            for (auto msg_pair : msg_table_d->objtree)
+                d->objtree[msg_pair.first] = msg_pair.second;
 
-        return *thisptr;
+            return *thisptr;
+        }
+
+        auto msg_array_d = dynamic_cast<array_data *>(msg.__value.data);
+        if (msg_array_d) {
+            auto new_table = table();
+            auto new_table_d = static_cast<table_data *>(new_table.__value.data);
+
+            for (int i = 0; i < msg_array_d->size; ++i) {
+                auto &&obj = msg_array_d->arr[i];
+                if (obj.__value.type != value_t::symbol_t)
+                    throw message_not_recognized_error{*thisptr, msg};
+
+                auto sym = obj.__value.symbol;
+                if (d->objtree.find(sym) == d->objtree.end())
+                    continue;
+
+                new_table_d->objtree[sym] = d->objtree[sym];
+            }
+
+            return new_table;
+        }
+
+        throw message_not_recognized_error{*thisptr, msg};
     }
 
     throw message_not_recognized_error{*thisptr, msg};
