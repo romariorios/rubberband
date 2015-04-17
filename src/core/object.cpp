@@ -454,7 +454,7 @@ SEND_MSG(number)
 
     if (msg == symbol("=="))
         comp.__send_msg = num_op_eq_send_msg;
-    else if (msg == symbol("!="))
+    else if (msg == symbol("/="))
         comp.__send_msg = num_op_ne_send_msg;
     else if (msg == symbol("<"))
         comp.__send_msg = num_op_lt_send_msg;
