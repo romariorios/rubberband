@@ -1,3 +1,23 @@
+# ~assert_condition|<condition>, <error>, <from>, <arg_name>, <extra_args>
+~:assert_cond -> {
+  ~:extra -> $4
+  ~extra <<? <-: ><?~ {
+    ~:extra -> (:)
+  }
+
+  $0 >< ^($4:
+    error -> $1,
+    from -> $2,
+    arg_name -> $3)
+}(:)
+
+# ~assert_for_blk <blk_name>
+# ~:assert -> ~assert_for_blk blk
+# ~assert|<condition>, <error>, <arg_name>, <extra_args>
+~:assert_for_blk -> {
+  !{ !~ctx assert_cond|$0, $1, ~blk_name, $2, $3 }:ctx -> ~, blk_name -> $
+}~
+
 # curry will turn the arguments from a curried function
 # into a table inside the function. Ex.:
 # ~:f -> ~curry~ (|a, b, c) { !:a -> $a, b -> $b, c -> $c }
@@ -5,23 +25,12 @@
 ~:curry ->
 {
   !{
-    $ <<? <-| >< ^:
-      error -> expecting_array,
-      from -> curry,
-      arg_name -> args,
-      got -> $
-    $* == 0 ^:
-      error -> empty_array,
-      from -> curry,
-      arg_name -> args
+    ~assert|$ <<? <-|, expecting_array, args, :got -> $
+    ~assert|$* /= 0, empty_array, args, :got -> $
 
     ~:args -> $
     !{
-      $ <<? <-{} >< ^:
-        error -> expecting_block,
-        from -> curried_function,
-        arg_name -> block,
-        got -> $
+      ~assert|$ <<? <-{}, expecting_block, block, :got -> $
 
       ~:block -> $
       !{
@@ -45,23 +54,15 @@
         }
       }~
     }~
-  }:context -> $
-}()
+  }(~ + :context -> $)
+}(~:assert -> ~assert_for_blk curry)
 
 # while will loop until the condition becomes false. Ex.:
 # ~:i -> 0
 # ~while~ { !~i < 10 } { ~print (~i); ~:i -> ~i + 10 }
-~:while -> ~curry(:) (|context, condition, block) {
-  $condition <<? <-{} >< ^:
-    error -> expecting_block,
-    from -> while,
-    arg_name -> condition,
-    got -> $condition
-  $block <<? <-{} >< ^:
-    error -> expecting_block,
-    from -> while,
-    arg_name -> block,
-    got -> $block
+~:while -> ~curry(:assert -> ~assert_for_blk while) (|context, condition, block) {
+  ~assert|$condition <<? <-{}, expecting_block, condition, :got -> $condition
+  ~assert|$block <<? <-{}, expecting_block, block, :got -> $block
 
   ~$
   ~:loop -> {
@@ -84,10 +85,7 @@
 # ~c      # ()
 ~:fn_ctx -> {
   !{
-    $ <<? <-a \/ ($ <<? <-:) >< ^:
-      error -> expecting_symbol_or_table,
-      from -> fn_ctx_instance,
-      got -> $
+    ~assert|$ <<? <-a \/ ($ <<? <-:), expecting_symbol_or_table, access_obj, :got -> $
 
     !$ <<? <-:?(~:_a -> $) {
       !~local(~_a)
@@ -104,21 +102,15 @@
         }
       }
     }
-  }:local -> (:), external -> $
-}()
+  }:local -> (:), external -> $, assert -> ~assert_for_blk fn_ctx_instance
+}~
 
 # ~:fac -> ~fn~ (|n) { !~n <= 1?~ { !1 } { !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
-~:fn -> ~curry~ (|ctx, arg_names, blk) {
-  $arg_names <<? <-| >< ^:
-    error -> expecting_array,
-    from -> fn,
-    arg_name -> arg_names,
-    got -> $arg_names
-  $blk <<? <-{} >< ^:
-    error -> expecting_block,
-    from -> fn,
-    got -> $blk
+~:fn -> ~curry(~ + :assert -> ~assert_for_blk fn) (|ctx, arg_names, blk).
+{
+  ~assert|$arg_names <<? <-|, expecting_array, arg_names, :got -> $arg_names
+  ~assert|$blk <<? <-{}, expecting_block, blk, :got -> $blk
 
   !~curry(:blk -> $blk, ctx -> ~fn_ctx($ctx))($arg_names){
     ~ctx $
@@ -129,19 +121,14 @@
   }
 }
 
+~:use_assert -> { ~:assert -> ~assert_for_blk$ }
+
 # ~:list -> ~map~ (|1, 2, 3, 4, 5) { !$ * $ }
 # # ~list will be (|1, 4, 9, 16, 25)
 ~:map -> ~fn~ (|ctx, array, blk) {
-  ~array <<? <-| >< ^:
-    error -> expecting_array,
-    from -> map,
-    arg_name -> array,
-    got -> ~array
-  ~blk <<? <-{} >< ^:
-    error -> expecting_block,
-    from -> map,
-    arg_name -> blk,
-    got -> ~blk
+  ~use_assert~map
+  ~assert|~array <<? <-|, expecting_array, array, :got -> ~array
+  ~assert|~blk <<? <-{}, expecting_block, blk, :got -> ~blk
 
   ~:result -> ~array*(|)
 
@@ -157,16 +144,9 @@
 # ~:val -> ~accum~ (|1, 2, 3, 4, 5, 6):init -> { !1 }, step -> { !$e * ($val) }
 # # ~val will be 720
 ~:accum -> ~fn~ (|ctx, array, blks) {
-  ~array <<? <-| >< ^:
-    error -> expecting_array,
-    from -> accum,
-    arg_name -> array,
-    got -> ~array
-  ~blks step <<? <-{} >< ^:
-    error -> expecting_block,
-    from -> accum,
-    arg_name -> step,
-    got -> ~blks step
+  ~use_assert~accum
+  ~assert|~array <<? <-|, expecting_array, array, :got -> ~array
+  ~assert|~blks step <<? <-{}, expecting_block, step, :got -> ~blks step
 
   ~:res -> ~blks init
   ~map~ (~array) { ~:res -> ~blks step(~ctx):e -> $, val -> ~res }
@@ -175,30 +155,19 @@
 
 ~:range -> ~fn~ (|args) {
   ~(~args)  # Merges args and the current context
-  ~to <<? <-0 >< ^:
-    error -> expecting_number,
-    from -> range,
-    arg_name -> to,
-    got -> ~to
+  ~use_assert~range
+  ~assert|~to <<? <-0, expecting_number, to, :got -> ~to
 
   ~from <<? <-()?~ {
     ~:from -> 0
   } {
-    ~from <<? <-0 >< ^:
-      error -> expecting_number,
-      from -> range,
-      arg_name -> from,
-      got -> ~from
+    ~assert|~from <<? <-0, expecting_number, from, :got -> ~from
   }
 
   ~step <<? <-()?~ {
     ~:step -> 1
   } {
-    ~step <<? <-0 >< ^:
-      error -> expecting_number,
-      from -> range,
-      arg_name -> step,
-      got -> ~step
+    ~assert|~step <<? <-0, expecting_number, step, :got -> ~step
   }
 
   ~:range_size -> ~to - (~from) / (~step) + 1
