@@ -19,7 +19,9 @@
 #define OBJECT_HPP
 
 #include <initializer_list>
+#include <memory>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace rbb
@@ -70,7 +72,8 @@ public:
 
     object operator<<(const object &msg); // send_msg
 
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
 
     value_t __value;
     send_msg_function __send_msg;

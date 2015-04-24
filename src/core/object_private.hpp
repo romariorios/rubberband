@@ -19,6 +19,8 @@
 #define OBJECT_PRIVATE_HPP
 
 #include <map>
+#include <memory>
+#include <unordered_set>
 
 #include "shared_data_t.hpp"
 
@@ -49,7 +51,8 @@ public:
         delete[] arr;
     }
     
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
 
     object *arr;
     int size;
@@ -58,7 +61,8 @@ public:
 class table_data : public shared_data_t
 {
 public:
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
     
     std::map<symbol_node *, object> objtree;
 };
@@ -72,7 +76,8 @@ public:
         delete block_l;
     }
     
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> = nullptr) const;
 
     literal::block *block_l;
 };

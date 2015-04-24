@@ -18,6 +18,9 @@
 #ifndef SHARED_DATA_T
 #define SHARED_DATA_T
 
+#include <memory>
+#include <unordered_set>
+
 namespace rbb
 {
 
@@ -31,7 +34,9 @@ public:
     virtual ~shared_data_t()
     {}
     
-    virtual std::string to_string() const {
+    virtual std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> = nullptr) const
+    {
         return "[unknown data]";
     }
 
