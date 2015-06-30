@@ -22,7 +22,7 @@ TESTS_INIT()
             rbb::number(20),
             rbb::number(30)
         }),
-        "|[10, 20, 30]")
+        "(|10, 20, 30)")
     TEST_STRINGFICATION(
         rbb::table({
             rbb::symbol("a"),
@@ -34,7 +34,7 @@ TESTS_INIT()
             rbb::number(20),
             rbb::number(30)
         }),
-        ":[a -> 10, b -> 20, c -> 30]")
+        "(:a -> 10, b -> 20, c -> 30)")
     {
         rbb::literal::block bll;
         bll.return_statement().add_expr<rbb::literal::number>(10);
@@ -81,7 +81,7 @@ TESTS_INIT()
 
         TEST_STRINGFICATION(
             bll.eval(),
-            "{ ~ :[a -> 10]; ~ :[b -> 20]; ~ :[c -> |[thirty, trinta, 30]] }"
+            "{ ~ (:a -> 10); ~ (:b -> 20); ~ (:c -> (|thirty, trinta, 30)) }"
         )
     }
 TESTS_END()
