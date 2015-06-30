@@ -91,7 +91,7 @@ TESTS_INIT()
         tokenizer tok{
             R"(
                 ~:i -> 0
-                ~:v -> |20|[]
+                ~:v -> (20|)
                 ~while~ {! ~i < 20 } {
                     ~v|~i, ~i * (~i)
                 }
@@ -108,11 +108,10 @@ TESTS_INIT()
             token::t::colon,
             token::symbol("v"),
             token::t::arrow,
-            token::t::bar,
+            token::t::parenthesis_open,
             token::number(20),
             token::t::bar,
-            token::t::bracket_open,
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::t::stm_sep,
             token::t::tilde,
             token::symbol("while"),
@@ -191,17 +190,17 @@ TESTS_INIT()
     }
 
     {
-        tokenizer tok{"!|[1, 2, a] 2"};
+        tokenizer tok{"!(|1, 2, a) 2"};
         std::vector<token> expected {
             token::t::exclamation,
+            token::t::parenthesis_open,
             token::t::bar,
-            token::t::bracket_open,
             token::number(1),
             token::t::comma,
             token::number(2),
             token::t::comma,
             token::symbol("a"),
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::number(2)
         };
         auto tok_all = tok.look_all();
@@ -210,11 +209,11 @@ TESTS_INIT()
     }
 
     {
-        tokenizer tok{"!:[a -> 10, b -> 20] b"};
+        tokenizer tok{"!(:a -> 10, b -> 20) b"};
         std::vector<token> expected {
             token::t::exclamation,
+            token::t::parenthesis_open,
             token::t::colon,
-            token::t::bracket_open,
             token::symbol("a"),
             token::t::arrow,
             token::number(10),
@@ -222,7 +221,7 @@ TESTS_INIT()
             token::symbol("b"),
             token::t::arrow,
             token::number(20),
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::symbol("b")
         };
         auto tok_all = tok.look_all();
@@ -231,13 +230,13 @@ TESTS_INIT()
     }
 
     {
-        tokenizer tok{"{}:[]; :a -> 10"};
+        tokenizer tok{"{}(:); :a -> 10"};
         std::vector<token> expected {
             token::t::curly_open,
             token::t::curly_close,
+            token::t::parenthesis_open,
             token::t::colon,
-            token::t::bracket_open,
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::t::stm_sep,
             token::t::colon,
             token::symbol("a"),
@@ -252,7 +251,7 @@ TESTS_INIT()
     {
         tokenizer tok{R"(
             ~uncurry:
-                args -> (~argc)|[],
+                args -> ((~argc)|),
                 i -> 1,
                 argc -> ~argc,
                 context -> ~context,
@@ -265,12 +264,12 @@ TESTS_INIT()
             token::symbol("args"),
             token::t::arrow,
             token::t::parenthesis_open,
+            token::t::parenthesis_open,
             token::t::tilde,
             token::symbol("argc"),
             token::t::parenthesis_close,
             token::t::bar,
-            token::t::bracket_open,
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::t::comma,
             token::symbol("i"),
             token::t::arrow,
@@ -297,16 +296,16 @@ TESTS_INIT()
 
     {
         tokenizer tok{R"(
-            ~fun:[
+            ~fun(:
                 stuff -> 10,
                 more_stuff -> 20
-            ]()
+            )()
         )"};
         std::vector<token> expected{
             token::t::tilde,
             token::symbol("fun"),
+            token::t::parenthesis_open,
             token::t::colon,
-            token::t::bracket_open,
             token::symbol("stuff"),
             token::t::arrow,
             token::number(10),
@@ -314,7 +313,7 @@ TESTS_INIT()
             token::symbol("more_stuff"),
             token::t::arrow,
             token::number(20),
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::t::parenthesis_open,
             token::t::parenthesis_close
         };
@@ -326,7 +325,7 @@ TESTS_INIT()
     {
         tokenizer tok{R"(
             %^~math
-            ~:good_stuff -> :[]
+            ~:good_stuff -> (:)
             %^(~good_stuff)external
         )"};
         vector<token> expected{
@@ -339,9 +338,9 @@ TESTS_INIT()
             token::t::colon,
             token::symbol("good_stuff"),
             token::t::arrow,
+            token::t::parenthesis_open,
             token::t::colon,
-            token::t::bracket_open,
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::t::stm_sep,
             token::t::percent,
             token::symbol("^"),
@@ -392,7 +391,7 @@ TESTS_INIT()
     
     {
         tokenizer tok{R"(
-            ~:a -> |[]
+            ~:a -> (|)
             ~a <<? <-|
             <-:<-()<-{}
             ~:b -> <-() <<? <-<
@@ -402,9 +401,9 @@ TESTS_INIT()
             token::t::colon,
             token::symbol("a"),
             token::t::arrow,
+            token::t::parenthesis_open,
             token::t::bar,
-            token::t::bracket_open,
-            token::t::bracket_close,
+            token::t::parenthesis_close,
             token::t::stm_sep,
             token::t::tilde,
             token::symbol("a"),
