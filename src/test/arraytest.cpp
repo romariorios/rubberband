@@ -29,7 +29,7 @@ auto size = arr << rbb::symbol("*");\
 TEST_CONDITION(\
     size == rbb::number(__size),\
     printf(\
-        "The array %s wasn't properly allocated\n  Expected size: %ld; actual size: %s\n",\
+        "The array %s wasn't properly allocated\n  Expected size: %d; actual size: %s\n",\
         arr.to_string().c_str(),\
         __size,\
         size.to_string().c_str()))
@@ -39,7 +39,7 @@ auto result = arr << rbb::number(__index);\
 TEST_CONDITION(\
     result == (__expected),\
     printf(\
-        "The array %s wasn't properly allocated\n  The element %ld was expected to be %s, but it was %s\n",\
+        "The array %s wasn't properly allocated\n  The element %d was expected to be %s, but it was %s\n",\
         arr.to_string().c_str(),\
         __index,\
         (__expected).to_string().c_str(),\
