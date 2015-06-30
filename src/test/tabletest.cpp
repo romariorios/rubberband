@@ -155,7 +155,7 @@ TESTS_INIT()
             {number(10), number(20), number(30)}
         );
 
-        auto result = atable << array({symbol("a"), symbol("b")});
+        auto result = atable << rbb::array({symbol("a"), symbol("b")});
         TEST_CONDITION(
             result << symbol("*") << symbol("*") == number(2) &&
             result << symbol("a") == number(10) &&
