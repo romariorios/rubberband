@@ -100,19 +100,19 @@ TESTS_INIT()
     TEST_PROGRAM("", empty(), empty(), empty())
     TEST_PROGRAM("!10", empty(), empty(), number(10))
     TEST_PROGRAM("!10 ", empty(), empty(), number(10))
-    TEST_PROGRAM("!|[1, 2, a] 0", empty(), empty(), number(1))
-    TEST_PROGRAM("!|[1, 2, a] 1", empty(), empty(), number(2))
-    TEST_PROGRAM("!|[1, 2, a] 2", empty(), empty(), symbol("a"))
-    TEST_PROGRAM("!|[1, 2, a] 3", empty(), empty(), empty())
-    TEST_PROGRAM("!:[a -> 10, b -> 20] a", empty(), empty(), number(10))
-    TEST_PROGRAM("!:[a -> 10, b -> 20] b", empty(), empty(), number(20))
-    TEST_PROGRAM("!:[a -> 10, b -> 20] lol", empty(), empty(), empty())
+    TEST_PROGRAM("!(|1, 2, a) 0", empty(), empty(), number(1))
+    TEST_PROGRAM("!(|1, 2, a) 1", empty(), empty(), number(2))
+    TEST_PROGRAM("!(|1, 2, a) 2", empty(), empty(), symbol("a"))
+    TEST_PROGRAM("!(|1, 2, a) 3", empty(), empty(), empty())
+    TEST_PROGRAM("!(:a -> 10, b -> 20) a", empty(), empty(), number(10))
+    TEST_PROGRAM("!(:a -> 10, b -> 20) b", empty(), empty(), number(20))
+    TEST_PROGRAM("!(:a -> 10, b -> 20) lol", empty(), empty(), empty())
     TEST_PROGRAM("!$", empty(), number(10), number(10));
     TEST_PROGRAM("!~", number(10), empty(), number(10));
     TEST_PROGRAM("~:x -> $ !~x * $", table({}, {}), number(10), number(100))
     TEST_PROGRAM("~:x -> $ !~x * (~x)", table({}, {}), number(10), number(100))
     TEST_PROGRAM(R"(
-        ~:fibnums -> |[0, 1, 1]
+        ~:fibnums -> (|0, 1, 1)
         ~:n -> $
 
         !~n <= 2?~ {
@@ -147,7 +147,7 @@ TESTS_INIT()
                 }
             }~
             ~loop()
-        }:[]
+        }(:)
 
         ~:fibnums -> |0, 1, 1
         ~:n -> $
@@ -163,7 +163,7 @@ TESTS_INIT()
         !~fibnums 2
     )", table({}, {}), number(43), number(433494437))
     TEST_PROGRAM(R"(
-        ~:v -> 3|[]
+        ~:v -> 3(|)
         ~v|0, 10
         ~v|1, 20
         ~v|2, 30
@@ -171,7 +171,7 @@ TESTS_INIT()
         !~v 0
     )", table({}, {}), empty(), number(10))
     TEST_PROGRAM(R"(
-        ~:v -> 3|[]
+        ~:v -> 3(|)
         ~v|0, 10
         ~v|1, 20
         ~v|2, 30
@@ -179,7 +179,7 @@ TESTS_INIT()
         !~v 1
     )", table({}, {}), empty(), number(20))
     TEST_PROGRAM(R"(
-        ~:v -> 3|[]
+        ~:v -> 3(|)
         ~v|0, 10
         ~v|1, 20
         ~v|2, 30
@@ -192,5 +192,5 @@ TESTS_INIT()
         !~a
     )", table({}, {}), empty(), number(10))
 
-    TEST_PARSING("{}:[]; :a -> 10", "{ {  } :[]; :[a -> 10] }")
+    TEST_PARSING("{}(:); :a -> 10", "{ {  } (:); (:a -> 10) }")
 TESTS_END()
