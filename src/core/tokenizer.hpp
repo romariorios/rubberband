@@ -44,6 +44,7 @@ struct token
 
         // Separators
         arrow,
+        dot,
         comma,
         exclamation,
         stm_sep,
@@ -175,7 +176,6 @@ private:
     enum class _state {
         start,
         comment,
-        merge_lines,
         arrow_or_negative_number,
         number_integer_part,
         number_fractional_part,
@@ -194,7 +194,6 @@ private:
     long _cur_line = 1;
     long _cur_col = 1;
     
-    bool _dot_ahead(int &ignore_offset, int& length, long &line, long &col) const;
     token _look_token(int &length, long &line, long &col) const;
 
     token _previous_token = token{token::t::start_of_input};

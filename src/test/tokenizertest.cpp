@@ -147,8 +147,7 @@ TESTS_INIT()
     {
         tokenizer tok{R"(
             # This is a comment
-            { ~:x -> $; ~:y -> ~x +
-            .$ ! ~x * (~x) } # This is also a comment
+            { ~:x -> $; ~:y -> ~x + $ ! ~x * (~x) } # This is also a comment
         )"};
         std::vector<token> expected {
             token::t::curly_open,
@@ -179,14 +178,6 @@ TESTS_INIT()
         auto tok_all = tok.look_all();
 
         TEST_TOKENIZATION
-
-        tokenizer tok2{R"(
-            # This is a comment
-            { ~:x -> $; ~:y -> ~x +.
-            $ ! ~x * (~x) } # This is also a comment
-        )"};
-
-        TEST_TOKENIZATION_OF(tok2.look_all(), expected)
     }
 
     {
@@ -425,5 +416,26 @@ TESTS_INIT()
         auto &&tok_all = tok.look_all();
         
         TEST_TOKENIZATION
+    }
+
+    {
+        tokenizer tok{R"(
+            ~:sqr -> ().{ !$ * $ }
+        )"};
+        vector<token> expected{
+            token::t::tilde,
+            token::t::colon,
+            token::symbol("sqr"),
+            token::t::arrow,
+            token::t::parenthesis_open,
+            token::t::parenthesis_close,
+            token::t::dot,
+            token::t::curly_open,
+            token::t::exclamation,
+            token::t::dollar,
+            token::symbol("*"),
+            token::t::dollar,
+            token::t::curly_close
+        };
     }
 TESTS_END()

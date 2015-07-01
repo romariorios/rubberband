@@ -58,28 +58,6 @@ std::vector<token> tokenizer::look_all() const
     return tok.all();
 }
 
-bool tokenizer::_dot_ahead(int &ignore_offset, int &length, long &line, long &col) const
-{
-    for (auto &ch : _remaining.substr(length)) {
-        ++length;
-        ++ignore_offset;
-        ++col;
-
-        switch (ch) {
-        case ' ':
-        case '\t':
-        case '\n':
-            continue;
-        case '.':
-            return true;
-        default:
-            --length;
-            --ignore_offset;
-            return false;
-        }
-    }
-}
-
 static void rewind(int &length, long &line, long &col, long prevcol, char ch)
 {
     --length;
@@ -156,11 +134,6 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                         ++ignore_offset;
                         continue;
                     default:
-                        if (_dot_ahead(ignore_offset, length, line, col)) {
-                            cur_state = _state::merge_lines;
-                            continue;
-                        }
-
                         return token::t::stm_sep;
                     }
                 }
@@ -169,11 +142,9 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             case '#':
                 cur_state = _state::comment;
                 continue;
-            // Merge lines
-            case '.':
-                cur_state = _state::merge_lines;
-                continue;
             // Single-char tokens
+            case '.':
+                return token::t::dot;
             case '{':
                 return token::t::curly_open;
             case '(':
@@ -262,17 +233,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
 
             rewind(length, line, col, prevcol, ch);
             cur_state = _state::start;
-        case _state::merge_lines:
-            switch (ch) {
-            case '\n':
-            case ' ':
-            case '\t':
-                continue;
-            default:
-                rewind(length, line, col, prevcol, ch);
-                cur_state = _state::start;
-                continue;
-            }
+            continue;
         case _state::arrow_or_negative_number:
             if (ch == '>')
                 return token::t::arrow;
