@@ -84,6 +84,13 @@ msg_send(chain)     ::= expr_value(expr) stm(s).
 }
 expr_value(e)       ::= literal(l). { e = l; }
 expr_value(e)       ::= PARENTHESIS_OPEN stm(s) PARENTHESIS_CLOSE. { e = s; }
+expr_value(e)       ::= expr_value(msg) DOT expr_value(rcv).
+{
+    auto stm = new block_statement;
+    stm->add_expr_ptr(msg);
+    stm->add_expr_ptr(rcv);
+    e = stm;
+}
 literal(l)          ::= empty(e). { l = e; }
 literal(l)          ::= SYMBOL(tok). { l = new literal::symbol{std::string{*tok->lexem.str}}; }
 literal(l)          ::= NUMBER(tok).

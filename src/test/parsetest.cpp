@@ -193,4 +193,8 @@ TESTS_INIT()
     )", table({}, {}), empty(), number(10))
 
     TEST_PARSING("{}(:); :a -> 10", "{ {  } (:); (:a -> 10) }")
+
+    TEST_PROGRAM(R"(
+        !2.(|0, 10, this_one, 20)
+    )", empty(), empty(), symbol("this_one"))
 TESTS_END()

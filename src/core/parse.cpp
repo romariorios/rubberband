@@ -44,6 +44,8 @@ inline int token_to_tokcode(token t)
         return PARENTHESIS_CLOSE;
     case token::t::arrow:
         return ARROW;
+    case token::t::dot:
+        return DOT;
     case token::t::comma:
         return COMMA;
     case token::t::exclamation:
