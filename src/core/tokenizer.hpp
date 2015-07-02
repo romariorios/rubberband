@@ -178,6 +178,7 @@ private:
         comment,
         arrow_or_negative_number,
         number_integer_part,
+        number_fractional_part_or_dot,
         number_fractional_part,
         eq_symbol,
         gt_char,

@@ -437,5 +437,32 @@ TESTS_INIT()
             token::t::dollar,
             token::t::curly_close
         };
+        auto &&tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
+
+    {
+        tokenizer tok{R"(
+            !2.(|0, 10, this_one, 20)
+        )"};
+        vector<token> expected{
+            token::t::exclamation,
+            token::number(2),
+            token::t::dot,
+            token::t::parenthesis_open,
+            token::t::bar,
+            token::number(0),
+            token::t::comma,
+            token::number(10),
+            token::t::comma,
+            token::symbol("this_one"),
+            token::t::comma,
+            token::number(20),
+            token::t::parenthesis_close
+        };
+        auto &&tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
     }
 TESTS_END()

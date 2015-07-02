@@ -247,7 +247,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
         case _state::number_integer_part:
             switch (ch) {
             case '.':
-                cur_state = _state::number_fractional_part;
+                cur_state = _state::number_fractional_part_or_dot;
                 continue;
             default:
                 if (!(ch >= '0' && ch <= '9')) {
@@ -259,6 +259,18 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 }
                 continue;
             }
+        case _state::number_fractional_part_or_dot:
+            if (!(ch >= '0' && ch <= '9')) {
+                rewind(length, line, col, prevcol, ch);
+                rewind(length, line, col, prevcol, ch);
+
+                return token::number(
+                    std::stol(
+                        _remaining.substr(0, length + 1)));
+            }
+
+            cur_state = _state::number_fractional_part;
+            continue;
         case _state::number_fractional_part:
             if (!(ch >= '0' && ch <= '9')) {
                 rewind(length, line, col, prevcol, ch);
