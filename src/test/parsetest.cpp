@@ -197,4 +197,11 @@ TESTS_INIT()
     TEST_PROGRAM(R"(
         !2.(|0, 10, this_one, 20)
     )", empty(), empty(), symbol("this_one"))
+
+    TEST_PROGRAM(R"(
+        (~
+        :a -> 10)
+        !(~
+        a)
+    )", table({}, {}), empty(), number(10))
 TESTS_END()

@@ -195,7 +195,9 @@ private:
     long _cur_line = 1;
     long _cur_col = 1;
     
-    token _look_token(int &length, long &line, long &col) const;
+    struct _look_token_args;
+    static void _rewind(_look_token_args &args, char ch, long prevcol);
+    token _look_token(_look_token_args &args) const;
 
     token _previous_token = token{token::t::start_of_input};
     std::string _remaining;

@@ -21,24 +21,29 @@
 
 using namespace rbb;
 
-token tokenizer::next()
+struct tokenizer::_look_token_args
 {
     int length;
-    long line = _cur_line, col = _cur_col;
-    auto ret = _previous_token = _look_token(length, line, col);
+    long line;
+    long col;
+};
 
-    _remaining.erase(_remaining.begin(), _remaining.begin() + length);
-    _cur_line = line;
-    _cur_col = col;
+token tokenizer::next()
+{
+    _look_token_args args = {0, _cur_line, _cur_col};
+    auto ret = _previous_token = _look_token(args);
+
+    _remaining.erase(_remaining.begin(), _remaining.begin() + args.length);
+    _cur_line = args.line;
+    _cur_col = args.col;
     return ret;
 }
 
 token tokenizer::look_next() const
 {
-    int l; // unused
-    long li = _cur_line, col = _cur_col;
+    _look_token_args args = {0, _cur_line, _cur_col};
 
-    return _look_token(l, li, col);
+    return _look_token(args);
 }
 
 std::vector<token> tokenizer::all()
@@ -58,12 +63,12 @@ std::vector<token> tokenizer::look_all() const
     return tok.all();
 }
 
-static void rewind(int &length, long &line, long &col, long prevcol, char ch)
+void tokenizer::_rewind(_look_token_args& args, char ch, long int prevcol)
 {
-    --length;
+    --args.length;
     if (ch == '\n') {
-        --line;
-        col = prevcol;
+        --args.line;
+        args.col = prevcol;
     }
 }
 
@@ -81,21 +86,21 @@ static void throw_invalid_interface_error(
         "Invalid interface name"};
 }
 
-token tokenizer::_look_token(int& length, long &line, long &col) const
+token tokenizer::_look_token(_look_token_args &args) const
 {
-    length = 1;
+    args.length = 1;
     int ignore_offset = 0;
     auto cur_state = _state::start;
 
-    for (; length <= _remaining.size() + 1; ++length, ++col) {
-        const auto &ch = length <= _remaining.size()?
-            _remaining[length - 1] :
+    for (; args.length <= _remaining.size() + 1; ++args.length, ++args.col) {
+        const auto &ch = args.length <= _remaining.size()?
+            _remaining[args.length - 1] :
             '\0';
-        const auto prevcol = col;
+        const auto prevcol = args.col;
 
         if (ch == '\n') {
-            col = 1;
-            ++line;
+            args.col = 1;
+            ++args.line;
         }
 
         // Start state machine
@@ -123,7 +128,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 default:
                 {
                     // FIXME maybe this is a bit overkill?
-                    tokenizer tok{_remaining.substr(length)};
+                    tokenizer tok{_remaining.substr(args.length)};
                     const auto next_tok = tok.look_next();
 
                     switch (next_tok.type) {
@@ -207,7 +212,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 cur_state = _state::arrow_or_negative_number;
                 continue;
             case '\0':
-                rewind(length, line, col, prevcol, ch);
+                _rewind(args, ch, prevcol);
                 return token::t::end_of_input;
             default:
                 // Number
@@ -221,7 +226,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 )
                     cur_state = _state::alphanumeric_symbol;
                 else {
-                    length = _remaining.size();
+                    args.length = _remaining.size();
                     return token::t::invalid;
                 }
 
@@ -231,7 +236,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
             if (ch != '\n')
                 continue;
 
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             cur_state = _state::start;
             continue;
         case _state::arrow_or_negative_number:
@@ -242,7 +247,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 continue;
             }
 
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             return token::symbol("-");
         case _state::number_integer_part:
             switch (ch) {
@@ -251,33 +256,33 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 continue;
             default:
                 if (!(ch >= '0' && ch <= '9')) {
-                    rewind(length, line, col, prevcol, ch);
+                    _rewind(args, ch, prevcol);
 
                     return token::number(
                         std::stol(
-                            _remaining.substr(0, length + 1)));
+                            _remaining.substr(0, args.length + 1)));
                 }
                 continue;
             }
         case _state::number_fractional_part_or_dot:
             if (!(ch >= '0' && ch <= '9')) {
-                rewind(length, line, col, prevcol, ch);
-                rewind(length, line, col, prevcol, ch);
+                _rewind(args, ch, prevcol);
+                _rewind(args, ch, prevcol);
 
                 return token::number(
                     std::stol(
-                        _remaining.substr(0, length + 1)));
+                        _remaining.substr(0, args.length + 1)));
             }
 
             cur_state = _state::number_fractional_part;
             continue;
         case _state::number_fractional_part:
             if (!(ch >= '0' && ch <= '9')) {
-                rewind(length, line, col, prevcol, ch);
+                _rewind(args, ch, prevcol);
 
                 return token::number_f(
                     std::stod(
-                        _remaining.substr(0, length + 1)));
+                        _remaining.substr(0, args.length + 1)));
             }
             continue;
         case _state::gt_char:
@@ -288,7 +293,7 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 return token::symbol(">=");
             }
 
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             return token::symbol(">");
         case _state::lt_char:
             switch (ch) {
@@ -302,13 +307,13 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 continue;
             }
 
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             return token::symbol("<");
         case _state::eq_symbol:
             if (ch == '=')
                 return token::symbol("==");
 
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             return token::symbol("=");
         case _state::slash_char:
             switch (ch) {
@@ -318,13 +323,13 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 return token::symbol("/\\");
             }
 
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             return token::symbol("/");
         case _state::inverted_slash_char:
             if (ch == '/')
                 return token::symbol("\\/");
 
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             return token::symbol("\\");
         case _state::alphanumeric_symbol:
             if (!(
@@ -333,17 +338,17 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 (ch >= '0' && ch <= '9') ||
                 ch == '_'
             )) {
-                rewind(length, line, col, prevcol, ch);
+                _rewind(args, ch, prevcol);
 
                 return token::symbol(
-                    _remaining.substr(ignore_offset, length - ignore_offset));
+                    _remaining.substr(ignore_offset, args.length - ignore_offset));
             }
             continue;
         case _state::double_lt:
             if (ch == '?')
                 return token::symbol("<<?");
             
-            rewind(length, line, col, prevcol, ch);
+            _rewind(args, ch, prevcol);
             return token::symbol("<<");
         case _state::left_arrow:
             switch (ch) {
@@ -367,20 +372,20 @@ token tokenizer::_look_token(int& length, long &line, long &col) const
                 return token::symbol("<-<");
             }
 
-            throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
+            throw_invalid_interface_error(args.line, args.col, _remaining, ignore_offset, args.length);
         case _state::left_arrow_open_par:
             if (ch == ')')
                 return token::symbol("<-()");
             
-            throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
+            throw_invalid_interface_error(args.line, args.col, _remaining, ignore_offset, args.length);
         case _state::left_arrow_open_curly:
             if (ch == '}')
                 return token::symbol("<-{}");
             
-            throw_invalid_interface_error(line, col, _remaining, ignore_offset, length);
+            throw_invalid_interface_error(args.line, args.col, _remaining, ignore_offset, args.length);
         }
     }
 
-    --length;
+    --args.length;
     return token::t::end_of_input;
 }
