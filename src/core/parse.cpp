@@ -55,6 +55,8 @@ inline int token_to_tokcode(token t)
     case token::t::number:
     case token::t::number_f:
         return NUMBER;
+    case token::t::boolean:
+        return BOOLEAN;
     case token::t::symbol:
         return SYMBOL;
     case token::t::dollar:

@@ -103,6 +103,7 @@ literal(l)          ::= NUMBER(tok).
         l = new literal::empty;
     }
 }
+literal(l)          ::= BOOLEAN(tok). { l = new literal::boolean{tok->lexem.boolean}; }
 literal(l)          ::= array(arr). { l = arr; }
 literal(l)          ::= table(t). { l = t; }
 literal(l)          ::= block(bl). { l = bl; }

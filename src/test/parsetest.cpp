@@ -179,7 +179,7 @@ TESTS_INIT()
         !~v 1
     )", table({}, {}), empty(), number(20))
     TEST_PROGRAM(R"(
-        ~:v -> 3(|)
+        ~:v -> |.3
         ~v|0, 10
         ~v|1, 20
         ~v|2, 30
@@ -192,7 +192,7 @@ TESTS_INIT()
         !~a
     )", table({}, {}), empty(), number(10))
 
-    TEST_PARSING("{}(:); :a -> 10", "{ {  } (:); (:a -> 10) }")
+    TEST_PARSING(":.{}; :a -> 10", "{ ({  } (:)); (:a -> 10) }")
 
     TEST_PROGRAM(R"(
         !2.(|0, 10, this_one, 20)
@@ -204,4 +204,12 @@ TESTS_INIT()
         !(~
         a)
     )", table({}, {}), empty(), number(10))
+
+    TEST_PROGRAM(R"(
+        !?0
+    )", empty(), empty(), boolean(false))
+
+    TEST_PROGRAM(R"(
+        !?1
+    )", empty(), empty(), boolean(true))
 TESTS_END()
