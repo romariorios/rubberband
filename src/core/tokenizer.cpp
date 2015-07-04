@@ -20,29 +20,21 @@
 #include "error.hpp"
 
 using namespace rbb;
-
-struct tokenizer::_look_token_args
-{
-    int length;
-    long line;
-    long col;
-};
+using namespace std;
 
 token tokenizer::next()
 {
-    _look_token_args args = {0, _cur_line, _cur_col};
+    _look_token_args args{_cur_state};
     auto ret = _previous_token = _look_token(args);
 
     _remaining.erase(_remaining.begin(), _remaining.begin() + args.length);
-    _cur_line = args.line;
-    _cur_col = args.col;
+    _cur_state = args;
     return ret;
 }
 
 token tokenizer::look_next() const
 {
-    _look_token_args args = {0, _cur_line, _cur_col};
-
+    _look_token_args args{_cur_state};
     return _look_token(args);
 }
 
@@ -113,10 +105,14 @@ token tokenizer::_look_token(_look_token_args &args) const
                 ++ignore_offset;
                 continue;
             case '\n':
+                if (args.par_depth.top() != 0) {
+                    ++ignore_offset;
+                    continue;
+                }
+
                 switch (_previous_token.type) {
                 case token::t::start_of_input:
                 case token::t::curly_open:
-                case token::t::parenthesis_open:
                 case token::t::arrow:
                 case token::t::comma:
                 case token::t::exclamation:
@@ -133,7 +129,6 @@ token tokenizer::_look_token(_look_token_args &args) const
 
                     switch (next_tok.type) {
                     case token::t::curly_close:
-                    case token::t::parenthesis_close:
                     case token::t::exclamation:
                     case token::t::end_of_input:
                         ++ignore_offset;
@@ -151,12 +146,16 @@ token tokenizer::_look_token(_look_token_args &args) const
             case '.':
                 return token::t::dot;
             case '{':
+                args.par_depth.push(0);
                 return token::t::curly_open;
             case '(':
+                args.par_depth.top()++;
                 return token::t::parenthesis_open;
             case '}':
+                args.par_depth.pop();
                 return token::t::curly_close;
             case ')':
+                args.par_depth.top()--;
                 return token::t::parenthesis_close;
             case ',':
                 return token::t::comma;

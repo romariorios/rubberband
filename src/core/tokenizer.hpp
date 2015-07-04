@@ -20,8 +20,7 @@
 
 #include <string>
 #include <vector>
-
-using namespace std;
+#include <stack>
 
 namespace rbb
 {
@@ -150,11 +149,37 @@ struct token
     }
 
     // Defined in to_string.cpp
-    string to_string() const;
+    std::string to_string() const;
 };
 
 class tokenizer
 {
+    struct _look_token_args
+    {
+        _look_token_args() = default;
+        _look_token_args(_look_token_args &&) = delete;
+
+        _look_token_args(const _look_token_args &other) :
+            line{other.line},
+            col{other.line},
+            par_depth{other.par_depth}
+        {}
+
+        _look_token_args &operator=(const _look_token_args &other)
+        {
+            line = other.line;
+            col = other.col;
+            par_depth = other.par_depth;
+
+            return *this;
+        }
+
+        long length;
+        long line = 1;
+        long col = 1;
+        std::stack<int> par_depth{{0}};
+    } _cur_state;
+
 public:
     tokenizer(const std::string &str) :
         _remaining{str}
@@ -169,8 +194,9 @@ public:
     std::vector<token> all();
     std::vector<token> look_all() const;
     
-    inline long cur_line() const { return _cur_line; }
-    inline long cur_col() const { return _cur_col; }
+    inline long cur_line() const { return _cur_state.line; }
+    inline long cur_col() const { return _cur_state.col; }
+    void _par_depth(int arg1);
 
 private:
     enum class _state {
@@ -192,10 +218,6 @@ private:
         left_arrow_open_curly
     };
 
-    long _cur_line = 1;
-    long _cur_col = 1;
-    
-    struct _look_token_args;
     static void _rewind(_look_token_args &args, char ch, long prevcol);
     token _look_token(_look_token_args &args) const;
 

@@ -465,4 +465,55 @@ TESTS_INIT()
 
         TEST_TOKENIZATION
     }
+
+    {
+        tokenizer tok{R"(
+            (~
+            a)
+        )"};
+        vector<token> expected{
+            token::t::parenthesis_open,
+            token::t::tilde,
+            token::symbol("a"),
+            token::t::parenthesis_close
+        };
+        auto &&tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
+
+    {
+        tokenizer tok{R"(
+            b{
+            ~:c -> 0
+            ~:d -> 0
+            (~
+            e)
+            }
+        )"};
+        vector<token> expected{
+            token::symbol("b"),
+            token::t::curly_open,
+            token::t::tilde,
+            token::t::colon,
+            token::symbol("c"),
+            token::t::arrow,
+            token::number(0),
+            token::t::stm_sep,
+            token::t::tilde,
+            token::t::colon,
+            token::symbol("d"),
+            token::t::arrow,
+            token::number(0),
+            token::t::stm_sep,
+            token::t::parenthesis_open,
+            token::t::tilde,
+            token::symbol("e"),
+            token::t::parenthesis_close,
+            token::t::curly_close
+        };
+        auto &&tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
 TESTS_END()
