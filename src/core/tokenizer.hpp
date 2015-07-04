@@ -51,6 +51,7 @@ struct token
         // Literals
         number,
         number_f,
+        boolean,
         symbol,
         dollar,
         tilde,
@@ -65,6 +66,7 @@ struct token
     union {
         long integer;
         double floating;
+        bool boolean;
         std::string *str;
     } lexem;
 
@@ -114,6 +116,14 @@ struct token
     {
         token ret{t::number_f};
         ret.lexem.floating = floating;
+
+        return ret;
+    }
+
+    static token boolean(bool val)
+    {
+        token ret{t::boolean};
+        ret.lexem.boolean = val;
 
         return ret;
     }
@@ -202,6 +212,7 @@ private:
     enum class _state {
         start,
         comment,
+        question_mark_or_boolean,
         arrow_or_negative_number,
         number_integer_part,
         number_fractional_part_or_dot,

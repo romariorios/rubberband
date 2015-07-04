@@ -181,6 +181,8 @@ token tokenizer::_look_token(_look_token_args &args) const
                 return token::t::colon;
             // Special symbols
             case '?':
+                cur_state = _state::question_mark_or_boolean;
+                continue;
             case '+':
             case '*':
             case '^':
@@ -238,6 +240,16 @@ token tokenizer::_look_token(_look_token_args &args) const
             _rewind(args, ch, prevcol);
             cur_state = _state::start;
             continue;
+        case _state::question_mark_or_boolean:
+            switch (ch) {
+            case '0':
+                return token::boolean(false);
+            case '1':
+                return token::boolean(true);
+            default:
+                _rewind(args, ch, prevcol);
+                return token::symbol("?");
+            }
         case _state::arrow_or_negative_number:
             if (ch == '>')
                 return token::t::arrow;

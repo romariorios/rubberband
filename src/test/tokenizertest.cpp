@@ -516,4 +516,26 @@ TESTS_INIT()
 
         TEST_TOKENIZATION
     }
+
+    {
+        tokenizer tok{R"(
+            ~:
+            true_literal -> ?1,
+            false_literal -> ?0
+        )"};
+        vector<token> expected{
+            token::t::tilde,
+            token::t::colon,
+            token::symbol("true_literal"),
+            token::t::arrow,
+            token::boolean(true),
+            token::t::comma,
+            token::symbol("false_literal"),
+            token::t::arrow,
+            token::boolean(false)
+        };
+        auto &&tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
 TESTS_END()
