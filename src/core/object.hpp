@@ -35,13 +35,15 @@ struct value_t
 {
     enum type_t
     {
-        no_data_t  = 0x10,
-        empty_t    = 0x11,
-        integer_t  = 0x12,
-        floating_t = 0x13,
-        boolean_t  = 0x14,
-        symbol_t   = 0x15,
-        data_t     = 0x20
+        no_type_t  = 0x0,
+        no_data_t  = 0x1,
+        empty_t    = 0x2,
+        integer_t  = 0x4,
+        floating_t = 0x8,
+        boolean_t  = 0x10,
+        symbol_t   = 0x20,
+        data_t     = 0x40,
+        functor_t  = 0x80
     } type = value_t::empty_t;
 
     union
@@ -114,6 +116,11 @@ inline object table(
         std::vector<object> {symbols},
         std::vector<object> {objects});
 }
+
+object functor(
+    shared_data_t *data,
+    send_msg_function send_msg = nullptr);
+object functor(send_msg_function send_msg = nullptr);
 
 }
 

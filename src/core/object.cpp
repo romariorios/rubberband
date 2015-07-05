@@ -22,6 +22,7 @@
 #include "object_private.hpp"
 #include "symbol.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <vector>
 
@@ -51,6 +52,21 @@ object object::create_data_object(
     return ret;
 }
 
+class object_data : public shared_data_t
+{
+public:
+    object_data(const object &obj) :
+        obj(obj)
+    {}
+
+    object obj;
+};
+
+static object create_functor_object(object *data, send_msg_function send_msg = nullptr)
+{
+    return functor(new object_data{*data}, send_msg);
+}
+
 // object: The base for everything
 SEND_MSG(empty);
 
@@ -74,16 +90,20 @@ object& object::operator=(const object& other)
 {
     this->~object();
 
-    __value = other.__value;
+    if (other.__value.type & value_t::data_t) {
+        __value.shared_data = new shared_ptr<shared_data_t>(*other.__value.shared_data);
+        __value.type = other.__value.type;
+    } else
+        __value = other.__value;
+
     __send_msg = other.__send_msg;
 
     return *this;
 }
 
-static bool is_numeric(const value_t &val)
+static bool is_numeric(object &val)
 {
-    return val.type == value_t::integer_t ||
-           val.type == value_t::floating_t;
+    return (val << symbol("<<?") << symbol("<-0")).__value.boolean;
 }
 
 object::~object()
@@ -115,16 +135,6 @@ bool object::operator==(const object& other) const
     return false;
 }
 
-class object_data : public shared_data_t
-{
-public:
-    object_data(const object &obj) :
-        obj(obj)
-    {}
-
-    object obj;
-};
-
 // static symbols
 namespace s_symb
 {
@@ -134,9 +144,28 @@ namespace s_symb
 
 static bool in_bounds(array_data *, int);
 
+object check_if_operation_true(const object &obj, const object &msg, const char *op)
+{
+    try {
+        auto &&follows_interface_obj = obj.__send_msg(const_cast<object *>(&obj), symbol(op));
+        return boolean(
+            follows_interface_obj.__send_msg(
+                &follows_interface_obj,
+                msg) ==
+            boolean(true));
+    // FIXME maybe catching *all* exceptions isn't a good idea
+    } catch (...) {
+        return boolean(false);
+    }
+}
+
 SEND_MSG(responds_to)
 {
     auto &object = static_cast<object_data *>(thisptr->__value.data())->obj;
+
+    // Any object that gets here is not a functor
+    if (msg == s_symb::double_lt || msg == s_symb::double_lt_question)
+        return boolean(true);
     
     if (msg == symbol("==") || msg == symbol("!="))
         switch (object.__value.type) {
@@ -199,10 +228,10 @@ SEND_MSG(responds_to)
                     msg_d->size == 2 &&
                     (
                         (
-                            msg_d->arr[0].__value.type == value_t::integer_t &&
+                            msg_d->arr[0].__value.type & value_t::integer_t &&
                             in_bounds(arr_d, msg_d->arr[0].__value.integer)
                         ) || (
-                            msg_d->arr[0].__value.type == value_t::floating_t &&
+                            msg_d->arr[0].__value.type & value_t::floating_t &&
                             in_bounds(arr_d, msg_d->arr[0].__value.floating)
                         )
                     ));
@@ -234,27 +263,18 @@ SEND_MSG(responds_to)
             if (!block_d->block_l->_context_set)
                 return boolean(true);
         }
-        
-        return {};
     }
     default:
-        return boolean(false);
+        break;
     }
-}
 
-object ask_if_obj_follows_interface(const object &obj, const object &msg)
-{
-    auto &&follows_interface_obj = obj.__send_msg(const_cast<object *>(&obj), symbol("<<?"));
-    return boolean(
-        follows_interface_obj.__send_msg(
-            &follows_interface_obj,
-            msg) ==
-        boolean(true));
+    // otherwise, delegate the question to the object itself
+    return check_if_operation_true(object, msg, "<<");
 }
 
 object follows_interface(const object &obj, const object &msg)
 {
-    switch (obj.__value.type) {
+    switch (obj.__value.type & ~value_t::functor_t) {
     case value_t::integer_t:
     case value_t::floating_t:
         return boolean(msg == symbol("<-0"));
@@ -277,19 +297,13 @@ object follows_interface(const object &obj, const object &msg)
         auto block_d = dynamic_cast<block_data *>(d);
         if (block_d && !block_d->block_l->_context_set)
             return boolean(msg == symbol("<-{}"));
-
-        // otherwise, delegate the question to the object itself
-        try {
-            return ask_if_obj_follows_interface(obj, msg);
-        // FIXME maybe catching *all* exceptions isn't a good idea
-        } catch (...) {
-            return boolean(false);
-        }
     }
     default:
-        // do same thing here
-        return ask_if_obj_follows_interface(obj, msg);
+        break;
     }
+
+    // otherwise, delegate the question to the object itself
+    return check_if_operation_true(obj, msg, "<<?");
 }
 
 SEND_MSG(follows_interface)
@@ -301,31 +315,16 @@ SEND_MSG(follows_interface)
 
 object object::operator<<(const object &msg)
 {
-    if (msg == s_symb::double_lt) {
-        // In this case, this object is the responds_to method already
-        if (__send_msg == responds_to_send_msg)
-            return boolean(true);
-        
-        object responds_to_obj;
-        responds_to_obj.__value.type = value_t::data_t;
-        responds_to_obj.__value.data = new object_data{*this};
-        responds_to_obj.__send_msg = responds_to_send_msg;
-        
-        return responds_to_obj;
-    }
+    if (__value.type & value_t::functor_t)
+        goto send_msg_skip_introspection;
+
+    if (msg == s_symb::double_lt)
+        return create_functor_object(this, responds_to_send_msg);
     
-    if (msg == s_symb::double_lt_question) {
-        if (__send_msg == responds_to_send_msg)
-            return boolean(true);
-        
-        object follows_interface_obj;
-        follows_interface_obj.__value.type = value_t::data_t;
-        follows_interface_obj.__value.data = new object_data{*this};
-        follows_interface_obj.__send_msg = follows_interface_send_msg;
-        
-        return follows_interface_obj;
-    }
+    if (msg == s_symb::double_lt_question)
+        return create_functor_object(this, follows_interface_send_msg);
     
+send_msg_skip_introspection:
     return __send_msg(this, msg);
 }
 
@@ -339,7 +338,7 @@ SEND_MSG(empty)
         return empty();
 
     object cmp;
-    cmp.__value.type = value_t::no_data_t;
+    cmp.__value.type = value_t::functor_t;
 
     if (msg == symbol("=="))
         cmp.__send_msg = empty_cmp_eq_send_msg;
@@ -359,10 +358,11 @@ object rbb::empty()
 // number: Numeric object
 double rbb::number_to_double(const object &num)
 {
-    if (!is_numeric(num.__value))
+    auto num_copy = num;
+    if (!is_numeric(num_copy))
         return NAN;
 
-    return num.__value.type == value_t::floating_t?
+    return num.__value.type & value_t::floating_t?
         num.__value.floating : (double) num.__value.integer;
 }
 
@@ -372,11 +372,11 @@ static object num_operation(const object &thisobj, const object &msg,
 {
     object obj = static_cast<object_data *>(thisobj.__value.data())->obj;
 
-    if (!is_numeric(obj.__value))
+    if (!is_numeric(obj))
         return empty();
 
-    if (obj.__value.type == value_t::integer_t &&
-        msg.__value.type == value_t::integer_t
+    if (obj.__value.type & value_t::integer_t &&
+        msg.__value.type & value_t::integer_t
     ) {
         return int_operation(obj.__value.integer, msg.__value.integer);
     }
@@ -423,11 +423,12 @@ static int get_index_from_obj(const object &);
 SEND_MSG(number)
 {
     if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
-        auto d = static_cast<array_data *>(msg.__value.data);
+        auto msg_copy = msg;
+        int msg_size = number_to_double(msg_copy << symbol("*"));
         auto new_d = new array_data{get_index_from_obj(*thisptr)};
 
-        for (auto i = 0; i < d->size; ++i)
-            new_d->arr[i] = d->arr[i];
+        for (auto i = 0; i < min(msg_size, new_d->size); ++i)
+            new_d->arr[i] = msg_copy << number(i);
 
         return create_array_object(new_d);
     }
@@ -435,7 +436,7 @@ SEND_MSG(number)
     if (follows_interface(msg, symbol("<-a")) != boolean(true))
         throw message_not_recognized_error{*thisptr, msg};
 
-    object comp = create_data_object(new object_data(*thisptr));
+    object comp = create_functor_object(thisptr);
 
     if (msg == symbol("=="))
         comp.__send_msg = num_op_eq_send_msg;
@@ -495,7 +496,7 @@ SEND_MSG(symbol)
     if (follows_interface(msg, symbol("<-a")) != boolean(true))
         throw message_not_recognized_error{*thisptr, msg};
 
-    object cmp_op = create_data_object(new object_data(*thisptr));
+    object cmp_op = create_functor_object(thisptr);
 
     if (msg == symbol("=="))
         cmp_op.__send_msg = symbol_comp_eq_send_msg;
@@ -574,7 +575,7 @@ SEND_MSG(boolean_get_iftrue_block)
     if (d->boolean_obj.__value.boolean)
         d_ret->true_result = block << d->context << empty();
 
-    return create_data_object(d_ret, boolean_get_iffalse_block_send_msg);
+    return functor(d_ret, boolean_get_iffalse_block_send_msg);
 }
 
 SEND_MSG(boolean_get_context)
@@ -583,7 +584,7 @@ SEND_MSG(boolean_get_context)
     if (!d)
         return empty();
 
-    return create_data_object(
+    return functor(
         new boolean_decision_data(msg, d->obj),
         boolean_get_iftrue_block_send_msg);
 }
@@ -591,7 +592,7 @@ SEND_MSG(boolean_get_context)
 #define BOOLEAN_DO(op, sym)\
 SEND_MSG(boolean_do_##op)\
 {\
-    if (msg.__value.type != value_t::boolean_t)\
+    if (follows_interface(msg, symbol("<-?")) != boolean(true))\
         return empty();\
 \
     object_data *d = static_cast<object_data *>(thisptr->__value.data());\
@@ -628,15 +629,15 @@ SEND_MSG(boolean)
         comp_block.__value.boolean = !thisptr->__value.boolean;
         return comp_block;
     } else if (msg == symbol("/\\")) {
-        return create_data_object(new object_data(*thisptr), boolean_do_AND_send_msg);
+        return create_functor_object(thisptr, boolean_do_AND_send_msg);
     } else if (msg == symbol("\\/")) {
-        return create_data_object(new object_data(*thisptr), boolean_do_OR_send_msg);
+        return create_functor_object(thisptr, boolean_do_OR_send_msg);
     } else if (msg == symbol("><")) {
         return boolean(!thisptr->__value.boolean);
     } else if (msg == symbol("?")) {
-        return create_data_object(new object_data(*thisptr), boolean_get_context_send_msg);
+        return create_functor_object(thisptr, boolean_get_context_send_msg);
     } else if (msg == symbol("^")) {
-        return create_data_object(new object_data{*thisptr}, boolean_raise_send_msg);
+        return create_functor_object(thisptr, boolean_raise_send_msg);
     }
 
     throw message_not_recognized_error{*thisptr, msg};
@@ -708,8 +709,8 @@ SEND_MSG(array_slicing)
         throw semantic_error{"Wrong number of arguments for array slicing", *thisptr, msg};
 
     if (
-        !is_numeric(msg_d->arr[0].__value) ||
-        !is_numeric(msg_d->arr[1].__value)
+        !is_numeric(msg_d->arr[0]) ||
+        !is_numeric(msg_d->arr[1])
     )
         throw wrong_type_error<number_name>{*thisptr, msg};
 
@@ -730,10 +731,11 @@ SEND_MSG(array_slicing)
 
 static int get_index_from_obj(const object &obj)
 {
-    if (!is_numeric(obj.__value))
+    auto obj_copy = obj;
+    if (!is_numeric(obj_copy))
         return -1;
 
-    if (obj.__value.type == value_t::floating_t)
+    if (obj.__value.type & value_t::floating_t)
         return obj.__value.floating;
 
     return obj.__value.integer;
@@ -752,7 +754,7 @@ SEND_MSG(array)
         if (msg == symbol("*"))
             return rbb::number(d->size);
 
-        object symb_ret = create_data_object(new object_data(*thisptr));
+        object symb_ret = create_functor_object(thisptr);
 
         if (msg == symbol("=="))
             symb_ret.__send_msg = data_comparison_eq_send_msg;
@@ -767,20 +769,20 @@ SEND_MSG(array)
 
         return symb_ret;
     } else if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
-        array_data *msg_d = static_cast<array_data *>(msg.__value.data);
+        auto msg_copy = msg;
 
-        if (msg_d->size < 2)
+        if ((msg_copy << symbol("*") << symbol("<") << number(2)).__value.boolean)
             throw semantic_error{"Wrong number of arguments for array assignment", *thisptr, msg};
 
-        auto index = msg_d->arr[0];
-        if (!is_numeric(index.__value))
+        auto index = msg_copy << number(0);
+        if (!is_numeric(index))
             throw wrong_type_error<number_name>{*thisptr, msg};
 
         auto msg_ind = get_index_from_obj(index);
         if (!in_bounds(d, msg_ind))
             return empty();
 
-        d->arr[msg_ind] = msg_d->arr[1];
+        d->arr[msg_ind] = msg_copy << number(1);
 
         return empty();
     } else if (follows_interface(msg, symbol("<-0")) == boolean(true)) {
@@ -842,7 +844,7 @@ SEND_MSG(table)
     table_data *d = static_cast<table_data *>(thisptr->__value.data());
 
     if (follows_interface(msg, symbol("<-a")) == boolean(true)) {
-        object answer = create_data_object(new object_data(*thisptr));
+        object answer = create_functor_object(thisptr);
 
         if (msg == rbb::symbol("=="))
             answer.__send_msg = data_comparison_eq_send_msg;
@@ -886,7 +888,7 @@ SEND_MSG(table)
 
         for (int i = 0; i < msg_array_d->size; ++i) {
             auto &&obj = msg_array_d->arr[i];
-            if (obj.__value.type != value_t::symbol_t)
+            if (follows_interface(obj, symbol("<-a")) != boolean(true))
                 throw message_not_recognized_error{*thisptr, msg};
 
             auto sym = obj.__value.symbol;
@@ -921,7 +923,7 @@ object rbb::table(
 }
 
 // Block: A sequence of instructions ready to be executed
-SEND_MSG(block)
+SEND_MSG(block_instance)
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data());
     d->block_l->set_message(msg);
@@ -929,7 +931,7 @@ SEND_MSG(block)
     return d->block_l->run();
 }
 
-SEND_MSG(block_body)
+SEND_MSG(block)
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data());
     auto block_l = new literal::block(*d->block_l);
@@ -945,4 +947,14 @@ object rbb::literal::block::eval(literal::block *parent)
         block_l->set_master(parent->_master);
 
     return object::create_data_object(new block_data(block_l), block_send_msg);
+}
+
+object rbb::functor(shared_data_t* data, send_msg_function send_msg)
+{
+    return object::create_data_object(data, send_msg, value_t::functor_t);
+}
+
+object rbb::functor(send_msg_function send_msg)
+{
+    return create_object(value_t::functor_t, send_msg);
 }

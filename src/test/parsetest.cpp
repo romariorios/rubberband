@@ -44,7 +44,7 @@ public:
             res == (expected),\
             printf(\
                 "The program:\n"\
-                "  { %s }\n"\
+                "{ %s \n}\n"\
                 "interpreted as:\n"\
                 "  %s\n"\
                 "running over the context:\n"\
@@ -66,12 +66,22 @@ public:
             false,\
             printf(\
                 "The program:\n"\
-                "  { %s }\n"\
+                "{ %s \n}\n"\
                 "has a syntax error at line %s, column %s (token: %s)\n",\
                 program,\
                 to_string(e.line).c_str(),\
                 to_string(e.column).c_str(),\
                 e.t().to_string().c_str()))\
+    } catch (std::exception &e) {\
+        TEST_CONDITION(\
+            false,\
+            printf(\
+                "The program:\n"\
+                "{ %s \n}\n"\
+                "threw the following exception:\n"\
+                "  %s\n",\
+                program,\
+                e.what()))\
     }\
 }
 
@@ -212,4 +222,37 @@ TESTS_INIT()
     TEST_PROGRAM(R"(
         !?1
     )", empty(), empty(), boolean(true))
+
+    TEST_PROGRAM(R"(
+        ~:fake_empty -> ().{
+          !$ == <<? ?(:arg -> $) {
+            !().{ !$ == <-() }
+          } {
+            !~arg == ()
+          }
+        }
+
+        !~fake_empty <<? <-()
+    )", table({}, {}), empty(), boolean(true))
+
+    TEST_PROGRAM(R"(
+        # Will be equivalent to |0, 10
+        ~:fake_array -> ().{
+          !$ == <<? ?(:arg -> $) {
+            !().{ !$ == <-| }
+          } {
+            !~arg == *?~ {
+              !2
+            } {
+              !~arg <<? <-0?~ {
+                !~arg * 10
+              } { }
+            }
+          }
+        }
+        ~:array -> |0, 10, 20, 30
+        ~array(~fake_array)  # Equivalent to ~array(|0, 10), so it should set the first element to 10
+
+        !~array 0
+    )", table({}, {}), empty(), number(10))
 TESTS_END()

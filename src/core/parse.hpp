@@ -58,12 +58,7 @@ namespace rbb
     template <class master_t>
     object master_set_context_send_msg(object *thisptr, const object &msg)
     {
-        object load;
-        load.__value.type = value_t::data_t;
-        load.__value.data = new load_data{msg};
-        load.__send_msg = master_load_send_msg<master_t>;
-        
-        return load;
+        return functor(new load_data{msg}, master_load_send_msg<master_t>);
     }
 
     class custom_operation_data : public shared_data_t
@@ -89,18 +84,15 @@ namespace rbb
     {
         if (msg == symbol("^")) {
             object load;
-            load.__value.type = value_t::no_data_t;
-            load.__value.data = nullptr;
+            load.__value.type =
+                static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
             load.__send_msg = master_set_context_send_msg<master_t>;
 
             return load;
         } else if (msg.__value.type == value_t::symbol_t) {
-            object custom;
-            custom.__value.type = value_t::data_t;
-            custom.__value.data = new custom_operation_data{msg};
-            custom.__send_msg = master_custom_operation_send_msg<master_t>;
-
-            return custom;
+            return functor(
+                new custom_operation_data{msg},
+                master_custom_operation_send_msg<master_t>);
         } else {
             throw semantic_error{
                 "Unknown operation by master object",
@@ -148,8 +140,8 @@ object parse(const string &code)
     p.parse(token::t::end_of_input);
 
     object master_object;
-    master_object.__value.type = value_t::no_data_t;
-    master_object.__value.data = nullptr;
+    master_object.__value.type =
+        static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
     master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
 
     return p.result(master_object);

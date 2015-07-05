@@ -136,18 +136,22 @@ TESTS_INIT()
     {
         auto &&obj = bl.eval() << object{};
         auto &&ans = obj << symbol("<<") << symbol("pretty_much_anything");
-        
+
         TEST_CONDITION(
-            ans == object{},
+            ans == boolean(false),
             printf(
-                "Block instance reports it knows what it responds to (responded %s)\n",
+                "Block instance should return false for a message it doesn't know how to respond "
+                "(responded %s)\n",
                 ans.to_string().c_str()))
         
         auto &&iface = obj << symbol("<<?") << symbol("<-{}");
-        
+
         TEST_CONDITION(
-            iface == object{},
-            puts("Block instance report it knows whether it follows the <-{} interface"))
+            iface == boolean(false),
+            printf(
+                "Block instance should return false when asked if it follows the <-{} interface "
+                "(responded %s)\n",
+                iface.to_string().c_str()))
     }
     
     {
