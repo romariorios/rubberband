@@ -40,7 +40,10 @@ static object create_object(value_t::type_t type, send_msg_function send_msg = 0
     return ret;
 }
 
-static object create_data_object(shared_data_t *data, send_msg_function send_msg = 0)
+object object::create_data_object(
+    shared_data_t *data,
+    send_msg_function send_msg,
+    value_t::type_t extra_type)
 {
     object ret = create_object(static_cast<value_t::type_t>(value_t::data_t | extra_type), send_msg);
     ret.__value.shared_data = new shared_ptr<shared_data_t>(data);
@@ -412,7 +415,7 @@ SEND_MSG(array);
 
 static object create_array_object(array_data *d)
 {
-    return create_data_object(d, array_send_msg);
+    return object::create_data_object(d, array_send_msg);
 }
 
 static int get_index_from_obj(const object &);
@@ -914,7 +917,7 @@ object rbb::table(
         d->objtree[sym] = objects[i];
     }
 
-    return create_data_object(d, table_send_msg);
+    return object::create_data_object(d, table_send_msg);
 }
 
 // Block: A sequence of instructions ready to be executed
@@ -932,7 +935,7 @@ SEND_MSG(block_body)
     auto block_l = new literal::block(*d->block_l);
     block_l->set_context(msg);
 
-    return create_data_object(new block_data(block_l), block_send_msg);
+    return object::create_data_object(new block_data(block_l), block_instance_send_msg);
 }
 
 object rbb::literal::block::eval(literal::block *parent)
@@ -941,5 +944,5 @@ object rbb::literal::block::eval(literal::block *parent)
     if (parent)
         block_l->set_master(parent->_master);
 
-    return create_data_object(new block_data(block_l), block_body_send_msg);
+    return object::create_data_object(new block_data(block_l), block_send_msg);
 }
