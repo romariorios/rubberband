@@ -25,7 +25,7 @@
 #include "error.hpp"
 #include "shared_data_t.hpp"
 
-#include <stack>
+#include <memory>
 #include <string>
 
 namespace rbb
@@ -47,7 +47,7 @@ namespace rbb
     template <class master_t>
     object master_load_send_msg(object *thisptr, const object &msg)
     {
-        auto d = static_cast<load_data *>(thisptr->__value.data);
+        auto d = static_cast<load_data *>(thisptr->__value.data());
 
         if (msg.__value.type != value_t::symbol_t)
             throw semantic_error{"Symbol expected", *thisptr, msg};
@@ -79,7 +79,7 @@ namespace rbb
     template <class master_t>
     object master_custom_operation_send_msg(object *thisptr, const object &msg)
     {
-        auto d = static_cast<custom_operation_data *>(thisptr->__value.data);
+        auto d = static_cast<custom_operation_data *>(thisptr->__value.data());
 
         return master_t::custom_operation(d->symbol.to_string(), msg);
     }

@@ -27,20 +27,15 @@ namespace rbb
 class shared_data_t
 {
 public:
-    shared_data_t() :
-        refc(1)
-    {}
+    shared_data_t() {}
 
-    virtual ~shared_data_t()
-    {}
+    virtual ~shared_data_t() {}
     
     virtual std::string to_string(
         std::shared_ptr<std::unordered_set<const object *>> = nullptr) const
     {
         return "[unknown data]";
     }
-
-    int refc;
 };
 
 }

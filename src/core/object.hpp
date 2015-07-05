@@ -50,8 +50,10 @@ struct value_t
         double floating;
         bool boolean;
         symbol_node *symbol;
-        shared_data_t *data;
+        std::shared_ptr<shared_data_t> *shared_data;
     };
+
+    shared_data_t *data() const { return shared_data->get(); }
 };
 
 class object;
@@ -77,11 +79,6 @@ public:
 
     value_t __value;
     send_msg_function __send_msg;
-
-private:
-    void destroy();
-    void ref();
-    int deref();
 };
 
 object empty();

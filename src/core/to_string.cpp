@@ -195,7 +195,7 @@ std::string object::to_string(
     case value_t::boolean_t:
         return __value.boolean? "?1" : "?0";
     case value_t::data_t:
-        return __value.data->to_string(visited);
+        return __value.data()->to_string(visited);
     default:
         return "[unknown]";
     }
