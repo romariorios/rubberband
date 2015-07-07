@@ -1,9 +1,5 @@
 #include "tests_common.hpp"
 
-#include <rbb/error.hpp>
-#include <rbb/parse.hpp>
-#include <string>
-
 extern void LemonCParserTrace(FILE *stream, char *zPrefix);
 
 object __print(object *, const object &msg)
@@ -33,62 +29,6 @@ public:
         return {};
     }
 };
-
-#define TEST_PARSER(__master, program, context, message, expected)\
-{\
-    try {\
-        auto prog = parse<__master>(program);\
-        auto res = prog << (context) << (message);\
-\
-        TEST_CONDITION(\
-            res == (expected),\
-            printf(\
-                "The program:\n"\
-                "{ %s \n}\n"\
-                "interpreted as:\n"\
-                "  %s\n"\
-                "running over the context:\n"\
-                "  %s\n"\
-                "when receiving the message:\n"\
-                "  %s\n"\
-                "returns:\n"\
-                "  %s\n"\
-                "but the following was expected:\n"\
-                "  %s\n",\
-                program,\
-                prog.to_string().c_str(),\
-                context.to_string().c_str(),\
-                message.to_string().c_str(),\
-                res.to_string().c_str(),\
-                expected.to_string().c_str()))\
-    } catch (syntax_error e) {\
-        TEST_CONDITION(\
-            false,\
-            printf(\
-                "The program:\n"\
-                "{ %s \n}\n"\
-                "has a syntax error at line %s, column %s (token: %s)\n",\
-                program,\
-                to_string(e.line).c_str(),\
-                to_string(e.column).c_str(),\
-                e.t().to_string().c_str()))\
-    } catch (std::exception &e) {\
-        TEST_CONDITION(\
-            false,\
-            printf(\
-                "The program:\n"\
-                "{ %s \n}\n"\
-                "threw the following exception:\n"\
-                "  %s\n",\
-                program,\
-                e.what()))\
-    }\
-}
-
-#define TEST_PROGRAM(program, context, message, expected)\
-{\
-    TEST_PARSER(dummy_master, program, context, message, expected)\
-}
 
 #define TEST_PARSING(__program, __to_string)\
 {\
@@ -222,37 +162,4 @@ TESTS_INIT()
     TEST_PROGRAM(R"(
         !?1
     )", empty(), empty(), boolean(true))
-
-    TEST_PROGRAM(R"(
-        ~:fake_empty -> ().{
-          !$ == <<? ?(:arg -> $) {
-            !().{ !$ == <-() }
-          } {
-            !~arg == ()
-          }
-        }
-
-        !~fake_empty <<? <-()
-    )", table({}, {}), empty(), boolean(true))
-
-    TEST_PROGRAM(R"(
-        # Will be equivalent to |0, 10
-        ~:fake_array -> ().{
-          !$ == <<? ?(:arg -> $) {
-            !().{ !$ == <-| }
-          } {
-            !~arg == *?~ {
-              !2
-            } {
-              !~arg <<? <-0?~ {
-                !~arg * 10
-              } { }
-            }
-          }
-        }
-        ~:array -> |0, 10, 20, 30
-        ~array(~fake_array)  # Equivalent to ~array(|0, 10), so it should set the first element to 10
-
-        !~array 0
-    )", table({}, {}), empty(), number(10))
 TESTS_END()
