@@ -887,12 +887,13 @@ SEND_MSG(table)
 
         return *thisptr;
     } else if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
-        auto msg_array_d = static_cast<array_data *>(msg.__value.data());
+        auto msg_copy = msg;
+        int array_size = number_to_double(msg_copy << symbol("*"));
         auto new_table = table();
         auto new_table_d = static_cast<table_data *>(new_table.__value.data());
 
-        for (int i = 0; i < msg_array_d->size; ++i) {
-            auto &&obj = msg_array_d->arr[i];
+        for (int i = 0; i < array_size; ++i) {
+            auto &&obj = msg_copy << number(i);
             if (follows_interface(obj, symbol("<-a")) != boolean(true))
                 throw message_not_recognized_error{*thisptr, msg};
 

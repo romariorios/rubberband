@@ -55,4 +55,27 @@ TESTS_INIT()
 
         !~a
     )", table({}, {}), empty(), number(15))
+
+    TEST_PROGRAM(R"(
+        ~:a -> 10, b -> 20, c -> 30
+
+        # Should be roughly equivalent to (|b)
+        ~:fake_array -> ().{
+          !$ == <<? ?(:arg -> $) {
+            !().{ !$ == <-| }
+          } {
+            !~arg == *?~ {
+              !1
+            } {
+              !~arg == 0?~ {
+                !b
+              } { }
+            }
+          }
+        }
+
+        # Take a slice of the context table
+        ~:slice -> ~(~fake_array)
+        !~slice b == 20 /\ (~slice a == ())
+    )", table({}, {}), empty(), boolean(true))
 TESTS_END()
