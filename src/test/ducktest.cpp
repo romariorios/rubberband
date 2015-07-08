@@ -35,4 +35,24 @@ TESTS_INIT()
 
         !~array 0
     )", table({}, {}), empty(), number(10))
+
+    TEST_PROGRAM(R"(
+        ~:fake_table -> ().{
+          !$ == <<? ?(:arg -> $) {
+            !().{ !$ == <-: }
+          } {
+            !~arg == *?~ {
+              !|a
+            } {
+              !~arg == a?~ {
+                !15
+              } { }
+            }
+          }
+        }
+
+        ~(~fake_table)  # Equivalent to ~:a -> 15
+
+        !~a
+    )", table({}, {}), empty(), number(15))
 TESTS_END()

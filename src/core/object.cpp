@@ -875,10 +875,15 @@ SEND_MSG(table)
 
     // Attribution (merging)
     } else if (follows_interface(msg, symbol("<-:")) == boolean(true)) {
-        table_data *msg_table_d = static_cast<table_data *>(msg.__value.data());
+        auto msg_copy = msg;
+        auto sym_array = msg_copy << symbol("*");
+        int sym_array_len = number_to_double(sym_array << symbol("*"));
 
-        for (auto msg_pair : msg_table_d->objtree)
-            d->objtree[msg_pair.first] = msg_pair.second;
+        for (int i = 0; i < sym_array_len; ++i) {
+            auto cur_sym = sym_array << number(i);
+            auto cur_sym_ptr = cur_sym.__value.symbol;
+            d->objtree[cur_sym_ptr] = msg_copy << cur_sym;
+        }
 
         return *thisptr;
     } else if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
