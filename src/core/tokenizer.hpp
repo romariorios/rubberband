@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -213,20 +213,19 @@ private:
         start,
         comment,
         question_mark_or_boolean,
-        arrow_or_negative_number,
+        arrow_or_negative_number_or_special_symbol,
         number_integer_part,
         number_fractional_part_or_dot,
         number_fractional_part,
+        special_symbol_or_two_minuses,
+        special_symbol,
         eq_symbol,
         gt_char,
         lt_char,
         slash_char,
         inverted_slash_char,
         alphanumeric_symbol,
-        double_lt,
-        left_arrow,
-        left_arrow_open_par,
-        left_arrow_open_curly
+        double_lt
     };
 
     static void _rewind(_look_token_args &args, char ch, long prevcol);

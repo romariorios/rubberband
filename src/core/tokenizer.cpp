@@ -210,7 +210,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 )
                     return token::symbol("-");
 
-                cur_state = _state::arrow_or_negative_number;
+                cur_state = _state::arrow_or_negative_number_or_special_symbol;
                 continue;
             case '\0':
                 _rewind(args, ch, prevcol);
@@ -250,11 +250,15 @@ token tokenizer::_look_token(_look_token_args &args) const
                 _rewind(args, ch, prevcol);
                 return token::symbol("?");
             }
-        case _state::arrow_or_negative_number:
+        case _state::arrow_or_negative_number_or_special_symbol:
             if (ch == '>')
                 return token::t::arrow;
             if (ch >= '0' && ch <= '9') {
                 cur_state = _state::number_integer_part;
+                continue;
+            }
+            if (ch == '-') {
+                cur_state = _state::special_symbol_or_two_minuses;
                 continue;
             }
 
@@ -296,6 +300,26 @@ token tokenizer::_look_token(_look_token_args &args) const
                         _remaining.substr(0, args.length + 1)));
             }
             continue;
+        case _state::special_symbol_or_two_minuses:
+            if (ch == ' ' || ch == '\t' || ch == '\n') {
+                _rewind(args, ch, prevcol);
+                _rewind(args, ch, prevcol);
+                // rewinding twice: once for the whitespace, once for the extra minus
+
+                return token::symbol("-");
+            }
+
+            cur_state = _state::special_symbol;
+            continue;
+        case _state::special_symbol:
+            if (ch == ' ' || ch == '\t' || ch == '\n') {
+                _rewind(args, ch, prevcol);
+
+                return token::symbol(
+                    _remaining.substr(ignore_offset, args.length - ignore_offset));
+            }
+
+            continue;
         case _state::gt_char:
             switch (ch) {
             case '<':
@@ -312,9 +336,6 @@ token tokenizer::_look_token(_look_token_args &args) const
                 return token::symbol("<=");
             case '<':
                 cur_state = _state::double_lt;
-                continue;
-            case '-':
-                cur_state = _state::left_arrow;
                 continue;
             }
 
@@ -361,39 +382,6 @@ token tokenizer::_look_token(_look_token_args &args) const
             
             _rewind(args, ch, prevcol);
             return token::symbol("<<");
-        case _state::left_arrow:
-            switch (ch) {
-            case '0':
-                return token::symbol("<-0");
-            case '(':
-                cur_state = _state::left_arrow_open_par;
-                continue;
-            case 'a':
-                return token::symbol("<-a");
-            case '?':
-                return token::symbol("<-?");
-            case '|':
-                return token::symbol("<-|");
-            case ':':
-                return token::symbol("<-:");
-            case '{':
-                cur_state = _state::left_arrow_open_curly;
-                continue;
-            case '<':
-                return token::symbol("<-<");
-            }
-
-            throw_invalid_interface_error(args.line, args.col, _remaining, ignore_offset, args.length);
-        case _state::left_arrow_open_par:
-            if (ch == ')')
-                return token::symbol("<-()");
-            
-            throw_invalid_interface_error(args.line, args.col, _remaining, ignore_offset, args.length);
-        case _state::left_arrow_open_curly:
-            if (ch == '}')
-                return token::symbol("<-{}");
-            
-            throw_invalid_interface_error(args.line, args.col, _remaining, ignore_offset, args.length);
         }
     }
 
