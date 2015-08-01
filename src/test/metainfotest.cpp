@@ -1,6 +1,7 @@
 #include "tests_common.hpp"
 
 #include <rbb/block.hpp>
+#include <array>
 
 #define TEST_RESPONDS_TO(message, expected)\
     TEST_CONDITION_WITH_EXCEPTION(\
@@ -20,6 +21,26 @@
             expected? "doesn't follow" : "follows",\
             ifacename))
 
+const char *interfaces[] = {"--a", "--+", "--?", "--|", "--:", "--{}", "--=", "--<"};
+constexpr const unsigned char interfaces_len = sizeof(interfaces) / sizeof(char *);
+using expected_t = std::array<char, interfaces_len>;
+
+bool test_interfaces(object &obj, const expected_t &responds_to)
+{
+    for (auto i = 0; i < interfaces_len; ++i)
+        if (obj << symbol("<<?") << symbol(interfaces[i]) != boolean(responds_to[i]))
+            return false;
+
+    return true;
+}
+
+#define TEST_INTERFACES \
+    TEST_CONDITION_WITH_EXCEPTION(\
+        test_interfaces(obj, expected),\
+        printf(\
+            "The object %s has some incorrect responses for some interfaces\n",\
+            obj.to_string().c_str()))
+
 TESTS_INIT()
     {
         auto &&obj = number(12);
@@ -36,7 +57,8 @@ TESTS_INIT()
             table({symbol("valhalla"), symbol("lol")}, {number(10), number(20)}),
             false)
         
-        TEST_INTERFACE("<-0", true)
+        expected_t expected{0, 1, 0, 0, 0, 0, 1, 1};
+        TEST_INTERFACES
     }
     
     {
@@ -48,7 +70,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("+"), false)
         TEST_RESPONDS_TO(object{}, false)
         
-        TEST_INTERFACE("<-()", true)
+        expected_t expected{0, 0, 0, 0, 0, 0, 1, 1};
+        TEST_INTERFACES
     }
     
     {
@@ -61,7 +84,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("<<?"), true)
         
-        TEST_INTERFACE("<-a", true)
+        expected_t expected{0, 0, 0, 0, 0, 0, 1, 1};
+        TEST_INTERFACES
     }
     
     {
@@ -76,7 +100,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(number(12), false)
         
-        TEST_INTERFACE("<-?", true)
+       expected_t expected{0, 0, 1, 0, 0, 0, 1, 1};
+       TEST_INTERFACES
     }
     
     {
@@ -96,7 +121,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(rbb::array({number(12), number(12), number(12)}), false)
         TEST_RESPONDS_TO(rbb::array({number(3), number(100)}), false)
         
-        TEST_INTERFACE("<-|", true)
+        expected_t expected{0, 0, 0, 1, 0, 0, 1, 1};
+        TEST_INTERFACES
     }
     
     {
@@ -117,7 +143,8 @@ TESTS_INIT()
             table({symbol("d")}, {number(10)}),
             true)
         
-        TEST_INTERFACE("<-:", true)
+        expected_t expected{0, 0, 0, 0, 1, 0, 1, 1};
+        TEST_INTERFACES
     }
     
     literal::block bl;
@@ -130,7 +157,8 @@ TESTS_INIT()
         auto &&obj = bl.eval();
         TEST_RESPONDS_TO(symbol("pretty_much_anything"), true)
         
-        TEST_INTERFACE("<-{}", true)
+        expected_t expected{0, 0, 0, 0, 0, 1, 1, 1};
+        TEST_INTERFACES
     }
     
     {
