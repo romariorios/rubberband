@@ -16,6 +16,7 @@ add_custom_command(
 
 set(rubberbandcore_sources
     block.cpp
+    interfaces.cpp
     object.cpp
     parse.cpp
     symbol.cpp

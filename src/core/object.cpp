@@ -19,6 +19,7 @@
 
 #include "block.hpp"
 #include "error.hpp"
+#include "interfaces.hpp"
 #include "object_private.hpp"
 #include "symbol.hpp"
 
@@ -318,12 +319,16 @@ object object::operator<<(const object &msg)
     if (__value.type & value_t::functor_t)
         goto send_msg_skip_introspection;
 
-    if (msg == s_symb::double_lt)
-        return create_functor_object(this, responds_to_send_msg);
-    
+    if (__value.type & value_t::floating_t || __value.type & value_t::integer_t)
+        goto temporary_workaround_to_make_some_objects_ignore_the_old_follows_interface_function_which_will_be_replaced;
+
     if (msg == s_symb::double_lt_question)
         return create_functor_object(this, follows_interface_send_msg);
-    
+
+temporary_workaround_to_make_some_objects_ignore_the_old_follows_interface_function_which_will_be_replaced:
+    if (msg == s_symb::double_lt)
+        return create_functor_object(this, responds_to_send_msg);
+
 send_msg_skip_introspection:
     return __send_msg(this, msg);
 }
@@ -422,6 +427,26 @@ static int get_index_from_obj(const object &);
 
 SEND_MSG(number)
 {
+    interface_collection<3> num_iface_collection{{
+        unique_ptr<interface>{new iface::arith{
+            num_op_add_send_msg,
+            num_op_sub_send_msg,
+            num_op_mul_send_msg,
+            num_op_div_send_msg
+        }},
+        unique_ptr<interface>{new iface::comparable{
+            num_op_eq_send_msg,
+            num_op_ne_send_msg
+        }},
+        unique_ptr<interface>{new iface::ordered{
+            num_op_lt_send_msg,
+            num_op_gt_send_msg,
+            num_op_le_send_msg,
+            num_op_ge_send_msg
+        }}
+    }};
+
+
     if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
         auto msg_copy = msg;
         int msg_size = number_to_double(msg_copy << symbol("*"));
@@ -437,28 +462,9 @@ SEND_MSG(number)
         throw message_not_recognized_error{*thisptr, msg};
 
     object comp = create_functor_object(thisptr);
+    comp.__send_msg = num_iface_collection.select_function(msg);
 
-    if (msg == symbol("=="))
-        comp.__send_msg = num_op_eq_send_msg;
-    else if (msg == symbol("/="))
-        comp.__send_msg = num_op_ne_send_msg;
-    else if (msg == symbol("<"))
-        comp.__send_msg = num_op_lt_send_msg;
-    else if (msg == symbol(">"))
-        comp.__send_msg = num_op_gt_send_msg;
-    else if (msg == symbol("<="))
-        comp.__send_msg = num_op_le_send_msg;
-    else if (msg == symbol(">="))
-        comp.__send_msg = num_op_ge_send_msg;
-    else if (msg == symbol("+"))
-        comp.__send_msg = num_op_add_send_msg;
-    else if (msg == symbol("-"))
-        comp.__send_msg = num_op_sub_send_msg;
-    else if (msg == symbol("*"))
-        comp.__send_msg = num_op_mul_send_msg;
-    else if (msg == symbol("/"))
-        comp.__send_msg = num_op_div_send_msg;
-    else
+    if (!comp.__send_msg)
         throw message_not_recognized_error{*thisptr, msg};
 
     return comp;
