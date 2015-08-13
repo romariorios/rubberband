@@ -21,47 +21,47 @@
 #include "object.hpp"
 #include "symbol.hpp"
 
+#include "utils/tuple_utils.hpp"
+
 namespace rbb
 {
 
-class interface
-{
-public:
-    virtual const char *interface_name() const = 0;
-
-    // returns 0 if no appropriate function is found
-    virtual send_msg_function select_function(const object &msg) const = 0;
-};
-
-template <int InterfacesCount>
+template <typename... Interfaces>
 class interface_collection
 {
-    using interfaces_t = std::array<std::unique_ptr<interface>, InterfacesCount>;
-
 public:
-    interface_collection(interfaces_t &&interfaces) :
-        _interfaces(std::move(interfaces))
+    interface_collection(Interfaces... interfaces) :
+        _interfaces{std::make_tuple(interfaces...)}
     {}
 
     bool follows_interface(const object &name) const
     {
-        for (auto &&iface : _interfaces)
-            if (name == symbol(iface->interface_name()))
-                return true;
+        bool follows = false;
 
-        return false;
+        for_each(_interfaces, [&](const auto &interface)
+        {
+            follows = name == symbol(interface.interface_name());
+
+            if (follows)
+                return control::break_loop;
+        });
+
+        return follows;
     }
 
     send_msg_function select_function(const object &msg) const
     {
-        for (auto &&iface : _interfaces) {
-            auto f = iface->select_function(msg);
+        send_msg_function f = nullptr;
+
+        for_each(_interfaces, [&](const auto &interface)
+        {
+            f = interface.select_function(msg);
 
             if (f)
-                return f;
-        }
+                return control::break_loop;
+        });
 
-        return nullptr;
+        return f;
     }
 
     inline bool responds_to(const object &msg) const
@@ -70,11 +70,16 @@ public:
     }
 
 private:
-    interfaces_t _interfaces;
+    std::tuple<Interfaces...> _interfaces;
 };
 
-#define RBB_IFACE(__name) public interface \
-{\
+template <typename... Interfaces>
+interface_collection<Interfaces...> mk_interface_collection(Interfaces... interfaces)
+{
+    return {interfaces...};
+}
+
+#define RBB_IFACE(__name) \
 public:\
     inline const char *interface_name() const { return __name; }\
     send_msg_function select_function(const object &msg) const;\
@@ -83,7 +88,9 @@ private:
 namespace iface
 {
 
-class arith : RBB_IFACE("--+")
+class arith
+{
+    RBB_IFACE("--+")
 
 public:
     arith(
@@ -100,7 +107,9 @@ private:
         _div_function;
 };
 
-class comparable : RBB_IFACE("--=")
+class comparable
+{
+    RBB_IFACE("--=")
 
 public:
     comparable(send_msg_function eq_function, send_msg_function ne_function);
@@ -111,7 +120,9 @@ private:
         _ne_function;
 };
 
-class ordered : RBB_IFACE("--<")
+class ordered
+{
+    RBB_IFACE("--<")
 
 public:
     ordered(

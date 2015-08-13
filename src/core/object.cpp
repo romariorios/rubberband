@@ -427,24 +427,24 @@ static int get_index_from_obj(const object &);
 
 SEND_MSG(number)
 {
-    interface_collection<3> num_iface_collection{{
-        unique_ptr<interface>{new iface::arith{
+    auto &&num_iface_collection = mk_interface_collection(
+        iface::arith{
             num_op_add_send_msg,
             num_op_sub_send_msg,
             num_op_mul_send_msg,
             num_op_div_send_msg
-        }},
-        unique_ptr<interface>{new iface::comparable{
+        },
+        iface::comparable{
             num_op_eq_send_msg,
             num_op_ne_send_msg
-        }},
-        unique_ptr<interface>{new iface::ordered{
+        },
+        iface::ordered{
             num_op_lt_send_msg,
             num_op_gt_send_msg,
             num_op_le_send_msg,
             num_op_ge_send_msg
-        }}
-    }};
+        }
+    );
 
 
     if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
