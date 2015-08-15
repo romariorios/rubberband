@@ -79,6 +79,14 @@ private:
     token _tok;
 };
 
+class use_without_parent_block : public std::logic_error
+{
+public:
+    use_without_parent_block(char lit) :
+        logic_error{"Using " + std::string{lit} + " without a parent block"}
+    {}
+};
+
 class semantic_error : public std::logic_error
 {
 public:
@@ -118,12 +126,12 @@ public:
 class in_statement_error : public std::logic_error
 {
 public:
-    in_statement_error(const std::string &stm, const semantic_error &e) :
+    in_statement_error(const std::string &stm, const std::logic_error &e) :
         logic_error{"In statement \"" + stm + "\": " + e.what()},
         internal_error{e}
     {}
 
-    const semantic_error &internal_error;
+    const std::logic_error &internal_error;
 };
 
 class runtime_error : public std::runtime_error

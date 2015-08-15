@@ -54,7 +54,7 @@ object block_statement::eval(literal::block* parent_block)
         }
 
         return cur_obj;
-    } catch (const semantic_error &e) {
+    } catch (const std::logic_error &e) {
         throw in_statement_error{to_string(), e};
     }
 }
@@ -98,21 +98,33 @@ void literal::table::add_object_ptr(expr *e)
 
 object literal::master::eval(literal::block* parent_block)
 {
+    if (!parent_block)
+        throw use_without_parent_block{'%'};
+
     return parent_block->_master;
 }
 
 object literal::self_ref::eval(literal::block* parent_block)
 {
+    if (!parent_block)
+        throw use_without_parent_block{'@'};
+
     return parent_block->eval();
 }
 
 object literal::context::eval(literal::block* parent_block)
 {
+    if (!parent_block)
+        throw use_without_parent_block{'~'};
+
     return parent_block->_context;
 }
 
 object literal::message::eval(literal::block* parent_block)
 {
+    if (!parent_block)
+        throw use_without_parent_block{'$'};
+
     return parent_block->_message;
 }
 
