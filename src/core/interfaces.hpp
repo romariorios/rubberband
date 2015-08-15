@@ -19,12 +19,42 @@
 #define INTERFACES_HPP
 
 #include "object.hpp"
+#include "shared_data_t.hpp"
 #include "symbol.hpp"
-
 #include "utils/tuple_utils.hpp"
 
 namespace rbb
 {
+
+template <typename... Interfaces>
+class interface_collection;
+
+template <typename... Interfaces>
+class metainfo_data : public shared_data_t
+{
+public:
+    metainfo_data(const interface_collection<Interfaces...> &interfaces) :
+        interfaces{interfaces}
+    {}
+
+    const interface_collection<Interfaces...> &interfaces;
+};
+
+template <typename... Interfaces>
+object iface_collection_follows_interface(object *thisptr, const object &msg)
+{
+    auto data = static_cast<metainfo_data<Interfaces...> *>(thisptr->__value.data());
+
+    return boolean(data->interfaces.follows_interface(msg));
+}
+
+template <typename... Interfaces>
+object iface_collection_responds_to(object *thisptr, const object &msg)
+{
+    auto data = static_cast<metainfo_data<Interfaces...> *>(thisptr->__value.data());
+
+    return boolean(data->interfaces.responds_to(thisptr, msg));
+}
 
 template <typename... Interfaces>
 class interface_collection
@@ -49,24 +79,34 @@ public:
         return follows;
     }
 
-    send_msg_function select_function(const object &msg) const
+    object select_response(object *thisptr, const object &msg) const
     {
-        send_msg_function f = nullptr;
+        if (msg == symbol("<<"))
+            return object::create_data_object(
+                new metainfo_data<Interfaces...>{*this},
+                iface_collection_responds_to<Interfaces...>);
+
+        if (msg == symbol("<<?"))
+            return object::create_data_object(
+                new metainfo_data<Interfaces...>{*this},
+                iface_collection_follows_interface<Interfaces...>);
+
+        object f;
 
         for_each(_interfaces, [&](const auto &interface)
         {
-            f = interface.select_function(msg);
+            f = interface.select_response(thisptr, msg);
 
-            if (f)
+            if (f != empty())
                 return control::break_loop;
         });
 
         return f;
     }
 
-    inline bool responds_to(const object &msg) const
+    inline bool responds_to(object *thisptr, const object &msg) const
     {
-        return select_function(msg);
+        return select_response(thisptr, msg) != empty();
     }
 
 private:
@@ -82,7 +122,7 @@ interface_collection<Interfaces...> mk_interface_collection(Interfaces... interf
 #define RBB_IFACE(__name) \
 public:\
     inline const char *interface_name() const { return __name; }\
-    send_msg_function select_function(const object &msg) const;\
+    object select_response(object *thisptr, const object &msg) const;\
 private:
 
 namespace iface

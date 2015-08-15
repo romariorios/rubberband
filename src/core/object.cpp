@@ -104,7 +104,7 @@ object& object::operator=(const object& other)
 
 static bool is_numeric(object &val)
 {
-    return (val << symbol("<<?") << symbol("<-0")).__value.boolean;
+    return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
 }
 
 object::~object()
@@ -425,9 +425,8 @@ static object create_array_object(array_data *d)
 
 static int get_index_from_obj(const object &);
 
-SEND_MSG(number)
-{
-    auto &&num_iface_collection = mk_interface_collection(
+auto num_iface_collection =
+    mk_interface_collection(
         iface::arith{
             num_op_add_send_msg,
             num_op_sub_send_msg,
@@ -446,7 +445,8 @@ SEND_MSG(number)
         }
     );
 
-
+SEND_MSG(number)
+{
     if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
         auto msg_copy = msg;
         int msg_size = number_to_double(msg_copy << symbol("*"));
@@ -461,13 +461,12 @@ SEND_MSG(number)
     if (follows_interface(msg, symbol("<-a")) != boolean(true))
         throw message_not_recognized_error{*thisptr, msg};
 
-    object comp = create_functor_object(thisptr);
-    comp.__send_msg = num_iface_collection.select_function(msg);
+    auto res = num_iface_collection.select_response(thisptr, msg);
 
-    if (!comp.__send_msg)
+    if (res == empty())
         throw message_not_recognized_error{*thisptr, msg};
 
-    return comp;
+    return res;
 }
 
 object rbb::number(double val)

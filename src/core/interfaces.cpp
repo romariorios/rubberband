@@ -20,6 +20,21 @@
 using namespace rbb;
 using namespace std;
 
+class object_data : public shared_data_t
+{
+public:
+    object_data(const object &obj) :
+        obj{obj}
+    {}
+
+    object obj;
+};
+
+inline object create_response(object *thisptr, send_msg_function f)
+{
+    return object::create_data_object(new object_data{*thisptr}, f);
+}
+
 iface::arith::arith(
     send_msg_function add_function,
     send_msg_function sub_function,
@@ -31,18 +46,18 @@ iface::arith::arith(
     _div_function{div_function}
 {}
 
-send_msg_function iface::arith::select_function(const object &msg) const
+object iface::arith::select_response(object *thisptr, const object &msg) const
 {
     if (msg == symbol("+"))
-        return _add_function;
+        return create_response(thisptr, _add_function);
     if (msg == symbol("-"))
-        return _sub_function;
+        return create_response(thisptr, _sub_function);
     if (msg == symbol("*"))
-        return _mul_function;
+        return create_response(thisptr, _mul_function);
     if (msg == symbol("/"))
-        return _div_function;
+        return create_response(thisptr, _div_function);
 
-    return nullptr;
+    return empty();
 }
 
 iface::comparable::comparable(send_msg_function eq_function, send_msg_function ne_function) :
@@ -50,15 +65,15 @@ iface::comparable::comparable(send_msg_function eq_function, send_msg_function n
     _ne_function{ne_function}
 {}
 
-send_msg_function iface::comparable::select_function(const object& msg) const
+object iface::comparable::select_response(object *thisptr, const object& msg) const
 {
     // TODO << and <<? are part of this interface
     if (msg == symbol("=="))
-        return _eq_function;
+        return create_response(thisptr, _eq_function);
     if (msg == symbol("/="))
-        return _ne_function;
+        return create_response(thisptr, _ne_function);
 
-    return nullptr;
+    return empty();
 }
 
 iface::ordered::ordered(
@@ -72,16 +87,16 @@ iface::ordered::ordered(
     _ge_function{ge_function}
 {}
 
-send_msg_function iface::ordered::select_function(const object& msg) const
+object iface::ordered::select_response(object *thisptr, const object& msg) const
 {
     if (msg == symbol("<"))
-        return _lt_function;
+        return create_response(thisptr, _lt_function);
     if (msg == symbol(">"))
-        return _gt_function;
+        return create_response(thisptr, _gt_function);
     if (msg == symbol("<="))
-        return _le_function;
+        return create_response(thisptr, _le_function);
     if (msg == symbol(">="))
-        return _ge_function;
+        return create_response(thisptr, _ge_function);
 
-    return nullptr;
+    return empty();
 }
