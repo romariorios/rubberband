@@ -88,11 +88,12 @@ void ____rbb_internal::lemon_parser::parse(token tok)
     LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_result);
 }
 
-object ____rbb_internal::lemon_parser::result(const object& master)
+object ____rbb_internal::lemon_parser::result(/*const object& master*/)
 {
     if (!_result)
         return empty();
 
-    _result->set_master(master);
+    // TODO how to ser the master?
+//     _result->set_master(master);
     return _result->eval();
 }

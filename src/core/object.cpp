@@ -949,9 +949,6 @@ SEND_MSG(block)
 object rbb::literal::block::eval(literal::block *parent)
 {
     auto block_l = new block{*this};
-    if (parent)
-        block_l->set_master(parent->_master);
-
     return object::create_data_object(new block_data(block_l), block_send_msg);
 }
 

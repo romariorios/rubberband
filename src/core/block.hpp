@@ -185,14 +185,6 @@ namespace literal
         expr_list _objects;
     };
 
-    class master : public expr
-    {
-    public:
-        inline master() {}
-        object eval(block *parent_block);
-        inline string to_string() const { return "%"; }
-    };
-
     class self_ref : public expr
     {
     public:
@@ -231,7 +223,6 @@ namespace literal
 
         void set_context(const object &context);
         void set_message(const object &msg);
-        void set_master(const object &master);
 
         object eval(block *parent = nullptr); // blocks depend on their parent block for the
                                               // master object
@@ -242,7 +233,6 @@ namespace literal
         bool _context_set = false;
         object _context;
         object _message;
-        object _master;
     };
 }
 

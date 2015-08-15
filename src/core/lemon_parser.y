@@ -110,7 +110,7 @@ literal(l)          ::= block(bl). { l = bl; }
 literal(l)          ::= DOLLAR. { l = new literal::message; }
 literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
-literal(l)          ::= PERCENT. { l = new literal::master; }
+literal(l)          ::= PERCENT. { /* TODO implement this properly */ l = new literal::empty; }
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR maybe_empty_a(arr_a). { arr = arr_a; }
 array_elements(arr) ::= stm(e) COMMA array_elements(arr_a).

@@ -107,7 +107,7 @@ namespace rbb
         lemon_parser();
         ~lemon_parser();
         void parse(token tok);
-        object result(const object &master);
+        object result(/*const object &master*/);
 
     private:
         literal::block *_result = nullptr;
@@ -139,12 +139,12 @@ object parse(const string &code)
 
     p.parse(token::t::end_of_input);
 
-    object master_object;
-    master_object.__value.type =
-        static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
-    master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
+//     object master_object;
+//     master_object.__value.type =
+//         static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
+//     master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
 
-    return p.result(master_object);
+    return p.result(/*master_object*/);
 }
 
 }

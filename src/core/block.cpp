@@ -96,14 +96,6 @@ void literal::table::add_object_ptr(expr *e)
     _objects.append_ptr(e);
 }
 
-object literal::master::eval(literal::block* parent_block)
-{
-    if (!parent_block)
-        throw use_without_parent_block{'%'};
-
-    return parent_block->_master;
-}
-
 object literal::self_ref::eval(literal::block* parent_block)
 {
     if (!parent_block)
@@ -133,8 +125,7 @@ literal::block::block() :
 {}
 
 literal::block::block(const block& other) :
-    _p{other._p},
-    _master{other._master}
+    _p{other._p}
 {}
 
 block_statement &literal::block::add_statement()
@@ -170,11 +161,6 @@ void literal::block::set_context(const object& context)
 void literal::block::set_message(const object& msg)
 {
     _message = msg;
-}
-
-void literal::block::set_master(const object &master)
-{
-    _master = master;
 }
 
 // eval() is at object.cpp
