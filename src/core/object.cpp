@@ -102,11 +102,6 @@ object& object::operator=(const object& other)
     return *this;
 }
 
-static bool is_numeric(object &val)
-{
-    return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
-}
-
 object::~object()
 {
     if (__value.type & value_t::data_t)
@@ -290,7 +285,7 @@ object follows_interface(const object &obj, const object &msg)
         auto d = obj.__value.data();
 
         if (dynamic_cast<array_data *>(d))
-            return boolean(msg == symbol("<-|"));
+            return boolean(msg == symbol("--|"));
 
         if (dynamic_cast<table_data *>(d))
             return boolean(msg == symbol("<-:"));
@@ -423,8 +418,6 @@ static object create_array_object(array_data *d)
     return object::create_data_object(d, array_send_msg);
 }
 
-static int get_index_from_obj(const object &);
-
 auto num_iface_collection =
     mk_interface_collection(
         iface::arith{
@@ -442,22 +435,14 @@ auto num_iface_collection =
             num_op_gt_send_msg,
             num_op_le_send_msg,
             num_op_ge_send_msg
+        },
+        iface::numeric{
+            array_send_msg
         }
     );
 
 SEND_MSG(number)
 {
-    if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
-        auto msg_copy = msg;
-        int msg_size = number_to_double(msg_copy << symbol("*"));
-        auto new_d = new array_data{get_index_from_obj(*thisptr)};
-
-        for (auto i = 0; i < min(msg_size, new_d->size); ++i)
-            new_d->arr[i] = msg_copy << number(i);
-
-        return create_array_object(new_d);
-    }
-
     auto res = num_iface_collection.select_response(thisptr, msg);
 
     if (res == empty())
@@ -680,7 +665,7 @@ SEND_MSG(array_concatenation)
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data());
 
-    if (follows_interface(msg, symbol("<-|")) != boolean(true))
+    if (follows_interface(msg, symbol("--|")) != boolean(true))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *msg_d = static_cast<array_data *>(msg.__value.data());
@@ -702,7 +687,7 @@ SEND_MSG(array_slicing)
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data());
 
-    if (follows_interface(msg, symbol("<-|")) != boolean(true))
+    if (follows_interface(msg, symbol("--|")) != boolean(true))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *msg_d = static_cast<array_data *>(msg.__value.data());
@@ -729,18 +714,6 @@ SEND_MSG(array_slicing)
         new_d->arr[i] = d->arr[j];
 
     return create_array_object(new_d);
-}
-
-static int get_index_from_obj(const object &obj)
-{
-    auto obj_copy = obj;
-    if (!is_numeric(obj_copy))
-        return -1;
-
-    if (obj.__value.type & value_t::floating_t)
-        return obj.__value.floating;
-
-    return obj.__value.integer;
 }
 
 static bool in_bounds(array_data *d, int i)
@@ -770,7 +743,7 @@ SEND_MSG(array)
             throw message_not_recognized_error{*thisptr, msg};
 
         return symb_ret;
-    } else if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
+    } else if (follows_interface(msg, symbol("--|")) == boolean(true)) {
         auto msg_copy = msg;
 
         if ((msg_copy << symbol("*") << symbol("<") << number(2)).__value.boolean)
@@ -888,7 +861,7 @@ SEND_MSG(table)
         }
 
         return *thisptr;
-    } else if (follows_interface(msg, symbol("<-|")) == boolean(true)) {
+    } else if (follows_interface(msg, symbol("--|")) == boolean(true)) {
         auto msg_copy = msg;
         int array_size = number_to_double(msg_copy << symbol("*"));
         auto new_table = table();

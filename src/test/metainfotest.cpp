@@ -21,7 +21,7 @@
             expected? "doesn't follow" : "follows",\
             ifacename))
 
-const char *interfaces[] = {"--a", "--+", "--?", "--|", "--:", "--{}", "--=", "--<"};
+const char *interfaces[] = {"--a", "--+", "--0", "--?", "--|", "--:", "--{}", "--=", "--<"};
 constexpr const unsigned char interfaces_len = sizeof(interfaces) / sizeof(char *);
 using expected_t = std::array<char, interfaces_len>;
 
@@ -57,7 +57,7 @@ TESTS_INIT()
             table({symbol("valhalla"), symbol("lol")}, {number(10), number(20)}),
             false)
         
-        expected_t expected{0, 1, 0, 0, 0, 0, 1, 1};
+        expected_t expected{0, 1, 1, 0, 0, 0, 0, 1, 1};
         TEST_INTERFACES
     }
     
@@ -70,7 +70,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("+"), false)
         TEST_RESPONDS_TO(object{}, false)
         
-        expected_t expected{0, 0, 0, 0, 0, 0, 1, 1};
+        expected_t expected{0, 0, 0, 0, 0, 0, 0, 1, 1};
         TEST_INTERFACES
     }
     
@@ -84,7 +84,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("<<?"), true)
         
-        expected_t expected{0, 0, 0, 0, 0, 0, 1, 1};
+        expected_t expected{0, 0, 0, 0, 0, 0, 0, 1, 1};
         TEST_INTERFACES
     }
     
@@ -100,7 +100,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(number(12), false)
         
-       expected_t expected{0, 0, 1, 0, 0, 0, 1, 1};
+       expected_t expected{0, 0, 0, 1, 0, 0, 0, 1, 1};
        TEST_INTERFACES
     }
     
@@ -121,7 +121,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(rbb::array({number(12), number(12), number(12)}), false)
         TEST_RESPONDS_TO(rbb::array({number(3), number(100)}), false)
         
-        expected_t expected{0, 0, 0, 1, 0, 0, 1, 1};
+        expected_t expected{0, 0, 0, 0, 1, 0, 0, 1, 1};
         TEST_INTERFACES
     }
     
@@ -143,7 +143,7 @@ TESTS_INIT()
             table({symbol("d")}, {number(10)}),
             true)
         
-        expected_t expected{0, 0, 0, 0, 1, 0, 1, 1};
+        expected_t expected{0, 0, 0, 0, 0, 1, 0, 1, 1};
         TEST_INTERFACES
     }
     
@@ -157,7 +157,7 @@ TESTS_INIT()
         auto &&obj = bl.eval();
         TEST_RESPONDS_TO(symbol("pretty_much_anything"), true)
         
-        expected_t expected{0, 0, 0, 0, 0, 1, 1, 1};
+        expected_t expected{0, 0, 0, 0, 0, 0, 1, 1, 1};
         TEST_INTERFACES
     }
     

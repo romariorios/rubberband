@@ -82,6 +82,23 @@ public:
     literal::block *block_l;
 };
 
+static bool is_numeric(object &val)
+{
+    return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
+}
+
+static int get_index_from_obj(const object &obj)
+{
+    auto obj_copy = obj;
+    if (!is_numeric(obj_copy))
+        return -1;
+
+    if (obj.__value.type & value_t::floating_t)
+        return obj.__value.floating;
+
+    return obj.__value.integer;
+}
+
 }
 
 #endif

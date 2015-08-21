@@ -126,7 +126,20 @@ public:
 
     inline bool responds_to(object *thisptr, const object &msg) const
     {
-        return select_function(thisptr, msg);
+        if (msg == symbol("<<") || msg == symbol("<<?"))
+            return select_function(thisptr, msg);
+
+        bool responds;
+
+        for_each(_interfaces, [&](const auto &interface)
+        {
+            responds = interface.responds_to(thisptr, msg);
+
+            if (responds)
+                return control::break_loop;
+        });
+
+        return responds;
     }
 
 private:
@@ -143,6 +156,7 @@ interface_collection<Interfaces...> mk_interface_collection(Interfaces... interf
 public:\
     inline const char *interface_name() const { return __name; }\
     send_msg_function select_function(object *thisptr, const object &msg) const;\
+    bool responds_to(object *thisptr, const object &msg) const;\
     object select_response(object *thisptr, const object &msg) const;\
 private:
 
@@ -198,6 +212,18 @@ private:
         _gt_function,
         _le_function,
         _ge_function;
+};
+
+// TODO come up with some way for an interface to require others
+class numeric
+{
+    RBB_IFACE("--0")
+
+public:
+    numeric(send_msg_function array_send_msg);
+
+private:
+    send_msg_function _array_send_msg;
 };
 
 }
