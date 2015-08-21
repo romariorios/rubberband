@@ -70,7 +70,11 @@ public:
 
         for_each(_interfaces, [&](const auto &interface)
         {
-            follows = name == symbol(interface.interface_name());
+            auto iface_name = interface.interface_name();
+            if (!iface_name)
+                return control::break_loop;
+
+            follows = name == symbol(iface_name);
 
             if (follows)
                 return control::break_loop;
@@ -79,17 +83,33 @@ public:
         return follows;
     }
 
-    object select_response(object *thisptr, const object &msg) const
+    send_msg_function select_function(object *thisptr, const object &msg) const
     {
         if (msg == symbol("<<"))
-            return object::create_data_object(
-                new metainfo_data<Interfaces...>{*this},
-                iface_collection_responds_to<Interfaces...>);
+            return iface_collection_responds_to<Interfaces...>;
 
         if (msg == symbol("<<?"))
+            return iface_collection_follows_interface<Interfaces...>;
+
+        send_msg_function f;
+
+        for_each(_interfaces, [&](const auto &interface)
+        {
+            f = interface.select_function(thisptr, msg);
+
+            if (f)
+                return control::break_loop;
+        });
+
+        return f;
+    }
+
+    object select_response(object *thisptr, const object &msg) const
+    {
+        if (msg == symbol("<<") || msg == symbol("<<?"))
             return object::create_data_object(
                 new metainfo_data<Interfaces...>{*this},
-                iface_collection_follows_interface<Interfaces...>);
+                select_function(thisptr, msg));
 
         object f;
 
@@ -106,7 +126,7 @@ public:
 
     inline bool responds_to(object *thisptr, const object &msg) const
     {
-        return select_response(thisptr, msg) != empty();
+        return select_function(thisptr, msg);
     }
 
 private:
@@ -122,6 +142,7 @@ interface_collection<Interfaces...> mk_interface_collection(Interfaces... interf
 #define RBB_IFACE(__name) \
 public:\
     inline const char *interface_name() const { return __name; }\
+    send_msg_function select_function(object *thisptr, const object &msg) const;\
     object select_response(object *thisptr, const object &msg) const;\
 private:
 

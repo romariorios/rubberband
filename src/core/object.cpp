@@ -458,9 +458,6 @@ SEND_MSG(number)
         return create_array_object(new_d);
     }
 
-    if (follows_interface(msg, symbol("<-a")) != boolean(true))
-        throw message_not_recognized_error{*thisptr, msg};
-
     auto res = num_iface_collection.select_response(thisptr, msg);
 
     if (res == empty())
