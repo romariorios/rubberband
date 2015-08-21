@@ -203,20 +203,15 @@ TESTS_INIT()
         literal::block block_lit_;
 
         auto &block_ret_ = block_lit_.return_statement();
-//         block_ret_.add_expr<literal::master>();
-        block_ret_.add_expr<literal::empty>();
+        block_ret_.add_expr<evaluated_object>(table({symbol("a")}, {number(100)}));
         block_ret_.add_expr<literal::symbol>("a");
 
-        try {
-            auto block_ = block_lit_.eval();
-            auto result_ = block_ << empty() << empty();
+        auto block_ = block_lit_.eval();
+        auto result_ = block_ << empty() << empty();
 
-            TEST_CONDITION(
-                result_ == number(100),
-                printf("Number is %s (expected 100)\n", result_.to_string().c_str()))
-        } catch (...) {
-            puts("Reimplement { !%a } test");
-        }
+        TEST_CONDITION(
+            result_ == number(100),
+            printf("Number is %s (expected 100)\n", result_.to_string().c_str()))
     }
 
     // { !{ !%$ }()1 } # (being % |10, 12)
@@ -229,8 +224,7 @@ TESTS_INIT()
         block_ret_.add_expr<literal::number>(1);
 
         auto &inner_ret = inner_block.return_statement();
-//         inner_ret.add_expr<literal::master>();
-        inner_ret.add_expr<literal::empty>();
+        inner_ret.add_expr<evaluated_object>(rbb::array({number(10), number(12)}));
         inner_ret.add_expr<literal::message>();
 
         auto block_ = block_lit_.eval();

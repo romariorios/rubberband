@@ -24,7 +24,11 @@
 using namespace rbb;
 
 extern void *LemonCParserAlloc(void *(*mallocProc)(size_t));
-extern void LemonCParser(void *p, int tok_num, token *tok, literal::block **bl);
+extern void LemonCParser(
+    void *p,
+    int tok_num,
+    token *tok,
+    ____rbb_internal::lemon_parser::extra *extra_args);
 extern void *LemonCParserFree(void *p, void (*freeProc)(void *));
 
 inline int token_to_tokcode(token t)
@@ -74,7 +78,8 @@ inline int token_to_tokcode(token t)
     }
 }
 
-____rbb_internal::lemon_parser::lemon_parser() :
+____rbb_internal::lemon_parser::lemon_parser(const object &master_object) :
+    _extra{master_object},
     _p{LemonCParserAlloc(malloc)}
 {}
 
@@ -85,15 +90,13 @@ ____rbb_internal::lemon_parser::~lemon_parser()
 
 void ____rbb_internal::lemon_parser::parse(token tok)
 {
-    LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_result);
+    LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_extra);
 }
 
-object ____rbb_internal::lemon_parser::result(/*const object& master*/)
+object ____rbb_internal::lemon_parser::result()
 {
-    if (!_result)
+    if (!_extra.result)
         return empty();
 
-    // TODO how to ser the master?
-//     _result->set_master(master);
-    return _result->eval();
+    return _extra.result->eval();
 }

@@ -22,7 +22,7 @@
 %token_type {token *}
 %token_destructor { delete $$; }
 
-%extra_argument { literal::block **result_block }
+%extra_argument { ____rbb_internal::lemon_parser::extra *extra_args }
 
 %syntax_error { throw syntax_error{*yyminor.yy0}; }
 
@@ -47,8 +47,8 @@
 %type table_index {block_statement *}
 %type block {literal::block *}
 
-start               ::= block_body(bl). { *result_block = bl; }
-start               ::= . { *result_block = new literal::block; }
+start               ::= block_body(bl). { extra_args->result = bl; }
+start               ::= . { extra_args->result = new literal::block; }
 block_body(bl)      ::= stm_list(bl_a) ret_stm(ret).
 {
     bl_a->set_return_statement_ptr(ret);
@@ -110,7 +110,7 @@ literal(l)          ::= block(bl). { l = bl; }
 literal(l)          ::= DOLLAR. { l = new literal::message; }
 literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
-literal(l)          ::= PERCENT. { /* TODO implement this properly */ l = new literal::empty; }
+literal(l)          ::= PERCENT. { l = new evaluated_object{extra_args->master}; }
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR maybe_empty_a(arr_a). { arr = arr_a; }
 array_elements(arr) ::= stm(e) COMMA array_elements(arr_a).

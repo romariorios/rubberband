@@ -104,13 +104,22 @@ namespace rbb
     class lemon_parser
     {
     public:
-        lemon_parser();
+        lemon_parser(const object &master_object);
         ~lemon_parser();
         void parse(token tok);
-        object result(/*const object &master*/);
+        object result();
+
+        struct extra
+        {
+            extra(const object &master) :
+                master{master}
+            {}
+
+            literal::block *result = nullptr;
+            object master;
+        } _extra;
 
     private:
-        literal::block *_result = nullptr;
         void *_p;
     };
 
@@ -120,8 +129,13 @@ template <class master_t>
 object parse(const string &code)
 {
     tokenizer tokenizer{code};
+
+     object master_object;
+     master_object.__value.type =
+         static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
+     master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
     
-    ____rbb_internal::lemon_parser p;
+    ____rbb_internal::lemon_parser p{master_object};
     
     try {
         for (
@@ -139,12 +153,7 @@ object parse(const string &code)
 
     p.parse(token::t::end_of_input);
 
-//     object master_object;
-//     master_object.__value.type =
-//         static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
-//     master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
-
-    return p.result(/*master_object*/);
+    return p.result();
 }
 
 }

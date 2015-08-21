@@ -74,6 +74,20 @@ private:
     std::forward_list<expr::ptr>::iterator list_end = before_begin();
 };
 
+class evaluated_object : public expr
+{
+public:
+    inline evaluated_object(const object &obj) : _obj{obj} {}
+
+    inline object const_eval() const
+    {
+        return _obj;
+    }
+
+private:
+    object _obj;
+};
+
 class block_data;
 class block_statement : public expr
 {
