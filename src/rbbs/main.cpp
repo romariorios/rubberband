@@ -40,7 +40,7 @@ public:
 
         return {};
     }
-};
+} master;
 
 class could_not_open_file : public exception
 {
@@ -89,7 +89,7 @@ object program_from_file(const string &filename)
     }
     
     try {
-        return parse<rbbs_master>(program);
+        return parse(program, master);
     } catch (syntax_error e) {
         throw rbbs_syntax_error{e, filename};
     }

@@ -34,71 +34,90 @@ namespace rbb
     namespace ____rbb_internal
     {
     
+    template <typename master_t>
     class load_data : public shared_data_t
     {
     public:
-        load_data(const object &ctx) :
-            context{ctx}
+        load_data(const object &ctx, master_t &master) :
+            context{ctx},
+            master{master}
         {}
 
         object context;
+        master_t &master;
     };
 
     template <class master_t>
     object master_load_send_msg(object *thisptr, const object &msg)
     {
-        auto d = static_cast<load_data *>(thisptr->__value.data());
+        auto d = static_cast<load_data<master_t> *>(thisptr->__value.data());
 
         if (msg.__value.type != value_t::symbol_t)
             throw semantic_error{"Symbol expected", *thisptr, msg};
 
-        return master_t::load(d->context, msg.to_string());
+        return d->master.load(d->context, msg.to_string());
     }
+
+    template <class master_t>
+    class master_data : public shared_data_t
+    {
+    public:
+        master_data(master_t &master) :
+            master{master}
+        {}
+
+        master_t &master;
+    };
     
     template <class master_t>
     object master_set_context_send_msg(object *thisptr, const object &msg)
     {
-        return functor(new load_data{msg}, master_load_send_msg<master_t>);
+        auto d = static_cast<master_data<master_t> *>(thisptr->__value.data());
+
+        return functor(new load_data<master_t>{msg, d->master}, master_load_send_msg<master_t>);
     }
 
+    template <typename master_t>
     class custom_operation_data : public shared_data_t
     {
     public:
-        explicit custom_operation_data(const object &sym) :
-            symbol{sym}
+        explicit custom_operation_data(const object &sym, master_t &master) :
+            symbol{sym},
+            master{master}
         {}
 
         object symbol;
+        master_t &master;
     };
 
     template <class master_t>
     object master_custom_operation_send_msg(object *thisptr, const object &msg)
     {
-        auto d = static_cast<custom_operation_data *>(thisptr->__value.data());
+        auto d = static_cast<custom_operation_data<master_t> *>(thisptr->__value.data());
 
-        return master_t::custom_operation(d->symbol.to_string(), msg);
+        return d->master.custom_operation(d->symbol.to_string(), msg);
     }
 
     template <class master_t>
     object master_send_msg(object *thisptr, const object &msg)
     {
-        if (msg == symbol("^")) {
-            object load;
-            load.__value.type =
-                static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
-            load.__send_msg = master_set_context_send_msg<master_t>;
+        auto d = static_cast<master_data<master_t> *>(thisptr->__value.data());
 
-            return load;
-        } else if (msg.__value.type == value_t::symbol_t) {
+        if (msg == symbol("^"))
+            return object::create_data_object(
+                new master_data<master_t>{d->master},
+                master_set_context_send_msg<master_t>,
+                value_t::functor_t);
+
+        if (msg.__value.type == value_t::symbol_t)
             return functor(
-                new custom_operation_data{msg},
+                new custom_operation_data<master_t>{msg, d->master},
                 master_custom_operation_send_msg<master_t>);
-        } else {
-            throw semantic_error{
-                "Unknown operation by master object",
-                *thisptr,
-                msg};
-        }
+
+        throw semantic_error{
+            "Unknown operation by master object",
+            *thisptr,
+            msg};
     }
     
     class lemon_parser
@@ -126,16 +145,15 @@ namespace rbb
     }
 
 template <class master_t>
-object parse(const string &code)
+object parse(const string &code, master_t &master)
 {
     tokenizer tokenizer{code};
 
-     object master_object;
-     master_object.__value.type =
-         static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
-     master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
-    
-    ____rbb_internal::lemon_parser p{master_object};
+    ____rbb_internal::lemon_parser p{
+        object::create_data_object(
+            new ____rbb_internal::master_data<master_t>{master},
+            ____rbb_internal::master_send_msg<master_t>,
+            value_t::functor_t)};
     
     try {
         for (

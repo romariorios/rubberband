@@ -9,17 +9,17 @@ object __print(object *, const object &msg)
     return object{};
 }
 
-class test_master
+class test_master_t
 {
 public:
-    static object load(const object &obj, const string &str)
+    object load(const object &obj, const string &str)
     {
         if (str != "__parsetestmodule")
             return {};
         
-        auto block = parse<test_master>(R"(
+        auto block = parse(R"(
             ~:a -> 10
-        )");
+        )", *this);
         
         return block << obj << object{};
     }
@@ -28,11 +28,11 @@ public:
     {
         return {};
     }
-};
+} test_master;
 
 #define TEST_PARSING(__program, __to_string)\
 {\
-    auto interpreted_as = parse<dummy_master>(__program).to_string();\
+    auto interpreted_as = parse(__program, dummy_master).to_string();\
 \
     TEST_CONDITION(\
         interpreted_as == (__to_string),\
