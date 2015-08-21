@@ -47,8 +47,8 @@
 %type table_index {block_statement *}
 %type block {literal::block *}
 
-start               ::= block_body(bl). { extra_args->result = bl; }
-start               ::= . { extra_args->result = new literal::block; }
+start               ::= literal(l). { extra_args->result = l->eval(nullptr); }
+start               ::= .
 block_body(bl)      ::= stm_list(bl_a) ret_stm(ret).
 {
     bl_a->set_return_statement_ptr(ret);

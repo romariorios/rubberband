@@ -95,8 +95,5 @@ void ____rbb_internal::lemon_parser::parse(token tok)
 
 object ____rbb_internal::lemon_parser::result()
 {
-    if (!_extra.result)
-        return empty();
-
-    return _extra.result->eval();
+    return _extra.result;
 }

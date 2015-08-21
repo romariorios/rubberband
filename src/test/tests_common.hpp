@@ -81,7 +81,7 @@ static dummy_master_t dummy_master;
             res == (expected),\
             printf(\
                 "The program:\n"\
-                "{ %s \n}\n"\
+                "%s\n"\
                 "interpreted as:\n"\
                 "  %s\n"\
                 "running over the context:\n"\
@@ -103,7 +103,7 @@ static dummy_master_t dummy_master;
             false,\
             printf(\
                 "The program:\n"\
-                "{ %s \n}\n"\
+                "%s\n"\
                 "has a syntax error at line %s, column %s (token: %s)\n",\
                 program,\
                 to_string(e.line).c_str(),\

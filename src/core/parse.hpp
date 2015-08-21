@@ -134,7 +134,7 @@ namespace rbb
                 master{master}
             {}
 
-            literal::block *result = nullptr;
+            object result;
             object master;
         } _extra;
 
@@ -147,12 +147,14 @@ namespace rbb
 template <class master_t>
 object parse(const string &code, master_t &master)
 {
+    using namespace ____rbb_internal;
+
     tokenizer tokenizer{code};
 
-    ____rbb_internal::lemon_parser p{
+    lemon_parser p{
         object::create_data_object(
-            new ____rbb_internal::master_data<master_t>{master},
-            ____rbb_internal::master_send_msg<master_t>,
+            new master_data<master_t>{master},
+            master_send_msg<master_t>,
             value_t::functor_t)};
     
     try {
