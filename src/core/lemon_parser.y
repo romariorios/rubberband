@@ -4,6 +4,7 @@
     #include "error.hpp"
     #include "object.hpp"
     #include "parse.hpp"
+    #include "parse_private.hpp"
     #include "tokenizer.hpp"
 
     #include <cassert>
@@ -22,7 +23,7 @@
 %token_type {token *}
 %token_destructor { delete $$; }
 
-%extra_argument { ____rbb_internal::lemon_parser::extra *extra_args }
+%extra_argument { extra_lemon_args *extra_args }
 
 %syntax_error { throw syntax_error{*yyminor.yy0}; }
 

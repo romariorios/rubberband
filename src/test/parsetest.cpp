@@ -9,22 +9,18 @@ object __print(object *, const object &msg)
     return object{};
 }
 
-class test_master_t
+class test_master_t : public base_master
 {
 public:
-    object load(const object &obj, const string &str)
+    object load(const string &str)
     {
         if (str != "__parsetestmodule")
             return {};
         
-        auto block = parse(R"(
-            { ~:a -> 10 }
-        )", *this);
-        
-        return block << obj << object{};
+        return parse(R"({ ~:a -> 10 })");
     }
 
-    static object custom_operation(const string &name, const object &obj)
+    object custom_operation(const string &, const object &)
     {
         return {};
     }
@@ -32,7 +28,7 @@ public:
 
 #define TEST_PARSING(__program, __to_string)\
 {\
-    auto interpreted_as = parse(__program, dummy_master).to_string();\
+    auto interpreted_as = dummy_master.parse(__program).to_string();\
 \
     TEST_CONDITION(\
         interpreted_as == (__to_string),\
@@ -144,7 +140,7 @@ TESTS_INIT()
     
     TEST_PARSER(test_master, R"(
     {
-        %^~__parsetestmodule
+        %^__parsetestmodule~()
         !~a
     })", table({}, {}), empty(), number(10))
 

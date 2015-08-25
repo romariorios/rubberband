@@ -8,13 +8,13 @@ TESTS_INIT()
     {
         long line, column;
         try {
-            parse(R"(
+            dummy_master.parse(R"(
 ~:a -> 10, b -> 20
 ~:a -> 10
 ~:c -> ~a + 20
 ~: -> ~a
 ~:valhalla -> 300
-            )", dummy_master);
+            )");
         } catch (syntax_error e) {
             line = e.line;
             column = e.column;

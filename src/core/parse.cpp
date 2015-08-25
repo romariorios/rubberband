@@ -16,19 +16,28 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "parse.hpp"
+#include "parse_private.hpp"
 
 #include "block.hpp"
 #include "error.hpp"
-#include "lemon_parser.h"
+#include "tokenizer.hpp"
+
+#include "shared_data_t.hpp"
+
+#include <memory>
 
 using namespace rbb;
+using namespace std;
+
+// lemon externals
+#include "lemon_parser.h"
 
 extern void *LemonCParserAlloc(void *(*mallocProc)(size_t));
 extern void LemonCParser(
     void *p,
     int tok_num,
     token *tok,
-    ____rbb_internal::lemon_parser::extra *extra_args);
+    extra_lemon_args *extra_args);
 extern void *LemonCParserFree(void *p, void (*freeProc)(void *));
 
 inline int token_to_tokcode(token t)
@@ -78,22 +87,123 @@ inline int token_to_tokcode(token t)
     }
 }
 
-____rbb_internal::lemon_parser::lemon_parser(const object &master_object) :
-    _extra{master_object},
-    _p{LemonCParserAlloc(malloc)}
-{}
-
-____rbb_internal::lemon_parser::~lemon_parser()
+// lemon wrapper class
+class lemon_parser
 {
-    LemonCParserFree(_p, free);
+public:
+    lemon_parser(const object &master_object) :
+        _extra{master_object},
+        _p{LemonCParserAlloc(malloc)}
+    {}
+
+    ~lemon_parser()
+    {
+        LemonCParserFree(_p, free);
+    }
+
+    void parse(token tok)
+    {
+        LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_extra);
+    }
+
+    object result()
+    {
+        return _extra.result;
+    }
+
+    extra_lemon_args _extra;
+
+private:
+    void *_p;
+};
+
+// master object functions and data structures
+class master_data : public shared_data_t
+{
+public:
+    master_data(base_master &master) :
+        master{master}
+    {}
+
+    base_master &master;
+};
+
+object master_load_send_msg(object *thisptr, const object &msg)
+{
+    auto d = static_cast<master_data *>(thisptr->__value.data());
+
+    if (msg.__value.type != value_t::symbol_t)
+        throw semantic_error{"Symbol expected", *thisptr, msg};
+
+    return d->master.load(msg.to_string());
 }
 
-void ____rbb_internal::lemon_parser::parse(token tok)
+class custom_operation_data : public shared_data_t
 {
-    LemonCParser(_p, token_to_tokcode(tok), new token{tok}, &_extra);
+public:
+    explicit custom_operation_data(const object &sym, base_master &master) :
+        symbol{sym},
+        master{master}
+    {}
+
+    object symbol;
+    base_master &master;
+};
+
+object master_custom_operation_send_msg(object *thisptr, const object &msg)
+{
+    auto d = static_cast<custom_operation_data *>(thisptr->__value.data());
+
+    return d->master.custom_operation(d->symbol.to_string(), msg);
 }
 
-object ____rbb_internal::lemon_parser::result()
+object master_send_msg(object *thisptr, const object &msg)
 {
-    return _extra.result;
+    auto d = static_cast<master_data*>(thisptr->__value.data());
+
+    if (msg == symbol("^"))
+        return object::create_data_object(
+            new master_data{d->master},
+            master_load_send_msg,
+            value_t::functor_t);
+
+    if (msg.__value.type == value_t::symbol_t)
+        return functor(
+            new custom_operation_data{msg, d->master},
+            master_custom_operation_send_msg);
+
+    throw semantic_error{
+        "Unknown operation by master object",
+        *thisptr,
+        msg};
+}
+
+// base_master methods
+object base_master::parse(const string &code)
+{
+    tokenizer tokenizer{code};
+
+    lemon_parser p{
+        object::create_data_object(
+            new master_data{*this},
+            master_send_msg,
+            value_t::functor_t)};
+
+    try {
+        for (
+            auto tok = tokenizer.next();
+            tok.type != token::t::end_of_input;
+            tok = tokenizer.next()
+        ) {
+            p.parse(tok);
+        }
+    } catch (syntax_error e) {
+        e.line = tokenizer.cur_line();
+        e.column = tokenizer.cur_col();
+        throw e;
+    }
+
+    p.parse(token::t::end_of_input);
+
+    return p.result();
 }

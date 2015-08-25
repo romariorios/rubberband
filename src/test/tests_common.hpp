@@ -62,11 +62,11 @@ bool test_operator_eq(const rbb::object &obj1, const rbb::object &obj2)
     return errors;\
 }
 
-class dummy_master_t
+class dummy_master_t : public base_master
 {
 public:
-    static object load(const object &obj, const string &str) { return {}; }
-    static object custom_operation(const string &name, const object &obj) { return {}; }
+    object load(const string &) { return {}; }
+    object custom_operation(const string &, const object &) { return {}; }
 };
 
 static dummy_master_t dummy_master;
@@ -74,7 +74,7 @@ static dummy_master_t dummy_master;
 #define TEST_PARSER(__master, program, context, message, expected)\
 {\
     try {\
-        auto prog = parse(program, __master);\
+        auto prog = __master.parse(program);\
         auto res = prog << (context) << (message);\
 \
         TEST_CONDITION(\

@@ -16,10 +16,10 @@ object program_from_file(const string &filename);
 
 vector<string> module_paths;
 
-class rbbs_master
+class rbbs_master : public base_master
 {
 public:
-    static object load(const object &context, const string &str)
+    object load(const string &str)
     {
         auto file_with_path = str + ".rbb";
         
@@ -30,10 +30,10 @@ public:
             file_with_path = path + "/" + str + ".rbb";
         }
         
-        return program_from_file(file_with_path) << context << object{};
+        return program_from_file(file_with_path);
     }
 
-    static object custom_operation(const string &name, const object &obj)
+    object custom_operation(const string &name, const object &obj)
     {
         if (name == "inspect_object")
             puts(obj.to_string().c_str());
@@ -89,7 +89,7 @@ object program_from_file(const string &filename)
     }
     
     try {
-        return parse(program, master);
+        return master.parse(program);
     } catch (syntax_error e) {
         throw rbbs_syntax_error{e, filename};
     }
@@ -132,8 +132,10 @@ int main(int argc, char **argv)
     module_paths = paths_args.getValue();
     
     auto main_context = table();
-    for (auto module : modules_args.getValue())
-        rbbs_master::load(main_context, module);
+    for (auto module : modules_args.getValue()) {
+        auto mod = master.load(module);
+        mod << main_context << empty();
+    }
 
     result << main_context << empty();
 
