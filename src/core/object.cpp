@@ -30,6 +30,17 @@
 #define SEND_MSG(typename)\
 static object typename##_send_msg(object *thisptr, const object &msg)
 
+#define SELECT_RESPONSE_FOR(typename)\
+SEND_MSG(typename)\
+{\
+    auto res = typename##_iface_collection.select_response(thisptr, msg);\
+\
+    if (res == empty())\
+        throw message_not_recognized_error{*thisptr, msg};\
+\
+    return res;\
+}
+
 using namespace rbb;
 
 // Helper create_object functions
@@ -314,7 +325,10 @@ object object::operator<<(const object &msg)
     if (__value.type & value_t::functor_t)
         goto send_msg_skip_introspection;
 
-    if (__value.type & value_t::floating_t || __value.type & value_t::integer_t)
+    if (
+        __value.type & value_t::floating_t ||
+        __value.type & value_t::integer_t ||
+        __value.type & value_t::empty_t)
         goto temporary_workaround_to_make_some_objects_ignore_the_old_follows_interface_function_which_will_be_replaced;
 
     if (msg == s_symb::double_lt_question)
@@ -332,23 +346,15 @@ send_msg_skip_introspection:
 SEND_MSG(empty_cmp_eq) { return follows_interface(msg, symbol("<-()")); }
 SEND_MSG(empty_cmp_ne) { return boolean(follows_interface(msg, symbol("<-()")) != boolean(true)); }
 
-SEND_MSG(empty)
-{
-    if (follows_interface(msg, symbol("<-a")) != boolean(true))
-        return empty();
+auto empty_iface_collection =
+    mk_interface_collection(
+        iface::comparable{
+            empty_cmp_eq_send_msg,
+            empty_cmp_ne_send_msg
+        }
+    );
 
-    object cmp;
-    cmp.__value.type = value_t::functor_t;
-
-    if (msg == symbol("=="))
-        cmp.__send_msg = empty_cmp_eq_send_msg;
-    else if (msg == symbol("!="))
-        cmp.__send_msg = empty_cmp_ne_send_msg;
-    else
-        throw message_not_recognized_error{*thisptr, msg};
-
-    return cmp;
-}
+SELECT_RESPONSE_FOR(empty)
 
 object rbb::empty()
 {

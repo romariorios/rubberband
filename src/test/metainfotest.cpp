@@ -25,21 +25,34 @@ const char *interfaces[] = {"--a", "--+", "--0", "--?", "--|", "--:", "--{}", "-
 constexpr const unsigned char interfaces_len = sizeof(interfaces) / sizeof(char *);
 using expected_t = std::array<char, interfaces_len>;
 
-bool test_interfaces(object &obj, const expected_t &responds_to)
+struct test_interfaces_result
+{
+    bool result;
+    const char *wrong_interface;
+
+    operator bool() const { return result; }
+};
+
+test_interfaces_result test_interfaces(object &obj, const expected_t &responds_to)
 {
     for (auto i = 0; i < interfaces_len; ++i)
         if (obj << symbol("<<?") << symbol(interfaces[i]) != boolean(responds_to[i]))
-            return false;
+            return {false, interfaces[i]};
 
-    return true;
+    return {true, 0};
 }
 
 #define TEST_INTERFACES \
+{\
+    auto result = test_interfaces(obj, expected);\
+\
     TEST_CONDITION_WITH_EXCEPTION(\
-        test_interfaces(obj, expected),\
+        result,\
         printf(\
-            "The object %s has some incorrect responses for some interfaces\n",\
-            obj.to_string().c_str()))
+            "The object %s responds incorrectly to %s\n",\
+            obj.to_string().c_str(),\
+            result.wrong_interface))\
+}
 
 TESTS_INIT()
     {
@@ -70,7 +83,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("+"), false)
         TEST_RESPONDS_TO(object{}, false)
         
-        expected_t expected{0, 0, 0, 0, 0, 0, 0, 1, 1};
+        expected_t expected{0, 0, 0, 0, 0, 0, 0, 1, 0};
         TEST_INTERFACES
     }
     
