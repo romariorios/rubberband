@@ -328,7 +328,8 @@ object object::operator<<(const object &msg)
     if (
         __value.type & value_t::floating_t ||
         __value.type & value_t::integer_t ||
-        __value.type & value_t::empty_t)
+        __value.type & value_t::empty_t ||
+        __value.type & value_t::symbol_t)
         goto temporary_workaround_to_make_some_objects_ignore_the_old_follows_interface_function_which_will_be_replaced;
 
     if (msg == s_symb::double_lt_question)
@@ -476,22 +477,16 @@ SEND_MSG(symbol_comp_eq) { return symbol_comp_send_msg(thisptr, msg, true); }
 
 SEND_MSG(symbol_comp_ne) { return symbol_comp_send_msg(thisptr, msg, false); }
 
-SEND_MSG(symbol)
-{
-    if (follows_interface(msg, symbol("<-a")) != boolean(true))
-        throw message_not_recognized_error{*thisptr, msg};
+auto symbol_iface_collection =
+    mk_interface_collection(
+        iface::symbolic{},
+        iface::comparable{
+            symbol_comp_eq_send_msg,
+            symbol_comp_ne_send_msg
+        }
+    );
 
-    object cmp_op = create_functor_object(thisptr);
-
-    if (msg == symbol("=="))
-        cmp_op.__send_msg = symbol_comp_eq_send_msg;
-    else if (msg == symbol("!="))
-        cmp_op.__send_msg = symbol_comp_ne_send_msg;
-    else
-        throw message_not_recognized_error{*thisptr, msg};
-
-    return cmp_op;
-}
+SELECT_RESPONSE_FOR(symbol)
 
 object rbb::symbol(const std::string &val)
 {

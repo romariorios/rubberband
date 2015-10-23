@@ -13,12 +13,12 @@ TEST_CONDITION(\
 bool eq;\
 eq = strcmp(sym1, sym2) == 0;\
 TEST_SYMBOL_COMPARISON(sym1, sym2, "==", eq)\
-TEST_SYMBOL_COMPARISON(sym1, sym2, "!=", !eq)\
+TEST_SYMBOL_COMPARISON(sym1, sym2, "/=", !eq)\
 }
 
 #define COMPARE_WITH_SPECIAL_SYMBOLS(sym)\
 COMPARE_EQ_AND_NE(sym, "==")\
-COMPARE_EQ_AND_NE(sym, "!=")\
+COMPARE_EQ_AND_NE(sym, "/=")\
 COMPARE_EQ_AND_NE(sym, "?")\
 COMPARE_EQ_AND_NE(sym, ">")\
 COMPARE_EQ_AND_NE(sym, "<")\
@@ -43,7 +43,7 @@ TESTS_INIT()
         abcd_comp == rbb::boolean(true),
         puts("Error when comparing equal symbols sending messages"))
     TEST_CONDITION(
-        rbb::symbol("a12345") << rbb::symbol("!=") << rbb::symbol("a1234") == rbb::boolean(true),
+        rbb::symbol("a12345") << rbb::symbol("/=") << rbb::symbol("a1234") == rbb::boolean(true),
         puts("Error when cheking two symbols for inequality"))
 
     const char *valhalla_s = "valhalla";
@@ -59,7 +59,7 @@ TESTS_INIT()
 
     // Test all special symbols
     COMPARE_WITH_SPECIAL_SYMBOLS("==")
-    COMPARE_WITH_SPECIAL_SYMBOLS("!=")
+    COMPARE_WITH_SPECIAL_SYMBOLS("/=")
     COMPARE_WITH_SPECIAL_SYMBOLS("?")
     COMPARE_WITH_SPECIAL_SYMBOLS(">")
     COMPARE_WITH_SPECIAL_SYMBOLS("<")
@@ -69,10 +69,8 @@ TESTS_INIT()
     COMPARE_WITH_SPECIAL_SYMBOLS("-")
     COMPARE_WITH_SPECIAL_SYMBOLS("*")
     COMPARE_WITH_SPECIAL_SYMBOLS("/")
-    COMPARE_WITH_SPECIAL_SYMBOLS("?|")
-    COMPARE_WITH_SPECIAL_SYMBOLS("?:")
 
-    TEST_OPERATOR_EQ(rbb::symbol("=="), rbb::symbol("!="))
+    TEST_OPERATOR_EQ(rbb::symbol("=="), rbb::symbol("/="))
     TEST_OPERATOR_EQ(rbb::symbol("abcdef"), rbb::symbol("abcdefg"))
     TEST_OPERATOR_EQ(rbb::symbol("asa"), rbb::empty())
     TEST_OPERATOR_EQ(rbb::empty(), rbb::symbol("aaa"))

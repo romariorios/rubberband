@@ -215,6 +215,13 @@ private:
 };
 
 // TODO come up with some way for an interface to require others
+
+// name-only interface
+class symbolic
+{
+    RBB_IFACE("--a")
+};
+
 class numeric
 {
     RBB_IFACE("--0")

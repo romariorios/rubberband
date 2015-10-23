@@ -130,8 +130,11 @@ send_msg_function iface::ordered::select_function(object *, const object& msg) c
 DEFAULT_SELECT_RESPONSE(iface::ordered)
 DEFAULT_RESPONDS_TO(iface::ordered)
 
-DEFAULT_SELECT_FUNCTION(iface::numeric)
+DEFAULT_SELECT_FUNCTION(iface::symbolic)
+DEFAULT_SELECT_RESPONSE(iface::symbolic)
+DEFAULT_RESPONDS_TO(iface::symbolic)
 
+DEFAULT_SELECT_FUNCTION(iface::numeric)
 
 iface::numeric::numeric(send_msg_function array_send_msg) :
     _array_send_msg{array_send_msg}
