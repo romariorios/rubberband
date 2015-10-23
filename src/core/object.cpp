@@ -345,8 +345,8 @@ send_msg_skip_introspection:
 }
 
 // empty: Empty object
-SEND_MSG(empty_cmp_eq) { return follows_interface(msg, symbol("<-()")); }
-SEND_MSG(empty_cmp_ne) { return boolean(follows_interface(msg, symbol("<-()")) != boolean(true)); }
+SEND_MSG(empty_cmp_eq) { return boolean(msg == empty()); }
+SEND_MSG(empty_cmp_ne) { return boolean(msg != empty()); }
 
 auto empty_iface_collection =
     mk_interface_collection(
