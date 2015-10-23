@@ -159,3 +159,42 @@ bool iface::numeric::responds_to(object *, const object &msg) const
 {
     return const_cast<object &>(msg) << symbol("<<?") << symbol("--|") == boolean(true);
 }
+
+iface::booleanoid::booleanoid(
+    send_msg_function and_send_msg,
+    send_msg_function or_send_msg,
+    send_msg_function get_context_send_msg,
+    send_msg_function raise_send_msg) :
+    _and_send_msg(and_send_msg),
+    _or_send_msg(or_send_msg),
+    _get_context_send_msg(get_context_send_msg),
+    _raise_send_msg(raise_send_msg)
+{}
+
+send_msg_function iface::booleanoid::select_function(object *, const object &msg) const
+{
+    if (msg == symbol("/\\"))
+        return _and_send_msg;
+    if (msg == symbol("\\/"))
+        return _or_send_msg;
+    if (msg == symbol("?"))
+        return _get_context_send_msg;
+    if (msg == symbol("^"))
+        return _raise_send_msg;
+
+    return nullptr;
+}
+
+bool iface::booleanoid::responds_to(object *thisptr, const object &msg) const
+{
+    return select_function(thisptr, msg) || msg == symbol("><");
+}
+
+object iface::booleanoid::select_response(object *thisptr, const object &msg) const
+{
+    if (!responds_to(thisptr, msg))
+        return {};
+
+    auto f = select_function(thisptr, msg);
+    return f? create_response(thisptr, f) : boolean(!thisptr->__value.boolean);
+}

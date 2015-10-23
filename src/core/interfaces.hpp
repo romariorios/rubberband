@@ -233,6 +233,25 @@ private:
     send_msg_function _array_send_msg;
 };
 
+class booleanoid
+{
+    RBB_IFACE("--?")
+
+public:
+    booleanoid(
+        send_msg_function and_send_msg,
+        send_msg_function or_send_msg,
+        send_msg_function get_context_send_msg,
+        send_msg_function raise_send_msg);
+
+private:
+    send_msg_function
+        _and_send_msg,
+        _or_send_msg,
+        _get_context_send_msg,
+        _raise_send_msg;
+};
+
 }
 
 }

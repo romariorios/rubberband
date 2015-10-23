@@ -329,7 +329,8 @@ object object::operator<<(const object &msg)
         __value.type & value_t::floating_t ||
         __value.type & value_t::integer_t ||
         __value.type & value_t::empty_t ||
-        __value.type & value_t::symbol_t)
+        __value.type & value_t::symbol_t ||
+        __value.type & value_t::boolean_t)
         goto temporary_workaround_to_make_some_objects_ignore_the_old_follows_interface_function_which_will_be_replaced;
 
     if (msg == s_symb::double_lt_question)
@@ -501,13 +502,21 @@ object rbb::symbol(const std::string &val)
 // boolean: Boolean object
 SEND_MSG(boolean_comp)
 {
-    if (follows_interface(msg, symbol("<-?")) != boolean(true))
+    if (const_cast<object &>(msg) << symbol("<<?") << symbol("--?") != boolean(true))
         return boolean(false);
 
-    if (msg.__value.boolean != thisptr->__value.boolean)
+    auto thisval =
+        static_cast<object_data *>(thisptr->__value.data())->obj.__value.boolean;
+
+    if (msg.__value.boolean != thisval)
         return boolean(false);
 
     return boolean(true);
+}
+
+SEND_MSG(boolean_comp_ne)
+{
+    return boolean(!boolean_comp_send_msg(thisptr, msg).__value.boolean);
 }
 
 class boolean_decision_data : public shared_data_t
@@ -595,33 +604,21 @@ SEND_MSG(boolean_raise)
     return {};
 }
 
-SEND_MSG(boolean)
-{
-    if (follows_interface(msg, symbol("<-a")) != boolean(true))
-        throw message_not_recognized_error{*thisptr, msg};
+auto boolean_iface_collection =
+    mk_interface_collection(
+        iface::comparable{
+            boolean_comp_send_msg,
+            boolean_comp_ne_send_msg
+        },
+        iface::booleanoid{
+            boolean_do_AND_send_msg,
+            boolean_do_OR_send_msg,
+            boolean_get_context_send_msg,
+            boolean_raise_send_msg
+        }
+    );
 
-    object comp_block = create_object(value_t::no_data_t, boolean_comp_send_msg);
-
-    if (msg == symbol("==")) {
-        comp_block.__value.boolean = thisptr->__value.boolean;
-        return comp_block;
-    } else if (msg == symbol("!=")) {
-        comp_block.__value.boolean = !thisptr->__value.boolean;
-        return comp_block;
-    } else if (msg == symbol("/\\")) {
-        return create_functor_object(thisptr, boolean_do_AND_send_msg);
-    } else if (msg == symbol("\\/")) {
-        return create_functor_object(thisptr, boolean_do_OR_send_msg);
-    } else if (msg == symbol("><")) {
-        return boolean(!thisptr->__value.boolean);
-    } else if (msg == symbol("?")) {
-        return create_functor_object(thisptr, boolean_get_context_send_msg);
-    } else if (msg == symbol("^")) {
-        return create_functor_object(thisptr, boolean_raise_send_msg);
-    }
-
-    throw message_not_recognized_error{*thisptr, msg};
-}
+SELECT_RESPONSE_FOR(boolean)
 
 object rbb::boolean(bool val)
 {

@@ -113,7 +113,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(number(12), false)
         
-       expected_t expected{0, 0, 0, 1, 0, 0, 0, 1, 1};
+       expected_t expected{0, 0, 0, 1, 0, 0, 0, 1, 0};
        TEST_INTERFACES
     }
     
