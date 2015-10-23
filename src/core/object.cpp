@@ -424,7 +424,7 @@ static object create_array_object(array_data *d)
     return object::create_data_object(d, array_send_msg);
 }
 
-auto num_iface_collection =
+auto number_iface_collection =
     mk_interface_collection(
         iface::arith{
             num_op_add_send_msg,
@@ -447,15 +447,7 @@ auto num_iface_collection =
         }
     );
 
-SEND_MSG(number)
-{
-    auto res = num_iface_collection.select_response(thisptr, msg);
-
-    if (res == empty())
-        throw message_not_recognized_error{*thisptr, msg};
-
-    return res;
-}
+SELECT_RESPONSE_FOR(number)
 
 object rbb::number(double val)
 {
