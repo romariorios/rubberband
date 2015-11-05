@@ -33,11 +33,15 @@ template <typename... Interfaces>
 class metainfo_data : public shared_data_t
 {
 public:
-    metainfo_data(const interface_collection<Interfaces...> &interfaces) :
-        interfaces{interfaces}
+    metainfo_data(
+        const interface_collection<Interfaces...> &interfaces,
+        const object &obj) :
+        interfaces{interfaces},
+        obj{obj}
     {}
 
     const interface_collection<Interfaces...> &interfaces;
+    object obj;
 };
 
 template <typename... Interfaces>
@@ -53,7 +57,7 @@ object iface_collection_responds_to(object *thisptr, const object &msg)
 {
     auto data = static_cast<metainfo_data<Interfaces...> *>(thisptr->__value.data());
 
-    return boolean(data->interfaces.responds_to(thisptr, msg));
+    return boolean(data->interfaces.responds_to(&data->obj, msg));
 }
 
 template <typename... Interfaces>
@@ -108,8 +112,9 @@ public:
     {
         if (msg == symbol("<<") || msg == symbol("<<?"))
             return object::create_data_object(
-                new metainfo_data<Interfaces...>{*this},
-                select_function(thisptr, msg));
+                new metainfo_data<Interfaces...>{*this, *thisptr},
+                select_function(thisptr, msg),
+                value_t::functor_t);  // REMOVEME this will be unnecessary when everything is ported to ifaces
 
         object f;
 
