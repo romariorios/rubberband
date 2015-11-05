@@ -149,8 +149,6 @@ namespace s_symb
     static auto &&double_lt_question = symbol("<<?");
 }
 
-static bool in_bounds(array_data *, int);
-
 object check_if_operation_true(const object &obj, const object &msg, const char *op)
 {
     try {
@@ -704,11 +702,6 @@ SEND_MSG(array_slicing)
         new_d->arr[i] = d->arr[j];
 
     return create_array_object(new_d);
-}
-
-static bool in_bounds(array_data *d, int i)
-{
-    return i >= 0 && i < d->size;
 }
 
 SEND_MSG(array)

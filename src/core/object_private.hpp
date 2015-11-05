@@ -82,9 +82,14 @@ public:
     literal::block *block_l;
 };
 
-static bool is_numeric(object &val)
+static bool is_numeric(const object &val)
 {
     return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
+}
+
+static bool in_bounds(array_data *d, int i)
+{
+    return i >= 0 && i < d->size;
 }
 
 static int get_index_from_obj(const object &obj)
