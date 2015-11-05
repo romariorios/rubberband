@@ -257,6 +257,19 @@ private:
         _raise_send_msg;
 };
 
+class listable
+{
+    RBB_IFACE("--|")
+
+public:
+    listable(send_msg_function concat_send_msg, send_msg_function slice_send_msg);
+
+private:
+    send_msg_function
+        _concat_send_msg,
+        _slice_send_msg;
+};
+
 }
 
 }

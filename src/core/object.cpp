@@ -33,12 +33,10 @@ static object typename##_send_msg(object *thisptr, const object &msg)
 #define SELECT_RESPONSE_FOR(typename)\
 SEND_MSG(typename)\
 {\
-    auto res = typename##_iface_collection.select_response(thisptr, msg);\
-\
-    if (res == empty())\
+    if (msg != symbol("<<") && *thisptr << symbol("<<") << msg != boolean(true))\
         throw message_not_recognized_error{*thisptr, msg};\
 \
-    return res;\
+    return typename##_iface_collection.select_response(thisptr, msg);\
 }
 
 using namespace rbb;
@@ -328,13 +326,13 @@ object object::operator<<(const object &msg)
         __value.type & value_t::integer_t ||
         __value.type & value_t::empty_t ||
         __value.type & value_t::symbol_t ||
-        __value.type & value_t::boolean_t)
-        goto temporary_workaround_to_make_some_objects_ignore_the_old_follows_interface_function_which_will_be_replaced;
+        __value.type & value_t::boolean_t ||
+        (__value.type & value_t::data_t && (dynamic_cast<array_data *>(__value.data()))))
+        goto send_msg_skip_introspection;
 
     if (msg == s_symb::double_lt_question)
         return create_functor_object(this, follows_interface_send_msg);
 
-temporary_workaround_to_make_some_objects_ignore_the_old_follows_interface_function_which_will_be_replaced:
     if (msg == s_symb::double_lt)
         return create_functor_object(this, responds_to_send_msg);
 
@@ -704,55 +702,19 @@ SEND_MSG(array_slicing)
     return create_array_object(new_d);
 }
 
-SEND_MSG(array)
-{
-    array_data *d = static_cast<array_data *>(thisptr->__value.data());
+auto array_iface_collection =
+    mk_interface_collection(
+        iface::comparable{
+            data_comparison_eq_send_msg,
+            data_comparison_ne_send_msg
+        },
+        iface::listable{
+            array_concatenation_send_msg,
+            array_slicing_send_msg
+        }
+    );
 
-    if (follows_interface(msg, symbol("<-a")) == boolean(true)) {
-        if (msg == symbol("*"))
-            return rbb::number(d->size);
-
-        object symb_ret = create_functor_object(thisptr);
-
-        if (msg == symbol("=="))
-            symb_ret.__send_msg = data_comparison_eq_send_msg;
-        else if (msg == symbol("!="))
-            symb_ret.__send_msg = data_comparison_ne_send_msg;
-        else if (msg == symbol("+"))
-            symb_ret.__send_msg = array_concatenation_send_msg;
-        else if (msg == symbol("/"))
-            symb_ret.__send_msg = array_slicing_send_msg;
-        else
-            throw message_not_recognized_error{*thisptr, msg};
-
-        return symb_ret;
-    } else if (follows_interface(msg, symbol("--|")) == boolean(true)) {
-        auto msg_copy = msg;
-
-        if ((msg_copy << symbol("*") << symbol("<") << number(2)).__value.boolean)
-            throw semantic_error{"Wrong number of arguments for array assignment", *thisptr, msg};
-
-        auto index = msg_copy << number(0);
-        if (!is_numeric(index))
-            throw wrong_type_error<number_name>{*thisptr, msg};
-
-        auto msg_ind = get_index_from_obj(index);
-        if (!in_bounds(d, msg_ind))
-            return empty();
-
-        d->arr[msg_ind] = msg_copy << number(1);
-
-        return empty();
-    } else if (follows_interface(msg, symbol("<-0")) == boolean(true)) {
-        auto ind = get_index_from_obj(msg);
-        if (!in_bounds(d, ind))
-            return empty();
-
-        return d->arr[ind];
-    }
-
-    throw message_not_recognized_error{*thisptr, msg};
-}
+SELECT_RESPONSE_FOR(array)
 
 object rbb::array(const std::vector<object> &objects)
 {

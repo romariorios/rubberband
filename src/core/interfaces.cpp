@@ -165,10 +165,10 @@ iface::booleanoid::booleanoid(
     send_msg_function or_send_msg,
     send_msg_function get_context_send_msg,
     send_msg_function raise_send_msg) :
-    _and_send_msg(and_send_msg),
-    _or_send_msg(or_send_msg),
-    _get_context_send_msg(get_context_send_msg),
-    _raise_send_msg(raise_send_msg)
+    _and_send_msg{and_send_msg},
+    _or_send_msg{or_send_msg},
+    _get_context_send_msg{get_context_send_msg},
+    _raise_send_msg{raise_send_msg}
 {}
 
 send_msg_function iface::booleanoid::select_function(object *, const object &msg) const
@@ -197,4 +197,62 @@ object iface::booleanoid::select_response(object *thisptr, const object &msg) co
 
     auto f = select_function(thisptr, msg);
     return f? create_response(thisptr, f) : boolean(!thisptr->__value.boolean);
+}
+
+iface::listable::listable(
+    send_msg_function concat_send_msg,
+    send_msg_function slice_send_msg) :
+    _concat_send_msg{concat_send_msg},
+    _slice_send_msg{slice_send_msg}
+{}
+
+send_msg_function iface::listable::select_function(object *, const object &msg) const
+{
+    if (msg == symbol("+"))
+        return _concat_send_msg;
+    if (msg == symbol("/"))
+        return _slice_send_msg;
+
+    return nullptr;
+}
+
+bool iface::listable::responds_to(object *thisptr, const object &msg) const
+{
+    if (select_function(thisptr, msg) ||
+        msg == symbol("*"))
+        return true;
+
+    auto d = static_cast<array_data *>(thisptr->__value.data());
+
+    auto msg_copy = msg;
+    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true))
+        return
+            msg_copy << symbol("*") == number(2) &&
+            in_bounds(d, get_index_from_obj(msg_copy << number(0)));
+
+    return in_bounds(d, get_index_from_obj(msg));
+}
+
+object iface::listable::select_response(object *thisptr, const object &msg) const
+{
+    if (!responds_to(thisptr, msg))
+        return {};
+
+    auto d = static_cast<array_data *>(thisptr->__value.data());
+
+    if (msg == symbol("*"))
+        return number(d->size);
+
+    if (is_numeric(msg))
+        return d->arr[get_index_from_obj(msg)];
+
+    auto msg_copy = msg;
+    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true)) {
+        auto index = get_index_from_obj(msg_copy << number(0));
+        d->arr[index] = msg_copy << number(1);
+
+        return {};
+    }
+
+    return create_response(thisptr, select_function(thisptr, msg));
 }

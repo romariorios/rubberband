@@ -45,6 +45,23 @@ TEST_CONDITION(\
         (__expected).to_string().c_str(),\
         result.to_string().c_str()))
 
+#define TEST_OUT_OF_BOUNDS_INDEX(__index) \
+{\
+    bool out_of_bounds = false;\
+    object res;\
+    try {\
+        res = arr << rbb::number(__index);\
+    } catch (message_not_recognized_error) {\
+        out_of_bounds = true;\
+    }\
+\
+    TEST_CONDITION(\
+        out_of_bounds,\
+        printf(\
+            "Expected rbb::message_not_recognized_error exception; got %s",\
+            res.to_string()))\
+}
+
 TESTS_INIT()
     {
         auto arr = rbb::number(3) << rbb::array({});
@@ -58,7 +75,7 @@ TESTS_INIT()
         auto arr = rbb::number(2) << rbb::array({rbb::number(1), rbb::number(2), rbb::number(3)});
 
         TEST_SIZE(2)
-        TEST_INDEX_ELEMENT(2, rbb::empty())
+        TEST_OUT_OF_BOUNDS_INDEX(2)
     }
 
     auto l = rbb::array({rbb::number(1), rbb::number(4), rbb::number(9)});
@@ -67,7 +84,7 @@ TESTS_INIT()
         l << rbb::symbol("==") << l == rbb::boolean(true),
         puts("An aray doesn't equal itself"))
     TEST_CONDITION(
-        l << rbb::symbol("!=") << l == rbb::boolean(false),
+        l << rbb::symbol("/=") << l == rbb::boolean(false),
         puts("An array differs from itself"))
 
     auto l_ = l;
@@ -86,9 +103,11 @@ TESTS_INIT()
     TEST_CONDITION(
         l << rbb::number(1) == rbb::number(4),
         puts("The array doesn't return its elements"))
-    TEST_CONDITION(
-        l << rbb::number(3) == rbb::empty(),
-        puts("The array isn't handling out-of-bounds well"))
+    {
+        auto &arr = l;
+
+        TEST_OUT_OF_BOUNDS_INDEX(3)
+    }
 
     auto ch_0 = rbb::array({ rbb::number(0), rbb::symbol("number_array") });
 
