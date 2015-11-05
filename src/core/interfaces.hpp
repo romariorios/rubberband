@@ -270,6 +270,21 @@ private:
         _slice_send_msg;
 };
 
+class mapped
+{
+    RBB_IFACE("--:")
+    
+public:
+    mapped(
+        send_msg_function merge_send_msg,
+        send_msg_function del_send_msg);
+    
+private:
+    send_msg_function
+        _merge_send_msg,
+        _del_send_msg;
+};
+
 }
 
 }

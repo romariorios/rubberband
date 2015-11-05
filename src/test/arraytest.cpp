@@ -46,21 +46,7 @@ TEST_CONDITION(\
         result.to_string().c_str()))
 
 #define TEST_OUT_OF_BOUNDS_INDEX(__index) \
-{\
-    bool out_of_bounds = false;\
-    object res;\
-    try {\
-        res = arr << rbb::number(__index);\
-    } catch (message_not_recognized_error) {\
-        out_of_bounds = true;\
-    }\
-\
-    TEST_CONDITION(\
-        out_of_bounds,\
-        printf(\
-            "Expected rbb::message_not_recognized_error exception; got %s",\
-            res.to_string()))\
-}
+TEST_MSG_NOT_RECOGNIZED(arr, rbb::number(__index))
 
 TESTS_INIT()
     {

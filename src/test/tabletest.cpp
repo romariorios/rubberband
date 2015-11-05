@@ -51,8 +51,8 @@ TESTS_INIT()
         tab << rbb::symbol("==") << tab == rbb::boolean(true),
         puts("Table doesn't equal itself"))
     TEST_CONDITION(
-        tab << rbb::symbol("!=") << tab == rbb::boolean(false),
-        puts("table != table doesn't equal false"))
+        tab << rbb::symbol("/=") << tab == rbb::boolean(false),
+        puts("table /= table doesn't equal false"))
     TEST_CONDITION(
         tab << rbb::symbol("a") == rbb::number(100),
         puts("Can't find field a"))
@@ -62,9 +62,7 @@ TESTS_INIT()
     TEST_CONDITION(
         tab << rbb::symbol("c") == rbb::number(300),
         puts("Can't find field c"))
-    TEST_CONDITION(
-        tab << rbb::symbol("d") == rbb::empty(),
-        puts("Generic object should answer empty for a non-existing field"))
+    TEST_MSG_NOT_RECOGNIZED(tab, symbol("d"))
     bool thrown = false;
     try {
         tab << rbb::number(100);

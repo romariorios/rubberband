@@ -256,3 +256,106 @@ object iface::listable::select_response(object *thisptr, const object &msg) cons
 
     return create_response(thisptr, select_function(thisptr, msg));
 }
+
+iface::mapped::mapped(
+    send_msg_function merge_send_msg,
+    send_msg_function del_send_msg) :
+    _merge_send_msg{merge_send_msg},
+    _del_send_msg{del_send_msg}
+{}
+
+send_msg_function iface::mapped::select_function(object *, const object &msg) const
+{
+    if (msg == symbol("+"))
+        return _merge_send_msg;
+    if (msg == symbol("-"))
+        return _del_send_msg;
+
+    return nullptr;
+}
+
+bool iface::mapped::responds_to(object *thisptr, const object &msg) const
+{
+    if (select_function(thisptr, msg) ||
+        msg == symbol("*"))
+        return true;
+
+    auto d = static_cast<table_data *>(thisptr->__value.data());
+
+    auto msg_copy = msg;
+    if (msg_copy << symbol("<<?") << symbol("--:") == boolean(true))
+        return true;
+
+    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true)) {
+        int size = number_to_double(msg_copy << symbol("*"));
+        for (int i = 0; i < size; ++i)
+            if (!((msg_copy << number(i)).__value.type & value_t::symbol_t))
+                return false;
+
+        return true;
+    }
+
+    return
+        msg_copy << symbol("<<?") << symbol("--:") == boolean(true) ||
+        table_contains_symbol(d, msg);
+}
+
+object iface::mapped::select_response(object *thisptr, const object &msg) const
+{
+    if (!responds_to(thisptr, msg))
+        return {};
+
+    auto f = select_function(thisptr, msg);
+    if (f)
+        return create_response(thisptr, f);
+
+    auto d = static_cast<table_data *>(thisptr->__value.data());
+
+    if (msg == symbol("*")) {
+        vector<object> l_el;
+
+        for (auto pair : d->objtree) {
+            object sym;
+            sym.__value.type = value_t::symbol_t;
+            sym.__value.symbol = pair.first;
+
+            l_el.push_back(sym);
+        }
+
+        return rbb::array(l_el);
+    }
+
+    auto msg_copy = msg;
+    if (msg_copy << symbol("<<?") << symbol("--:") == boolean(true)) {
+        auto sym_array = msg_copy << symbol("*");
+        int sym_array_len = number_to_double(sym_array << symbol("*"));
+
+        for (int i = 0; i < sym_array_len; ++i) {
+            auto cur_sym = sym_array << number(i);
+            auto cur_sym_ptr = cur_sym.__value.symbol;
+            d->objtree[cur_sym_ptr] = msg_copy << cur_sym;
+        }
+
+        return *thisptr;
+    }
+
+    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true)) {
+        int size = number_to_double(msg_copy << symbol("*"));
+        auto new_table = table();
+        auto new_table_d = static_cast<table_data *>(new_table.__value.data());
+
+        for (int i = 0; i < size; ++i) {
+            auto obj = msg_copy << number(i);
+            auto sym = obj.__value.symbol;
+
+            if (d->objtree.find(sym) == d->objtree.end())
+                continue;
+
+            new_table_d->objtree[sym] = d->objtree.at(sym);
+        }
+
+        return new_table;
+    }
+
+    return d->objtree.at(msg.__value.symbol);
+}

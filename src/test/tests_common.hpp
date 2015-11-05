@@ -36,6 +36,23 @@ int main() {\
             e.message.to_string().c_str());\
     }
 
+#define TEST_MSG_NOT_RECOGNIZED(__obj, __msg) \
+{\
+    bool not_recognized = false;\
+    object res;\
+    try {\
+        res = (__obj) << (__msg);\
+    } catch (message_not_recognized_error) {\
+        not_recognized = true;\
+    }\
+\
+    TEST_CONDITION(\
+        not_recognized,\
+        printf(\
+            "Expected rbb::message_not_recognized_error exception; got %s",\
+            res.to_string()))\
+}
+
 // this assumes obj1 and obj2 are different
 bool test_operator_eq(const rbb::object &obj1, const rbb::object &obj2)
 {

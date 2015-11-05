@@ -152,11 +152,14 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("-"), true)
         TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(rbb::array({number(10), number(20)}), false)
+        TEST_RESPONDS_TO(rbb::array({symbol("a"), symbol("b")}), true)
+        TEST_RESPONDS_TO(rbb::array({symbol("a"), symbol("b"), symbol("d")}), true)
+        TEST_RESPONDS_TO(rbb::array({symbol("a"), symbol("b"), number(10)}), false)
         TEST_RESPONDS_TO(
             table({symbol("d")}, {number(10)}),
             true)
         
-        expected_t expected{0, 0, 0, 0, 0, 1, 0, 1, 1};
+        expected_t expected{0, 0, 0, 0, 0, 1, 0, 1, 0};
         TEST_INTERFACES
     }
     

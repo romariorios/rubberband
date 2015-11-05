@@ -104,6 +104,13 @@ static int get_index_from_obj(const object &obj)
     return obj.__value.integer;
 }
 
+static bool table_contains_symbol(table_data *d, const object &msg)
+{
+    return
+        msg.__value.type & value_t::symbol_t &&
+        d->objtree.find(msg.__value.symbol) != d->objtree.end();
+}
+
 }
 
 #endif

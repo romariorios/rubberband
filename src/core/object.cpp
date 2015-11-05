@@ -331,7 +331,9 @@ object object::operator<<(const object &msg)
         __value.type & value_t::empty_t ||
         __value.type & value_t::symbol_t ||
         __value.type & value_t::boolean_t ||
-        (__value.type & value_t::data_t && (dynamic_cast<array_data *>(__value.data()))))
+        (__value.type & value_t::data_t && (
+            dynamic_cast<array_data *>(__value.data()) ||
+            dynamic_cast<table_data *>(__value.data()))))
         goto send_msg_skip_introspection;
 
     if (msg == s_symb::double_lt_question)
@@ -763,76 +765,19 @@ SEND_MSG(del_element)
     return {};
 }
 
-SEND_MSG(table)
-{
-    table_data *d = static_cast<table_data *>(thisptr->__value.data());
-
-    if (follows_interface(msg, symbol("<-a")) == boolean(true)) {
-        object answer = create_functor_object(thisptr);
-
-        if (msg == rbb::symbol("=="))
-            answer.__send_msg = data_comparison_eq_send_msg;
-        else if (msg == rbb::symbol("!="))
-            answer.__send_msg = data_comparison_ne_send_msg;
-        else if (msg == rbb::symbol("+"))
-            answer.__send_msg = table_merge_send_msg;
-        else if (msg == rbb::symbol("-"))
-            answer.__send_msg = del_element_send_msg;
-        else if (msg == rbb::symbol("*")) {
-            std::vector<object> l_el;
-
-            for (auto pair : d->objtree) {
-                object sym;
-                sym.__value.type = value_t::symbol_t;
-                sym.__value.symbol = pair.first;
-
-                l_el.push_back(sym);
-            }
-
-            return rbb::array(l_el);
-        } else {
-            auto result = d->objtree.find(msg.__value.symbol);
-            return result != d->objtree.end()? result->second : empty();
-        }
-
-        return answer;
-
-    // Attribution (merging)
-    } else if (follows_interface(msg, symbol("<-:")) == boolean(true)) {
-        auto msg_copy = msg;
-        auto sym_array = msg_copy << symbol("*");
-        int sym_array_len = number_to_double(sym_array << symbol("*"));
-
-        for (int i = 0; i < sym_array_len; ++i) {
-            auto cur_sym = sym_array << number(i);
-            auto cur_sym_ptr = cur_sym.__value.symbol;
-            d->objtree[cur_sym_ptr] = msg_copy << cur_sym;
-        }
-
-        return *thisptr;
-    } else if (follows_interface(msg, symbol("--|")) == boolean(true)) {
-        auto msg_copy = msg;
-        int array_size = number_to_double(msg_copy << symbol("*"));
-        auto new_table = table();
-        auto new_table_d = static_cast<table_data *>(new_table.__value.data());
-
-        for (int i = 0; i < array_size; ++i) {
-            auto &&obj = msg_copy << number(i);
-            if (follows_interface(obj, symbol("<-a")) != boolean(true))
-                throw message_not_recognized_error{*thisptr, msg};
-
-            auto sym = obj.__value.symbol;
-            if (d->objtree.find(sym) == d->objtree.end())
-                continue;
-
-            new_table_d->objtree[sym] = d->objtree[sym];
-        }
-
-        return new_table;
+IFACES(table)
+(
+    iface::comparable{
+        data_comparison_eq_send_msg,
+        data_comparison_ne_send_msg
+    },
+    iface::mapped{
+        table_merge_send_msg,
+        del_element_send_msg
     }
+);
 
-    throw message_not_recognized_error{*thisptr, msg};
-}
+SELECT_RESPONSE_FOR(table)
 
 object rbb::table(
     const std::vector<object> &symbols,
