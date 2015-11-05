@@ -63,7 +63,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol(">="), true)
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("=="), true)
-        TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(rbb::array({number(10), number(20), number(30)}), true)
         TEST_RESPONDS_TO(
@@ -77,7 +77,7 @@ TESTS_INIT()
     {
         object obj; // empty
         TEST_RESPONDS_TO(symbol("=="), true)
-        TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("<<?"), true)
         TEST_RESPONDS_TO(symbol("+"), false)
@@ -92,7 +92,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("lol"), false)
         TEST_RESPONDS_TO(rbb::array({object{}, symbol("a"), number(15)}), false)
         TEST_RESPONDS_TO(symbol("=="), true)
-        TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(symbol("<"), false)
         TEST_RESPONDS_TO(symbol("<<"), true)
         TEST_RESPONDS_TO(symbol("<<?"), true)
@@ -105,7 +105,7 @@ TESTS_INIT()
         auto &&obj = boolean(false);
         TEST_RESPONDS_TO(symbol("?"), true)
         TEST_RESPONDS_TO(symbol("=="), true)
-        TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(symbol("><"), true)
         TEST_RESPONDS_TO(symbol("\\/"), true)
         TEST_RESPONDS_TO(symbol("/\\"), true)
@@ -120,7 +120,7 @@ TESTS_INIT()
     {
         auto &&obj = rbb::array({number(10), number(20), symbol("a")});
         TEST_RESPONDS_TO(symbol("=="), true)
-        TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(number(0), true)
         TEST_RESPONDS_TO(symbol("*"), true)
         TEST_RESPONDS_TO(symbol("+"), true)
@@ -134,7 +134,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(rbb::array({number(12), number(12), number(12)}), false)
         TEST_RESPONDS_TO(rbb::array({number(3), number(100)}), false)
         
-        expected_t expected{0, 0, 0, 0, 1, 0, 0, 1, 1};
+        expected_t expected{0, 0, 0, 0, 1, 0, 0, 1, 0};
         TEST_INTERFACES
     }
     
@@ -143,7 +143,7 @@ TESTS_INIT()
             {symbol("a"), symbol("b"), symbol("c")},
             {number(10), number(20), number(30)});
         TEST_RESPONDS_TO(symbol("=="), true)
-        TEST_RESPONDS_TO(symbol("!="), true)
+        TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(symbol("*"), true)
         TEST_RESPONDS_TO(symbol("/"), false)
         TEST_RESPONDS_TO(symbol("^"), false)
@@ -193,12 +193,5 @@ TESTS_INIT()
                 "Block instance should return false when asked if it follows the <-{} interface "
                 "(responded %s)\n",
                 iface.to_string().c_str()))
-    }
-    
-    {
-        auto &&obj = symbol("<-()");
-        TEST_RESPONDS_TO(symbol("<<?"), true)
-        
-        TEST_INTERFACE("<-a", true)
     }
 TESTS_END()
