@@ -30,6 +30,10 @@
 #define SEND_MSG(typename)\
 static object typename##_send_msg(object *thisptr, const object &msg)
 
+#define IFACES(typename) \
+auto typename##_iface_collection =\
+    mk_interface_collection
+
 #define SELECT_RESPONSE_FOR(typename)\
 SEND_MSG(typename)\
 {\
@@ -344,13 +348,13 @@ send_msg_skip_introspection:
 SEND_MSG(empty_cmp_eq) { return boolean(msg == empty()); }
 SEND_MSG(empty_cmp_ne) { return boolean(msg != empty()); }
 
-auto empty_iface_collection =
-    mk_interface_collection(
-        iface::comparable{
-            empty_cmp_eq_send_msg,
-            empty_cmp_ne_send_msg
-        }
-    );
+IFACES(empty)
+(
+    iface::comparable{
+        empty_cmp_eq_send_msg,
+        empty_cmp_ne_send_msg
+    }
+);
 
 SELECT_RESPONSE_FOR(empty)
 
@@ -422,28 +426,28 @@ static object create_array_object(array_data *d)
     return object::create_data_object(d, array_send_msg);
 }
 
-auto number_iface_collection =
-    mk_interface_collection(
-        iface::arith{
-            num_op_add_send_msg,
-            num_op_sub_send_msg,
-            num_op_mul_send_msg,
-            num_op_div_send_msg
-        },
-        iface::comparable{
-            num_op_eq_send_msg,
-            num_op_ne_send_msg
-        },
-        iface::ordered{
-            num_op_lt_send_msg,
-            num_op_gt_send_msg,
-            num_op_le_send_msg,
-            num_op_ge_send_msg
-        },
-        iface::numeric{
-            array_send_msg
-        }
-    );
+IFACES(number)
+(
+    iface::arith{
+        num_op_add_send_msg,
+        num_op_sub_send_msg,
+        num_op_mul_send_msg,
+        num_op_div_send_msg
+    },
+    iface::comparable{
+        num_op_eq_send_msg,
+        num_op_ne_send_msg
+    },
+    iface::ordered{
+        num_op_lt_send_msg,
+        num_op_gt_send_msg,
+        num_op_le_send_msg,
+        num_op_ge_send_msg
+    },
+    iface::numeric{
+        array_send_msg
+    }
+);
 
 SELECT_RESPONSE_FOR(number)
 
@@ -474,14 +478,14 @@ SEND_MSG(symbol_comp_eq) { return symbol_comp_send_msg(thisptr, msg, true); }
 
 SEND_MSG(symbol_comp_ne) { return symbol_comp_send_msg(thisptr, msg, false); }
 
-auto symbol_iface_collection =
-    mk_interface_collection(
-        iface::symbolic{},
-        iface::comparable{
-            symbol_comp_eq_send_msg,
-            symbol_comp_ne_send_msg
-        }
-    );
+IFACES(symbol)
+(
+    iface::symbolic{},
+    iface::comparable{
+        symbol_comp_eq_send_msg,
+        symbol_comp_ne_send_msg
+    }
+);
 
 SELECT_RESPONSE_FOR(symbol)
 
@@ -600,19 +604,19 @@ SEND_MSG(boolean_raise)
     return {};
 }
 
-auto boolean_iface_collection =
-    mk_interface_collection(
-        iface::comparable{
-            boolean_comp_send_msg,
-            boolean_comp_ne_send_msg
-        },
-        iface::booleanoid{
-            boolean_do_AND_send_msg,
-            boolean_do_OR_send_msg,
-            boolean_get_context_send_msg,
-            boolean_raise_send_msg
-        }
-    );
+IFACES(boolean)
+(
+    iface::comparable{
+        boolean_comp_send_msg,
+        boolean_comp_ne_send_msg
+    },
+    iface::booleanoid{
+        boolean_do_AND_send_msg,
+        boolean_do_OR_send_msg,
+        boolean_get_context_send_msg,
+        boolean_raise_send_msg
+    }
+);
 
 SELECT_RESPONSE_FOR(boolean)
 
@@ -702,17 +706,17 @@ SEND_MSG(array_slicing)
     return create_array_object(new_d);
 }
 
-auto array_iface_collection =
-    mk_interface_collection(
-        iface::comparable{
-            data_comparison_eq_send_msg,
-            data_comparison_ne_send_msg
-        },
-        iface::listable{
-            array_concatenation_send_msg,
-            array_slicing_send_msg
-        }
-    );
+IFACES(array)
+(
+    iface::comparable{
+        data_comparison_eq_send_msg,
+        data_comparison_ne_send_msg
+    },
+    iface::listable{
+        array_concatenation_send_msg,
+        array_slicing_send_msg
+    }
+);
 
 SELECT_RESPONSE_FOR(array)
 
