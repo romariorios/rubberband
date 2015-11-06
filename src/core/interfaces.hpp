@@ -113,8 +113,7 @@ public:
         if (msg == symbol("<<") || msg == symbol("<<?"))
             return object::create_data_object(
                 new metainfo_data<Interfaces...>{*this, *thisptr},
-                select_function(thisptr, msg),
-                value_t::functor_t);  // REMOVEME this will be unnecessary when everything is ported to ifaces
+                select_function(thisptr, msg));
 
         object f;
 

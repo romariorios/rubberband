@@ -42,8 +42,7 @@ struct value_t
         floating_t = 0x8,
         boolean_t  = 0x10,
         symbol_t   = 0x20,
-        data_t     = 0x40,
-        functor_t  = 0x80
+        data_t     = 0x40
     } type = value_t::empty_t;
 
     union
@@ -116,11 +115,6 @@ inline object table(
         std::vector<object> {symbols},
         std::vector<object> {objects});
 }
-
-object functor(
-    shared_data_t *data,
-    send_msg_function send_msg = nullptr);
-object functor(send_msg_function send_msg = nullptr);
 
 }
 

@@ -58,7 +58,7 @@ namespace rbb
     template <class master_t>
     object master_set_context_send_msg(object *thisptr, const object &msg)
     {
-        return functor(new load_data{msg}, master_load_send_msg<master_t>);
+        return object::create_data_object(new load_data{msg}, master_load_send_msg<master_t>);
     }
 
     class custom_operation_data : public shared_data_t
@@ -84,13 +84,12 @@ namespace rbb
     {
         if (msg == symbol("^")) {
             object load;
-            load.__value.type =
-                static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
+            load.__value.type = value_t::no_data_t;
             load.__send_msg = master_set_context_send_msg<master_t>;
 
             return load;
         } else if (msg.__value.type == value_t::symbol_t) {
-            return functor(
+            return object::create_data_object(
                 new custom_operation_data{msg},
                 master_custom_operation_send_msg<master_t>);
         } else {
@@ -140,8 +139,7 @@ object parse(const string &code)
     p.parse(token::t::end_of_input);
 
     object master_object;
-    master_object.__value.type =
-        static_cast<value_t::type_t>(value_t::no_data_t | value_t::functor_t);
+    master_object.__value.type = value_t::no_data_t;
     master_object.__send_msg = ____rbb_internal::master_send_msg<master_t>;
 
     return p.result(master_object);

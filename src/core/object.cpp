@@ -76,11 +76,6 @@ public:
     object obj;
 };
 
-static object create_functor_object(object *data, send_msg_function send_msg = nullptr)
-{
-    return functor(new object_data{*data}, send_msg);
-}
-
 // object: The base for everything
 SEND_MSG(empty);
 
@@ -374,7 +369,7 @@ SEND_MSG(boolean_get_iftrue_block)
     if (d->boolean_obj.__value.boolean)
         d_ret->true_result = block << d->context << empty();
 
-    return functor(d_ret, boolean_get_iffalse_block_send_msg);
+    return object::create_data_object(d_ret, boolean_get_iffalse_block_send_msg);
 }
 
 SEND_MSG(boolean_get_context)
@@ -383,7 +378,7 @@ SEND_MSG(boolean_get_context)
     if (!d)
         return empty();
 
-    return functor(
+    return object::create_data_object(
         new boolean_decision_data(msg, d->obj),
         boolean_get_iftrue_block_send_msg);
 }
@@ -654,14 +649,4 @@ object rbb::literal::block::eval(literal::block *parent)
         block_l->set_master(parent->_master);
 
     return object::create_data_object(new block_data(block_l), block_send_msg);
-}
-
-object rbb::functor(shared_data_t* data, send_msg_function send_msg)
-{
-    return object::create_data_object(data, send_msg, value_t::functor_t);
-}
-
-object rbb::functor(send_msg_function send_msg)
-{
-    return create_object(value_t::functor_t, send_msg);
 }
