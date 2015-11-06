@@ -322,27 +322,6 @@ SEND_MSG(follows_interface)
 
 object object::operator<<(const object &msg)
 {
-    if (__value.type & value_t::functor_t)
-        goto send_msg_skip_introspection;
-
-    if (
-        __value.type & value_t::floating_t ||
-        __value.type & value_t::integer_t ||
-        __value.type & value_t::empty_t ||
-        __value.type & value_t::symbol_t ||
-        __value.type & value_t::boolean_t ||
-        (__value.type & value_t::data_t && (
-            dynamic_cast<array_data *>(__value.data()) ||
-            dynamic_cast<table_data *>(__value.data()))))
-        goto send_msg_skip_introspection;
-
-    if (msg == s_symb::double_lt_question)
-        return create_functor_object(this, follows_interface_send_msg);
-
-    if (msg == s_symb::double_lt)
-        return create_functor_object(this, responds_to_send_msg);
-
-send_msg_skip_introspection:
     return __send_msg(this, msg);
 }
 
@@ -798,22 +777,46 @@ object rbb::table(
 }
 
 // Block: A sequence of instructions ready to be executed
+SEND_MSG(block_instance_get_metainfo)
+{
+    auto d = static_cast<object_data *>(thisptr->__value.data());
+
+    object ans;
+    try {
+        ans = d->obj << msg;
+    } catch (message_not_recognized_error) {
+        return boolean(false);
+    }
+
+    return boolean(ans == boolean(true));
+}
+
 SEND_MSG(block_instance)
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data());
     d->block_l->set_message(msg);
 
-    return d->block_l->run();
+    auto &&ans = d->block_l->run();
+    if (msg == symbol("<<") || msg == symbol("<<?"))
+        return object::create_data_object(
+            new object_data{ans},
+            block_instance_get_metainfo_send_msg);
+
+    return ans;
 }
 
-SEND_MSG(block)
-{
-    block_data *d = static_cast<block_data *>(thisptr->__value.data());
-    auto block_l = new literal::block(*d->block_l);
-    block_l->set_context(msg);
+IFACES(block)
+(
+    iface::comparable{
+        data_comparison_eq_send_msg,
+        data_comparison_ne_send_msg
+    },
+    iface::executable{
+        block_instance_send_msg
+    }
+);
 
-    return object::create_data_object(new block_data(block_l), block_instance_send_msg);
-}
+SELECT_RESPONSE_FOR(block)
 
 object rbb::literal::block::eval(literal::block *parent)
 {

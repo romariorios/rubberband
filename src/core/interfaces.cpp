@@ -359,3 +359,23 @@ object iface::mapped::select_response(object *thisptr, const object &msg) const
 
     return d->objtree.at(msg.__value.symbol);
 }
+
+iface::executable::executable(send_msg_function execute) :
+    _execute{execute}
+{}
+
+DEFAULT_SELECT_FUNCTION(iface::executable)
+
+bool iface::executable::responds_to(object *, const object &) const
+{
+    return true;
+}
+
+object iface::executable::select_response(object *thisptr, const object &msg) const
+{
+    block_data *d = static_cast<block_data *>(thisptr->__value.data());
+    auto block_l = new literal::block(*d->block_l);
+    block_l->set_context(msg);
+
+    return object::create_data_object(new block_data(block_l), _execute);
+}

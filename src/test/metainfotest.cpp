@@ -173,7 +173,7 @@ TESTS_INIT()
         auto &&obj = bl.eval();
         TEST_RESPONDS_TO(symbol("pretty_much_anything"), true)
         
-        expected_t expected{0, 0, 0, 0, 0, 0, 1, 1, 1};
+        expected_t expected{0, 0, 0, 0, 0, 0, 1, 1, 0};
         TEST_INTERFACES
     }
     

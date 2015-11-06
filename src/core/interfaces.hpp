@@ -285,6 +285,17 @@ private:
         _del_send_msg;
 };
 
+class executable
+{
+    RBB_IFACE("--{}")
+
+public:
+    executable(send_msg_function execute);
+
+private:
+    send_msg_function _execute;
+};
+
 }
 
 }
