@@ -144,182 +144,6 @@ bool object::operator==(const object& other) const
     return false;
 }
 
-// static symbols
-namespace s_symb
-{
-    static auto &&double_lt = symbol("<<");
-    static auto &&double_lt_question = symbol("<<?");
-}
-
-object check_if_operation_true(const object &obj, const object &msg, const char *op)
-{
-    try {
-        auto &&follows_interface_obj = obj.__send_msg(const_cast<object *>(&obj), symbol(op));
-        return boolean(
-            follows_interface_obj.__send_msg(
-                &follows_interface_obj,
-                msg) ==
-            boolean(true));
-    // FIXME maybe catching *all* exceptions isn't a good idea
-    } catch (...) {
-        return boolean(false);
-    }
-}
-
-SEND_MSG(responds_to)
-{
-    auto &object = static_cast<object_data *>(thisptr->__value.data())->obj;
-
-    // Any object that gets here is not a functor
-    if (msg == s_symb::double_lt || msg == s_symb::double_lt_question)
-        return boolean(true);
-    
-    if (msg == symbol("==") || msg == symbol("!="))
-        switch (object.__value.type) {
-        case value_t::empty_t:
-        case value_t::integer_t:
-        case value_t::floating_t:
-        case value_t::symbol_t:
-        case value_t::boolean_t:
-        case value_t::data_t:
-            return boolean(true);
-        default:
-            return boolean(false);
-        }
-        
-    
-    switch (object.__value.type)
-    {
-    case value_t::integer_t:
-    case value_t::floating_t:
-        return boolean(
-            msg == symbol("<")  ||
-            msg == symbol(">")  ||
-            msg == symbol("<=") ||
-            msg == symbol(">=") ||
-            msg == symbol("+")  ||
-            msg == symbol("-")  ||
-            msg == symbol("*")  ||
-            msg == symbol("/")  ||
-            (
-                msg.__value.type & value_t::data_t &&
-                dynamic_cast<array_data *>(msg.__value.data())
-            ));
-    case value_t::boolean_t:
-        return boolean(
-            msg == symbol("?")   ||
-            msg == symbol("><")  ||
-            msg == symbol("\\/") ||
-            msg == symbol("/\\"));
-    case value_t::data_t:
-    {
-        auto d = object.__value.data();
-        if (dynamic_cast<array_data *>(d)) {
-            auto arr_d = dynamic_cast<array_data *>(d);
-            
-            switch (msg.__value.type) {
-            case value_t::symbol_t:
-                return boolean(
-                    msg == symbol("*") ||
-                    msg == symbol("+") ||
-                    msg == symbol("/"));
-            case value_t::integer_t:
-                return boolean(in_bounds(arr_d, msg.__value.integer));
-            case value_t::floating_t:
-                return boolean(in_bounds(arr_d, msg.__value.floating));
-            case value_t::data_t:
-            {
-                auto msg_d = dynamic_cast<array_data *>(msg.__value.data());
-                return boolean(
-                    msg_d &&
-                    msg_d->size == 2 &&
-                    (
-                        (
-                            msg_d->arr[0].__value.type & value_t::integer_t &&
-                            in_bounds(arr_d, msg_d->arr[0].__value.integer)
-                        ) || (
-                            msg_d->arr[0].__value.type & value_t::floating_t &&
-                            in_bounds(arr_d, msg_d->arr[0].__value.floating)
-                        )
-                    ));
-            }
-            default:
-                return boolean(false);
-            }
-        }
-        
-        if (dynamic_cast<table_data *>(d)) {
-            auto table_d = dynamic_cast<table_data *>(d);
-            
-            switch (msg.__value.type) {
-            case value_t::symbol_t:
-                return boolean(
-                    msg == symbol("+") ||
-                    msg == symbol("-") ||
-                    msg == symbol("*") ||
-                    table_d->objtree.find(msg.__value.symbol) != table_d->objtree.end());
-            case value_t::data_t:
-                return boolean(dynamic_cast<table_data *>(msg.__value.data()));
-            default:
-                return boolean(false);
-            }
-        }
-        
-        if (dynamic_cast<block_data *>(d)) {
-            auto block_d = dynamic_cast<block_data *>(d);
-            if (!block_d->block_l->_context_set)
-                return boolean(true);
-        }
-    }
-    default:
-        break;
-    }
-
-    // otherwise, delegate the question to the object itself
-    return check_if_operation_true(object, msg, "<<");
-}
-
-object follows_interface(const object &obj, const object &msg)
-{
-    switch (obj.__value.type & ~value_t::functor_t) {
-    case value_t::integer_t:
-    case value_t::floating_t:
-        return boolean(msg == symbol("<-0"));
-    case value_t::empty_t:
-        return boolean(msg == symbol("<-()"));
-    case value_t::symbol_t:
-        return boolean(msg == symbol("<-a"));
-    case value_t::boolean_t:
-        return boolean(msg == symbol("<-?"));
-    case value_t::data_t:
-    {
-        auto d = obj.__value.data();
-
-        if (dynamic_cast<array_data *>(d))
-            return boolean(msg == symbol("--|"));
-
-        if (dynamic_cast<table_data *>(d))
-            return boolean(msg == symbol("<-:"));
-
-        auto block_d = dynamic_cast<block_data *>(d);
-        if (block_d && !block_d->block_l->_context_set)
-            return boolean(msg == symbol("<-{}"));
-    }
-    default:
-        break;
-    }
-
-    // otherwise, delegate the question to the object itself
-    return check_if_operation_true(obj, msg, "<<?");
-}
-
-SEND_MSG(follows_interface)
-{
-    auto &obj = static_cast<object_data *>(thisptr->__value.data())->obj;
-    
-    return follows_interface(obj, msg);
-}
-
 object object::operator<<(const object &msg)
 {
     return __send_msg(this, msg);
@@ -480,10 +304,15 @@ object rbb::symbol(const std::string &val)
     return symb;
 }
 
+bool has_iface(const object &obj, const char *iface)
+{
+    return const_cast<object &>(obj) << symbol("<<?") << symbol(iface) == boolean(true);
+}
+
 // boolean: Boolean object
 SEND_MSG(boolean_comp)
 {
-    if (const_cast<object &>(msg) << symbol("<<?") << symbol("--?") != boolean(true))
+    if (!has_iface(msg, "--?"))
         return boolean(false);
 
     auto thisval =
@@ -522,7 +351,7 @@ SEND_MSG(boolean_get_iffalse_block)
         return empty();
 
     object block = msg;
-    if (follows_interface(msg, symbol("<-{}")) != boolean(true))
+    if (!has_iface(msg, "--{}"))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     return d->boolean_obj.__value.boolean?
@@ -539,7 +368,7 @@ SEND_MSG(boolean_get_iftrue_block)
     boolean_decision_data *d_ret = new boolean_decision_data(d->context, d->boolean_obj);
 
     object block = msg;
-    if (follows_interface(msg, symbol("<-{}")) != boolean(true))
+    if (!has_iface(msg, "--{}"))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     if (d->boolean_obj.__value.boolean)
@@ -562,7 +391,7 @@ SEND_MSG(boolean_get_context)
 #define BOOLEAN_DO(op, sym)\
 SEND_MSG(boolean_do_##op)\
 {\
-    if (follows_interface(msg, symbol("<-?")) != boolean(true))\
+    if (!has_iface(msg, "--?"))\
         return empty();\
 \
     object_data *d = static_cast<object_data *>(thisptr->__value.data());\
@@ -636,7 +465,7 @@ SEND_MSG(array_concatenation)
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data());
 
-    if (follows_interface(msg, symbol("--|")) != boolean(true))
+    if (has_iface(msg, "--|"))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *msg_d = static_cast<array_data *>(msg.__value.data());
@@ -658,7 +487,7 @@ SEND_MSG(array_slicing)
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data());
 
-    if (follows_interface(msg, symbol("--|")) != boolean(true))
+    if (!has_iface(msg, "--|"))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *msg_d = static_cast<array_data *>(msg.__value.data());
@@ -715,7 +544,7 @@ object rbb::array(const std::vector<object> &objects)
 // Table: Basically, a map from symbols to objects
 SEND_MSG(table_merge)
 {
-    if (follows_interface(msg, symbol("<-:")) != boolean(true))
+    if (!has_iface(msg, "--:"))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     object table = rbb::table();
@@ -729,7 +558,7 @@ static constexpr const char symbol_name[] = "Symbol";
 
 SEND_MSG(del_element)
 {
-    if (follows_interface(msg, symbol("<-a")) != boolean(true))
+    if (!has_iface(msg, "--a"))
         throw wrong_type_error<symbol_name>{*thisptr, msg};
 
     auto &objtree =
@@ -766,7 +595,7 @@ object rbb::table(
     const auto size = std::min(symbols.size(), objects.size());
 
     for (int i = 0; i < size; ++i) {
-        if (follows_interface(symbols[i], symbol("<-a")) != boolean(true))
+        if (!has_iface(symbols[i], "--a"))
             continue;
 
         auto sym = symbols[i].__value.symbol;
