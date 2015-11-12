@@ -17,6 +17,7 @@
 
 #include "block.hpp"
 #include "interfaces.hpp"
+#include "object.hpp"
 #include "object_private.hpp"
 
 using namespace rbb;
@@ -315,8 +316,7 @@ object iface::mapped::select_response(object *thisptr, const object &msg) const
         vector<object> l_el;
 
         for (auto pair : d->objtree) {
-            object sym;
-            sym.__value.type = value_t::symbol_t;
+            auto sym = symbol("");
             sym.__value.symbol = pair.first;
 
             l_el.push_back(sym);
