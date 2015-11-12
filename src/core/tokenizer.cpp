@@ -151,6 +151,9 @@ token tokenizer::_look_token(_look_token_args &args) const
             case '(':
                 args.par_depth.top()++;
                 return token::t::parenthesis_open;
+            case '[':
+                cur_state = _state::special_symbol;
+                continue;
             case '}':
                 args.par_depth.pop();
                 return token::t::curly_close;
@@ -202,7 +205,7 @@ token tokenizer::_look_token(_look_token_args &args) const
             case '\\':
                 cur_state = _state::inverted_slash_char;
                 continue;
-            // Arrow or number
+            // Dash
             case '-':
                 if (
                     _previous_token.type == token::t::number ||
@@ -210,7 +213,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 )
                     return token::symbol("-");
 
-                cur_state = _state::arrow_or_negative_number_or_special_symbol;
+                cur_state = _state::dash;
                 continue;
             case '\0':
                 _rewind(args, ch, prevcol);
@@ -250,7 +253,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 _rewind(args, ch, prevcol);
                 return token::symbol("?");
             }
-        case _state::arrow_or_negative_number_or_special_symbol:
+        case _state::dash:
             if (ch == '>')
                 return token::t::arrow;
             if (ch >= '0' && ch <= '9') {
@@ -258,8 +261,9 @@ token tokenizer::_look_token(_look_token_args &args) const
                 continue;
             }
             if (ch == '-') {
-                cur_state = _state::special_symbol_or_two_minuses;
-                continue;
+                _rewind(args, ch, prevcol);
+
+                return token::symbol("-");
             }
 
             _rewind(args, ch, prevcol);
@@ -300,24 +304,10 @@ token tokenizer::_look_token(_look_token_args &args) const
                         _remaining.substr(0, args.length + 1)));
             }
             continue;
-        case _state::special_symbol_or_two_minuses:
-            if (ch == ' ' || ch == '\t' || ch == '\n') {
-                _rewind(args, ch, prevcol);
-                _rewind(args, ch, prevcol);
-                // rewinding twice: once for the whitespace, once for the extra minus
-
-                return token::symbol("-");
-            }
-
-            cur_state = _state::special_symbol;
-            continue;
         case _state::special_symbol:
-            if (ch == ' ' || ch == '\t' || ch == '\n') {
-                _rewind(args, ch, prevcol);
-
+            if (ch == ']')
                 return token::symbol(
                     _remaining.substr(ignore_offset, args.length - ignore_offset));
-            }
 
             continue;
         case _state::gt_char:

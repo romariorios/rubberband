@@ -169,7 +169,7 @@ namespace iface
 
 class arith
 {
-    RBB_IFACE("--+")
+    RBB_IFACE("[+]")
 
 public:
     arith(
@@ -188,7 +188,7 @@ private:
 
 class comparable
 {
-    RBB_IFACE("--=")
+    RBB_IFACE("[=]")
 
 public:
     comparable(send_msg_function eq_function, send_msg_function ne_function);
@@ -201,7 +201,7 @@ private:
 
 class ordered
 {
-    RBB_IFACE("--<")
+    RBB_IFACE("[<]")
 
 public:
     ordered(
@@ -223,12 +223,12 @@ private:
 // name-only interface
 class symbolic
 {
-    RBB_IFACE("--a")
+    RBB_IFACE("[a]")
 };
 
 class numeric
 {
-    RBB_IFACE("--0")
+    RBB_IFACE("[0]")
 
 public:
     numeric(send_msg_function array_send_msg);
@@ -239,7 +239,7 @@ private:
 
 class booleanoid
 {
-    RBB_IFACE("--?")
+    RBB_IFACE("[?]")
 
 public:
     booleanoid(
@@ -258,7 +258,7 @@ private:
 
 class listable
 {
-    RBB_IFACE("--|")
+    RBB_IFACE("[|]")
 
 public:
     listable(send_msg_function concat_send_msg, send_msg_function slice_send_msg);
@@ -271,7 +271,7 @@ private:
 
 class mapped
 {
-    RBB_IFACE("--:")
+    RBB_IFACE("[:]")
     
 public:
     mapped(
@@ -286,7 +286,7 @@ private:
 
 class executable
 {
-    RBB_IFACE("--{}")
+    RBB_IFACE("[{}]")
 
 public:
     executable(send_msg_function execute);

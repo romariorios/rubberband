@@ -158,7 +158,7 @@ object iface::numeric::select_response(object *thisptr, const object &msg) const
 
 bool iface::numeric::responds_to(object *, const object &msg) const
 {
-    return const_cast<object &>(msg) << symbol("<<?") << symbol("--|") == boolean(true);
+    return const_cast<object &>(msg) << symbol("<<?") << symbol("[|]") == boolean(true);
 }
 
 iface::booleanoid::booleanoid(
@@ -226,7 +226,7 @@ bool iface::listable::responds_to(object *thisptr, const object &msg) const
     auto d = static_cast<array_data *>(thisptr->__value.data());
 
     auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true))
+    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true))
         return
             msg_copy << symbol("*") == number(2) &&
             in_bounds(d, get_index_from_obj(msg_copy << number(0)));
@@ -248,7 +248,7 @@ object iface::listable::select_response(object *thisptr, const object &msg) cons
         return d->arr[get_index_from_obj(msg)];
 
     auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true)) {
+    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true)) {
         auto index = get_index_from_obj(msg_copy << number(0));
         d->arr[index] = msg_copy << number(1);
 
@@ -284,10 +284,10 @@ bool iface::mapped::responds_to(object *thisptr, const object &msg) const
     auto d = static_cast<table_data *>(thisptr->__value.data());
 
     auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("--:") == boolean(true))
+    if (msg_copy << symbol("<<?") << symbol("[:]") == boolean(true))
         return true;
 
-    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true)) {
+    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true)) {
         int size = number_to_double(msg_copy << symbol("*"));
         for (int i = 0; i < size; ++i)
             if (!((msg_copy << number(i)).__value.type & value_t::symbol_t))
@@ -297,7 +297,7 @@ bool iface::mapped::responds_to(object *thisptr, const object &msg) const
     }
 
     return
-        msg_copy << symbol("<<?") << symbol("--:") == boolean(true) ||
+        msg_copy << symbol("<<?") << symbol("[:]") == boolean(true) ||
         table_contains_symbol(d, msg);
 }
 
@@ -326,7 +326,7 @@ object iface::mapped::select_response(object *thisptr, const object &msg) const
     }
 
     auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("--:") == boolean(true)) {
+    if (msg_copy << symbol("<<?") << symbol("[:]") == boolean(true)) {
         auto sym_array = msg_copy << symbol("*");
         int sym_array_len = number_to_double(sym_array << symbol("*"));
 
@@ -339,7 +339,7 @@ object iface::mapped::select_response(object *thisptr, const object &msg) const
         return *thisptr;
     }
 
-    if (msg_copy << symbol("<<?") << symbol("--|") == boolean(true)) {
+    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true)) {
         int size = number_to_double(msg_copy << symbol("*"));
         auto new_table = table();
         auto new_table_d = static_cast<table_data *>(new_table.__value.data());

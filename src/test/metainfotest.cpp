@@ -21,7 +21,7 @@
             expected? "doesn't follow" : "follows",\
             ifacename))
 
-const char *interfaces[] = {"--a", "--+", "--0", "--?", "--|", "--:", "--{}", "--=", "--<"};
+const char *interfaces[] = {"[a]", "[+]", "[0]", "[?]", "[|]", "[:]", "[{}]", "[=]", "[<]"};
 constexpr const unsigned char interfaces_len = sizeof(interfaces) / sizeof(char *);
 using expected_t = std::array<char, interfaces_len>;
 

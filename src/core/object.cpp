@@ -307,7 +307,7 @@ bool has_iface(const object &obj, const char *iface)
 // boolean: Boolean object
 SEND_MSG(boolean_comp)
 {
-    if (!has_iface(msg, "--?"))
+    if (!has_iface(msg, "[?]"))
         return boolean(false);
 
     auto thisval =
@@ -346,7 +346,7 @@ SEND_MSG(boolean_get_iffalse_block)
         return empty();
 
     object block = msg;
-    if (!has_iface(msg, "--{}"))
+    if (!has_iface(msg, "[{}]"))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     return d->boolean_obj.__value.boolean?
@@ -363,7 +363,7 @@ SEND_MSG(boolean_get_iftrue_block)
     boolean_decision_data *d_ret = new boolean_decision_data(d->context, d->boolean_obj);
 
     object block = msg;
-    if (!has_iface(msg, "--{}"))
+    if (!has_iface(msg, "[{}]"))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     if (d->boolean_obj.__value.boolean)
@@ -386,7 +386,7 @@ SEND_MSG(boolean_get_context)
 #define BOOLEAN_DO(op, sym)\
 SEND_MSG(boolean_do_##op)\
 {\
-    if (!has_iface(msg, "--?"))\
+    if (!has_iface(msg, "[?]"))\
         return empty();\
 \
     object_data *d = static_cast<object_data *>(thisptr->__value.data());\
@@ -460,7 +460,7 @@ SEND_MSG(array_concatenation)
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data());
 
-    if (has_iface(msg, "--|"))
+    if (has_iface(msg, "[|]"))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *msg_d = static_cast<array_data *>(msg.__value.data());
@@ -482,7 +482,7 @@ SEND_MSG(array_slicing)
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data());
 
-    if (!has_iface(msg, "--|"))
+    if (!has_iface(msg, "[|]"))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *msg_d = static_cast<array_data *>(msg.__value.data());
@@ -539,7 +539,7 @@ object rbb::array(const std::vector<object> &objects)
 // Table: Basically, a map from symbols to objects
 SEND_MSG(table_merge)
 {
-    if (!has_iface(msg, "--:"))
+    if (!has_iface(msg, "[:]"))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     object table = rbb::table();
@@ -553,7 +553,7 @@ static constexpr const char symbol_name[] = "Symbol";
 
 SEND_MSG(del_element)
 {
-    if (!has_iface(msg, "--a"))
+    if (!has_iface(msg, "[a]"))
         throw wrong_type_error<symbol_name>{*thisptr, msg};
 
     auto &objtree =
@@ -590,7 +590,7 @@ object rbb::table(
     const auto size = std::min(symbols.size(), objects.size());
 
     for (int i = 0; i < size; ++i) {
-        if (!has_iface(symbols[i], "--a"))
+        if (!has_iface(symbols[i], "[a]"))
             continue;
 
         auto sym = symbols[i].__value.symbol;

@@ -1,7 +1,7 @@
 # ~assert_condition|<condition>, <error>, <from>, <arg_name>, <extra_args>
 ~:assert_cond -> {
   ~:extra -> $4
-  ~extra <<? --: ><?~ {
+  ~extra <<? [:] ><?~ {
     ~:extra -> (:)
   }
 
@@ -25,12 +25,12 @@
 ~:curry ->
 {
   !{
-    ~assert|$ <<? --| , expecting_array, args, :got -> $
+    ~assert|$ <<? [|], expecting_array, args, :got -> $
     ~assert|$* /= 0, empty_array, args, :got -> $
 
     ~:args -> $
     !{
-      ~assert|$ <<? --{} , expecting_block, block, :got -> $
+      ~assert|$ <<? [{}], expecting_block, block, :got -> $
 
       ~:block -> $
       !{
@@ -61,8 +61,8 @@
 # ~:i -> 0
 # ~while~ { !~i < 10 } { ~print (~i); ~:i -> ~i + 10 }
 ~:while -> ~curry(:assert -> ~assert_for_blk while) (|context, condition, block) {
-  ~assert|$condition <<? --{} , expecting_block, condition, :got -> $condition
-  ~assert|$block <<? --{} , expecting_block, block, :got -> $block
+  ~assert|$condition <<? [{}], expecting_block, condition, :got -> $condition
+  ~assert|$block <<? [{}], expecting_block, block, :got -> $block
 
   ~$
   ~:loop -> {
@@ -85,7 +85,7 @@
 # ~c      # ()
 ~:fn_ctx -> {
   !{
-    ~assert|$ <<? --a \/ ($ <<? --: ), expecting_symbol_or_table, access_obj, :got -> $
+    ~assert|$ <<? [a] \/ ($ <<? [:]), expecting_symbol_or_table, access_obj, :got -> $
 
     !$ == ____clear_locals?(~:_a -> $) {
       ~:local -> (:)
@@ -102,8 +102,8 @@
 # ~:fac -> ~fn~ (|n) { !~n <= 1?~ { !1 } { !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
 ~:fn -> ~curry(~ + :assert -> ~assert_for_blk fn) (|ctx, arg_names, blk) {
-  ~assert|$arg_names <<? --| , expecting_array, arg_names, :got -> $arg_names
-  ~assert|$blk <<? --{} , expecting_block, blk, :got -> $blk
+  ~assert|$arg_names <<? [|], expecting_array, arg_names, :got -> $arg_names
+  ~assert|$blk <<? [{}], expecting_block, blk, :got -> $blk
 
   !~curry(:blk -> $blk, ctx -> ~fn_ctx($ctx))($arg_names){
     ~ctx $
@@ -120,8 +120,8 @@
 # # ~list will be (|1, 4, 9, 16, 25)
 ~:map -> ~fn~ (|ctx, array, blk) {
   ~use_assert~map
-  ~assert|~array <<? --| , expecting_array, array, :got -> ~array
-  ~assert|~blk <<? --{} , expecting_block, blk, :got -> ~blk
+  ~assert|~array <<? [|], expecting_array, array, :got -> ~array
+  ~assert|~blk <<? [{}], expecting_block, blk, :got -> ~blk
 
   ~:result -> ~array*(|)
 
@@ -138,8 +138,8 @@
 # # ~val will be 720
 ~:accum -> ~fn~ (|ctx, array, blks) {
   ~use_assert~accum
-  ~assert|~array <<? --| , expecting_array, array, :got -> ~array
-  ~assert|~blks step <<? --{} , expecting_block, step, :got -> ~blks step
+  ~assert|~array <<? [|], expecting_array, array, :got -> ~array
+  ~assert|~blks step <<? [{}], expecting_block, step, :got -> ~blks step
 
   ~:res -> ~blks init
   ~map~ (~array) { ~:res -> ~blks step(~ctx):e -> $, val -> ~res }
@@ -149,16 +149,16 @@
 ~:range -> ~fn~ (|args) {
   ~(~args)  # Merges args and the current context
   ~use_assert~range
-  ~assert|~to <<? --0 , expecting_number, to, :got -> ~to
+  ~assert|~to <<? [0], expecting_number, to, :got -> ~to
 
   ~ << from ?~ {
-    ~assert|~from <<? --0 , expecting_number, from, :got -> ~from
+    ~assert|~from <<? [0], expecting_number, from, :got -> ~from
   } {
     ~:from -> 0
   }
 
   ~ << step ?~ {
-    ~assert|~step <<? --0 , expecting_number, step, :got -> ~step
+    ~assert|~step <<? [0], expecting_number, step, :got -> ~step
   } {
     ~:step -> 1
   }
