@@ -460,7 +460,7 @@ SEND_MSG(array_concatenation)
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
     array_data *d = static_cast<array_data *>(d_obj.__value.data());
 
-    if (has_iface(msg, "[|]"))
+    if (!has_iface(msg, "[|]"))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
     array_data *msg_d = static_cast<array_data *>(msg.__value.data());
