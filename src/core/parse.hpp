@@ -20,6 +20,7 @@
 
 #include "object.hpp"
 
+#include <map>
 #include <string>
 
 namespace rbb
@@ -29,9 +30,15 @@ class base_master
 {
 public:
     virtual object parse(const std::string &code) final;
+    virtual object declare_literal(
+        unsigned char trigger,
+        const object &evaluator) final;
 
     virtual object load(const std::string &mod_name) = 0;
     virtual object custom_operation(const std::string &name, const object &obj) = 0;
+
+private:
+    std::map<unsigned char, object> _literals;
 };
 
 }

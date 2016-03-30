@@ -50,7 +50,7 @@ std::vector<token> tokenizer::all()
 
 std::vector<token> tokenizer::look_all() const
 {
-    tokenizer tok{_remaining};
+    tokenizer tok{_literals, _remaining};
 
     return tok.all();
 }
@@ -98,6 +98,17 @@ token tokenizer::_look_token(_look_token_args &args) const
         // Start state machine
         switch (cur_state) {
         case _state::start:
+            {
+                const auto uch = static_cast<unsigned char>(ch);
+                const auto cur_literal = _literals.find(uch);
+
+                if (cur_literal != _literals.end()) {
+                    auto evaluator = cur_literal->second;
+                    auto res = evaluator << empty() << empty();
+                    return token::custom_literal(res);
+                }
+            }
+
             // Ignore whitespace
             switch (ch) {
             case ' ':
@@ -124,7 +135,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 default:
                 {
                     // FIXME maybe this is a bit overkill?
-                    tokenizer tok{_remaining.substr(args.length)};
+                    tokenizer tok{_literals, _remaining.substr(args.length)};
                     const auto next_tok = tok.look_next();
 
                     switch (next_tok.type) {

@@ -21,6 +21,7 @@
 #include "block.hpp"
 #include "error.hpp"
 #include "tokenizer.hpp"
+#include "object_private.hpp"
 
 #include "shared_data_t.hpp"
 
@@ -80,6 +81,8 @@ inline int token_to_tokcode(token t)
         return AT;
     case token::t::percent:
         return PERCENT;
+    case token::t::custom_literal:
+        return CUSTOM_LITERAL;
     case token::t::bar:
         return BAR;
     case token::t::colon:
@@ -138,6 +141,31 @@ object master_load_send_msg(object *thisptr, const object &msg)
     return d->master.load(msg.to_string());
 }
 
+object master_declare_literal_send_msg(object *thisptr, const object &msg)
+{
+    auto d = static_cast<master_data *>(thisptr->__value.data());
+
+    if (msg.__value.type != value_t::data_t)
+        throw semantic_error{"Table expected", *thisptr, msg};
+
+    if (!dynamic_cast<table_data *>(msg.__value.data()))
+        throw semantic_error{"Table expected", *thisptr, msg};
+
+    auto trigger_obj = const_cast<object &>(msg) << symbol(">");
+    unsigned char trigger;
+    auto trigger_error_msg =
+        "The trigger should be numeric";
+
+    if (trigger_obj.__value.type == value_t::integer_t)
+        trigger = static_cast<unsigned char>(trigger_obj.__value.integer);
+    else if (trigger_obj.__value.type == value_t::floating_t)
+        trigger = static_cast<unsigned char>(trigger_obj.__value.floating);
+    else
+        throw semantic_error{trigger_error_msg, *thisptr, msg};
+
+    return d->master.declare_literal(trigger, const_cast<object &>(msg) << symbol("="));
+}
+
 class custom_operation_data : public shared_data_t
 {
 public:
@@ -161,12 +189,21 @@ object master_send_msg(object *thisptr, const object &msg)
 {
     auto d = static_cast<master_data*>(thisptr->__value.data());
 
+    // load
     if (msg == symbol("^"))
         return object::create_data_object(
             new master_data{d->master},
             master_load_send_msg,
             value_t::functor_t);
 
+    // declare literal
+    if (msg == symbol("*"))
+        return object::create_data_object(
+            new master_data{d->master},
+            master_declare_literal_send_msg,
+            value_t::functor_t);
+
+    // custom operation
     if (msg.__value.type == value_t::symbol_t)
         return functor(
             new custom_operation_data{msg, d->master},
@@ -181,7 +218,7 @@ object master_send_msg(object *thisptr, const object &msg)
 // base_master methods
 object base_master::parse(const string &code)
 {
-    tokenizer tokenizer{code};
+    tokenizer tokenizer{_literals, code};
 
     lemon_parser p{
         object::create_data_object(
@@ -196,6 +233,7 @@ object base_master::parse(const string &code)
             tok = tokenizer.next()
         ) {
             p.parse(tok);
+            continue;
         }
     } catch (syntax_error e) {
         e.line = tokenizer.cur_line();
@@ -206,4 +244,13 @@ object base_master::parse(const string &code)
     p.parse(token::t::end_of_input);
 
     return p.result();
+}
+
+object base_master::declare_literal(
+    unsigned char trigger,
+    const object &evaluator)
+{
+    _literals[trigger] = evaluator;
+
+    return {};
 }

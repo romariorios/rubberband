@@ -112,6 +112,7 @@ literal(l)          ::= DOLLAR. { l = new literal::message; }
 literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
 literal(l)          ::= PERCENT. { l = new evaluated_object{extra_args->master}; }
+literal(l)          ::= CUSTOM_LITERAL(tok). { l = new evaluated_object{*tok->lexem.obj}; }
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR maybe_empty_a(arr_a). { arr = arr_a; }
 array_elements(arr) ::= stm(e) COMMA array_elements(arr_a).

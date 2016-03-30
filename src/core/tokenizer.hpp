@@ -18,9 +18,12 @@
 #ifndef TOKENIZER_HPP
 #define TOKENIZER_HPP
 
+#include <map>
 #include <string>
-#include <vector>
 #include <stack>
+#include <vector>
+
+#include "object.hpp"
 
 namespace rbb
 {
@@ -57,6 +60,7 @@ struct token
         tilde,
         at,
         percent,
+        custom_literal,
 
         // Triggers
         bar,
@@ -68,6 +72,7 @@ struct token
         double floating;
         bool boolean;
         std::string *str;
+        object *obj;
     } lexem;
 
     token(t type) :
@@ -85,6 +90,8 @@ struct token
         
         if (other.type == t::symbol)
             lexem.str = new std::string{*other.lexem.str};
+        else if (other.type == t::custom_literal)
+            lexem.obj = new object{*other.lexem.obj};
         else
             lexem = other.lexem;
 
@@ -102,6 +109,8 @@ struct token
     {
         if (type == t::symbol)
             delete lexem.str;
+        else if (type == t::custom_literal)
+            delete lexem.obj;
     }
 
     static token number(long integer)
@@ -136,6 +145,14 @@ struct token
         return ret;
     }
 
+    static token custom_literal(const object &value)
+    {
+        token ret{token::t::custom_literal};
+        ret.lexem.obj = new object{value};
+
+        return ret;
+    }
+
     bool operator==(const token &other) const
     {
         if (type != other.type)
@@ -148,6 +165,8 @@ struct token
             return lexem.floating == other.lexem.floating;
         case t::symbol:
             return *lexem.str == *other.lexem.str;
+        case t::custom_literal:
+            return lexem.obj == other.lexem.obj;
         default:
             return true;
         }
@@ -191,12 +210,18 @@ class tokenizer
     } _cur_state;
 
 public:
-    tokenizer(const std::string &str) :
-        _remaining{str}
+    tokenizer(
+        const std::map<unsigned char, rbb::object> &literals,
+        const std::string &str) :
+        _remaining{str},
+        _literals{literals}
     {}
 
-    tokenizer(std::string &&str = std::string{}) :
-        _remaining{str}
+    tokenizer(
+        const std::map<unsigned char, rbb::object> &literals,
+        std::string &&str = std::string{}) :
+        _remaining{str},
+        _literals{literals}
     {}
 
     token next();
@@ -233,9 +258,9 @@ private:
 
     token _previous_token = token{token::t::start_of_input};
     std::string _remaining;
+    const std::map<unsigned char, rbb::object> &_literals;
 };
 
 }
 
 #endif
-
