@@ -82,6 +82,35 @@ public:
     literal::block *block_l;
 };
 
+static bool is_numeric(const object &val)
+{
+    return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
+}
+
+static bool in_bounds(array_data *d, int i)
+{
+    return i >= 0 && i < d->size;
+}
+
+static int get_index_from_obj(const object &obj)
+{
+    auto obj_copy = obj;
+    if (!is_numeric(obj_copy))
+        return -1;
+
+    if (obj.__value.type & value_t::floating_t)
+        return obj.__value.floating;
+
+    return obj.__value.integer;
+}
+
+static bool table_contains_symbol(table_data *d, const object &msg)
+{
+    return
+        msg.__value.type & value_t::symbol_t &&
+        d->objtree.find(msg.__value.symbol) != d->objtree.end();
+}
+
 }
 
 #endif

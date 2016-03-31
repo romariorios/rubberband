@@ -193,19 +193,17 @@ object master_send_msg(object *thisptr, const object &msg)
     if (msg == symbol("^"))
         return object::create_data_object(
             new master_data{d->master},
-            master_load_send_msg,
-            value_t::functor_t);
+            master_load_send_msg);
 
     // declare literal
     if (msg == symbol("+"))
         return object::create_data_object(
             new master_data{d->master},
-            master_declare_literal_send_msg,
-            value_t::functor_t);
+            master_declare_literal_send_msg);
 
     // custom operation
     if (msg.__value.type == value_t::symbol_t)
-        return functor(
+        return object::create_data_object(
             new custom_operation_data{msg, d->master},
             master_custom_operation_send_msg);
 
@@ -223,8 +221,7 @@ object base_master::parse(const string &code)
     lemon_parser p{
         object::create_data_object(
             new master_data{*this},
-            master_send_msg,
-            value_t::functor_t)};
+            master_send_msg)};
 
     try {
         for (

@@ -383,10 +383,10 @@ TESTS_INIT()
     {
         tokenizer tok{R"(
             ~:a -> (|)
-            ~a <<? --|
-            --: --() --{}
-            ~:b -> --() <<? --<
-            --++++ --@$~
+            ~a <<? [|]
+            [:] [()] [{}]
+            ~:b -> [()] <<? [<]
+            [++++] [@$~]
         )"};
         vector<token> expected{
             token::t::tilde,
@@ -400,22 +400,22 @@ TESTS_INIT()
             token::t::tilde,
             token::symbol("a"),
             token::symbol("<<?"),
-            token::symbol("--|"),
+            token::symbol("[|]"),
             token::t::stm_sep,
-            token::symbol("--:"),
-            token::symbol("--()"),
-            token::symbol("--{}"),
+            token::symbol("[:]"),
+            token::symbol("[()]"),
+            token::symbol("[{}]"),
             token::t::stm_sep,
             token::t::tilde,
             token::t::colon,
             token::symbol("b"),
             token::t::arrow,
-            token::symbol("--()"),
+            token::symbol("[()]"),
             token::symbol("<<?"),
-            token::symbol("--<"),
+            token::symbol("[<]"),
             token::t::stm_sep,
-            token::symbol("--++++"),
-            token::symbol("--@$~")
+            token::symbol("[++++]"),
+            token::symbol("[@$~]")
         };
         auto &&tok_all = tok.look_all();
         
@@ -426,6 +426,7 @@ TESTS_INIT()
         tokenizer tok{R"(
             <-| <-0 <-a <-{}
             --| -- --#
+            [|] [#]
         )"};
         vector<token> expected{
             token::symbol("<"),
@@ -441,10 +442,16 @@ TESTS_INIT()
             token::t::curly_open,
             token::t::curly_close,
             token::t::stm_sep,
-            token::symbol("--|"),
             token::symbol("-"),
             token::symbol("-"),
-            token::symbol("--#")
+            token::t::bar,
+            token::symbol("-"),
+            token::symbol("-"),
+            token::symbol("-"),
+            token::symbol("-"),
+            token::t::stm_sep,
+            token::symbol("[|]"),
+            token::symbol("[#]")
         };
         auto &&tok_all = tok.look_all();
 

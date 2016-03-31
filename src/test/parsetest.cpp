@@ -49,10 +49,10 @@ TESTS_INIT()
     TEST_PROGRAM("{ !(|1, 2, a) 0 }", empty(), empty(), number(1))
     TEST_PROGRAM("{ !(|1, 2, a) 1 }", empty(), empty(), number(2))
     TEST_PROGRAM("{ !(|1, 2, a) 2 }", empty(), empty(), symbol("a"))
-    TEST_PROGRAM("{ !(|1, 2, a) 3 }", empty(), empty(), empty())
+    TEST_PROGRAM("{ !(|1, 2, a) << 3 }", empty(), empty(), boolean(false))
     TEST_PROGRAM("{ !(:a -> 10, b -> 20) a }", empty(), empty(), number(10))
     TEST_PROGRAM("{ !(:a -> 10, b -> 20) b }", empty(), empty(), number(20))
-    TEST_PROGRAM("{ !(:a -> 10, b -> 20) lol }", empty(), empty(), empty())
+    TEST_PROGRAM("{ !(:a -> 10, b -> 20) << lol }", empty(), empty(), boolean(false))
     TEST_PROGRAM("{ !$ }", empty(), number(10), number(10));
     TEST_PROGRAM("{ !~ }", number(10), empty(), number(10));
     TEST_PROGRAM("{ ~:x -> $ !~x * $ }", table({}, {}), number(10), number(100))

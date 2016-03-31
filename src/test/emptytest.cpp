@@ -9,7 +9,7 @@ TESTS_INIT()
     TEST_CONDITION(
         empty_equals_empty == rbb::boolean(true), puts("Empty doesn't equal empty"))
 
-    rbb::object empty_differs_empty = rbb::empty() << rbb::symbol("!=") << rbb::empty();
+    rbb::object empty_differs_empty = rbb::empty() << rbb::symbol("/=") << rbb::empty();
 
     TEST_CONDITION(
         empty_differs_empty == rbb::boolean(false),

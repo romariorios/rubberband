@@ -4,6 +4,7 @@ project(rubberband)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/core)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/core)
+include_directories(${Tclap_INCLUDE_DIR})
 
 add_subdirectory(core)
 link_directories(
