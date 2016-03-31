@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -197,7 +197,7 @@ object master_send_msg(object *thisptr, const object &msg)
             value_t::functor_t);
 
     // declare literal
-    if (msg == symbol("*"))
+    if (msg == symbol("+"))
         return object::create_data_object(
             new master_data{d->master},
             master_declare_literal_send_msg,

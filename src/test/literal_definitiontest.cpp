@@ -4,7 +4,7 @@ TESTS_INIT()
     {
         auto define_literal = dummy_master.parse(R"(
         {
-            %*:
+            %+:
                 > -> 39,     # ASCII for '
                 = -> { !12 }
         }

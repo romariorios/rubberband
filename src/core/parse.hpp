@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
