@@ -43,7 +43,7 @@ TESTS_INIT()
     object print;
     print.__send_msg = __print;
 
-    TEST_PROGRAM("", empty(), empty(), empty())
+    TEST_PROGRAM("{}", empty(), empty(), empty())
     TEST_PROGRAM("{ !10 }", empty(), empty(), number(10))
     TEST_PROGRAM("{ !10 }", empty(), empty(), number(10))
     TEST_PROGRAM("{ !(|1, 2, a) 0 }", empty(), empty(), number(1))
