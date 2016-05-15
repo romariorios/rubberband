@@ -20,7 +20,11 @@ class rbbi_master
 {
 public:
     static object load(const object &, const string &) {}
-    static object custom_operation(const string &, const object &) {}
+    static object custom_operation(const string &op, const object &)
+    {
+        if (op == "exit")
+            exit(0);
+    }
 };
 
 int main(int, char **)
