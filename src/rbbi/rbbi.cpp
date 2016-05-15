@@ -1,6 +1,10 @@
 // boost includes
 #include <boost/format.hpp>
 
+// readline includes
+#include <readline/history.h>
+#include <readline/readline.h>
+
 // rubberband includes
 #include <parse.hpp>
 
@@ -24,9 +28,10 @@ int main(int, char **)
     auto context = table();
 
     for (;;) {
-        cout << "! ";
-        string code;
-        getline(cin, code);
+        auto line = readline("! ");
+        auto code = string{line};
+        add_history(line);
+        free(line);
 
         if (code.empty())
             continue;
