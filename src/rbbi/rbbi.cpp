@@ -9,6 +9,7 @@
 #include <parse.hpp>
 
 // std includes
+#include <exception>
 #include <iostream>
 #include <string>
 
@@ -32,7 +33,7 @@ int main(int, char **)
     auto context = table();
 
     for (;;) {
-        auto line = readline("! ");
+        auto line = readline("!");
         auto code = string{line};
         add_history(line);
         free(line);
@@ -40,17 +41,21 @@ int main(int, char **)
         if (code.empty())
             continue;
 
+        code = (format("!%s") % code).str();
+
         try {
-            auto block = parse<rbbi_master>((format("!%s") % code).str());
+            auto block = parse<rbbi_master>(code);
             auto result = block << context << empty();
 
             cout << format("==> %s") % result.to_string();
+        } catch (const syntax_error &e) {
+            cout << format("%s^\nSyntax error") % string(e.column - 1, ' ');
         } catch (const rbb::runtime_error &e) {
             cout
                 << format("Runtime raised the following error object: %s")
                    % e.error_obj.to_string();
-        } catch (...) {
-            cout << "Error";
+        } catch (const std::exception &e) {
+            cout << "Error: " << e.what();
         }
 
         cout << "\n\n";
