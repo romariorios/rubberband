@@ -169,11 +169,10 @@ class tokenizer
         _look_token_args() = default;
         _look_token_args(_look_token_args &&) = delete;
 
-        _look_token_args(const _look_token_args &other) :
-            line{other.line},
-            col{other.line},
-            par_depth{other.par_depth}
-        {}
+        _look_token_args(const _look_token_args &other)
+        {
+            *this = other;
+        }
 
         _look_token_args &operator=(const _look_token_args &other)
         {
