@@ -18,6 +18,9 @@
 #include "tokenizer.hpp"
 
 #include "error.hpp"
+#include "shared_data_t.hpp"
+
+#include <functional>
 
 using namespace rbb;
 using namespace std;
@@ -78,6 +81,33 @@ static void throw_invalid_interface_error(
         "Invalid interface name"};
 }
 
+class tokenizer_data : public shared_data_t
+{
+public:
+    tokenizer_data(function<char(int)> &&increment_by, const string &remaining) :
+        _increment_by{increment_by},
+        _remaining{remaining}
+    {}
+
+    function<char(int)> _increment_by;
+    const string &_remaining;
+};
+
+object tokenizer_send_msg(object *thisptr, const object &msg)
+{
+    auto d = dynamic_cast<tokenizer_data*>(thisptr->__value.data());
+    if (msg == symbol("[@]"))
+        return number(static_cast<unsigned char>(d->_increment_by(0)));
+
+    if (msg == symbol(">"))
+        d->_increment_by(1);
+    else if (msg == symbol("<"))
+        d->_increment_by(-1);
+    // TODO make tokenizer throw on error
+
+    return {};
+}
+
 token tokenizer::_look_token(_look_token_args &args) const
 {
     args.length = 1;
@@ -103,8 +133,19 @@ token tokenizer::_look_token(_look_token_args &args) const
                 const auto cur_literal = _literals.find(uch);
 
                 if (cur_literal != _literals.end()) {
+                    auto context = object::create_data_object(
+                        new tokenizer_data{
+                            [this, &args](int increment)
+                            {
+                                args.col += increment;
+                                args.length += increment;
+                                return _remaining[args.length - 1];
+                            },
+                            _remaining},
+                        tokenizer_send_msg);
+
                     auto evaluator = cur_literal->second;
-                    auto res = evaluator << empty() << empty();
+                    auto res = evaluator << context << empty();
                     return token::custom_literal(res);
                 }
             }

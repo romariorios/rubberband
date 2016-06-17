@@ -1,5 +1,17 @@
 #include "tests_common.hpp"
 
+#define TEST_VALUE_PARSING(__string, __value) \
+{\
+    auto parsed_value = dummy_master.parse(__string);\
+    TEST_CONDITION(\
+        parsed_value == (__value),\
+        printf(\
+            "Error trying to parse %s (expected %s, got %s)",\
+            __string,\
+            (__value).to_string().c_str(),\
+            parsed_value.to_string().c_str()))\
+}
+
 TESTS_INIT()
     {
         auto define_literal = dummy_master.parse(R"(
@@ -11,13 +23,7 @@ TESTS_INIT()
         )");
         define_literal << empty() << empty();
 
-        auto literal_value = dummy_master.parse("'");
-        TEST_CONDITION(
-            literal_value == number(12),
-            printf(
-                "Error trying to parse user-defined literal ' (expected value: %s, got: %s)\n",
-                number(12).to_string().c_str(),
-                literal_value.to_string().c_str()))
+        TEST_VALUE_PARSING("'", number(12))
 
         auto table_with_literals = dummy_master.parse(":a -> ', b -> ' + 10");
         TEST_CONDITION(
@@ -26,5 +32,18 @@ TESTS_INIT()
             printf(
                 "Error: unexpected parsed value %s",
                 table_with_literals.to_string().c_str()))
+    }
+
+    {
+        auto define_char_literal = dummy_master.parse(R"(
+        {
+            %+:
+                > -> 39,           # ASCII for '
+                = -> { ~> !~[@] }  # ~>: go to next char; ~[@]: current char
+        }
+        )");
+        define_char_literal << empty() << empty();
+
+        TEST_VALUE_PARSING("'c", number('c'))
     }
 TESTS_END()
