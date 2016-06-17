@@ -36,7 +36,7 @@ then
     CXX_FLAGS="-g -O0"
 fi
 
-CXX_FLAGS="-std=c++11 $CXX_FLAGS"
+CXX_FLAGS="-std=c++14 $CXX_FLAGS"
 
 if [ -z $RUBBERBAND_SRC ]
 then
@@ -56,14 +56,14 @@ then
 fi &&
 
 cd build &&
-    cmake $RUBBERBAND_SRC\
+    cmake "$RUBBERBAND_SRC"\
         -DCMAKE_INSTALL_PREFIX=../inst\
-        -DCMAKE_CXX_COMPILER=$CXX\
+        -DCMAKE_CXX_COMPILER="$CXX"\
         -DCMAKE_CXX_FLAGS="$CXX_FLAGS" &&
     make -j$THREADS install &&
 cd .. &&
 
-RUBBERBAND_PATH=$PWD/inst &&
+RUBBERBAND_PATH="$PWD"/inst &&
 
 for t in $tests
 do
@@ -74,10 +74,10 @@ do
         -lrubberbandcore\
         -o $test_name\
         $CXX_FLAGS\
-        -I$RUBBERBAND_PATH/include\
-        -L$RUBBERBAND_PATH/lib\
+        -I"$RUBBERBAND_PATH/include"\
+        -L"$RUBBERBAND_PATH/lib"\
         -std=c++11 &&
-    LD_LIBRARY_PATH=$RUBBERBAND_PATH/lib ./$test_name &&
+    LD_LIBRARY_PATH="$RUBBERBAND_PATH/lib" ./$test_name &&
     rm $test_name
 done
 

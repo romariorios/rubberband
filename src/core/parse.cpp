@@ -232,9 +232,10 @@ object base_master::parse(const string &code)
             p.parse(tok);
             continue;
         }
-    } catch (syntax_error e) {
-        e.line = tokenizer.cur_line();
-        e.column = tokenizer.cur_col();
+    } catch (const syntax_error &e) {
+        syntax_error new_e{e};
+        new_e.line = tokenizer.cur_line();
+        new_e.column = tokenizer.cur_col();
         throw e;
     }
 
