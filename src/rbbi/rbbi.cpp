@@ -6,6 +6,7 @@
 #include <readline/readline.h>
 
 // rubberband includes
+#include <error.hpp>
 #include <parse.hpp>
 
 // std includes
@@ -17,16 +18,16 @@ using namespace boost;
 using namespace rbb;
 using namespace std;
 
-class rbbi_master
+class rbbi_master : public base_master
 {
 public:
-    static object load(const object &, const string &) {}
-    static object custom_operation(const string &op, const object &)
+    object load(const string &) override { return empty(); }
+    object custom_operation(const string &op, const object &) override
     {
         if (op == "exit")
             exit(0);
     }
-};
+} master;
 
 int main(int, char **)
 {
@@ -41,10 +42,10 @@ int main(int, char **)
         if (code.empty())
             continue;
 
-        code = (format("!%s") % code).str();
+        code = (format("{ !%s }") % code).str();
 
         try {
-            auto block = parse<rbbi_master>(code);
+            auto block = master.parse(code);
             auto result = block << context << empty();
 
             cout << format("==> %s") % result.to_string();
