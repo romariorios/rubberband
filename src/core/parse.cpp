@@ -236,7 +236,7 @@ object base_master::parse(const string &code)
         syntax_error new_e{e};
         new_e.line = tokenizer.cur_line();
         new_e.column = tokenizer.cur_col();
-        throw e;
+        throw new_e;
     }
 
     p.parse(token::t::end_of_input);
