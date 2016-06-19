@@ -28,12 +28,19 @@ int main() {\
 #define TEST_CONDITION_WITH_EXCEPTION(__condition, __message)\
     try {\
         TEST_CONDITION(__condition, __message)\
-    } catch (message_not_recognized_error e) {\
+    } catch (const message_not_recognized_error &e) {\
         ++errors;\
         printf(\
             "The object %s doesn't recognize the %s message\n",\
             e.receiver.to_string().c_str(),\
             e.message.to_string().c_str());\
+    } catch (const syntax_error &e) {\
+        ++errors;\
+        printf(\
+            "Syntax error at line %ld and column %ld (token: %s)\n",\
+            e.line,\
+            e.column,\
+            e.t().to_string().c_str());\
     }
 
 #define TEST_MSG_NOT_RECOGNIZED(__obj, __msg) \
