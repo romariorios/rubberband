@@ -210,15 +210,15 @@ class tokenizer
 
 public:
     tokenizer(
-        const std::map<unsigned char, rbb::object> &literals,
-        const std::string &str) :
+        const std::string &str,
+        const std::map<unsigned char, rbb::object> &literals = {}) :
         _remaining{str},
         _literals{literals}
     {}
 
     tokenizer(
-        const std::map<unsigned char, rbb::object> &literals,
-        std::string &&str = std::string{}) :
+        std::string &&str = {},
+        const std::map<unsigned char, rbb::object> &literals = {}) :
         _remaining{str},
         _literals{literals}
     {}

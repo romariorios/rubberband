@@ -216,7 +216,7 @@ object master_send_msg(object *thisptr, const object &msg)
 // base_master methods
 object base_master::parse(const string &code)
 {
-    tokenizer tokenizer{_literals, code};
+    tokenizer tokenizer{code, _literals};
 
     lemon_parser p{
         object::create_data_object(
