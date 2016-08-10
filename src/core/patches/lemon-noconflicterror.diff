@@ -1,0 +1,8 @@
+1573a1574
+>   static int noconflicterror = 0;
+1582a1584
+>     {OPT_FLAG, "e", (char*)&noconflicterror, "Do not consider conflicts as errors."},
+1727c1729
+<   exitcode = ((lem.errorcnt > 0) || (lem.nconflict > 0)) ? 1 : 0;
+---
+>   exitcode = ((lem.errorcnt > 0) || (!noconflicterror && lem.nconflict > 0)) ? 1 : 0;

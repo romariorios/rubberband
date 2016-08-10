@@ -1,0 +1,9 @@
+1566a1567,1568
+> static int cppoutput = 0;
+> 
+1590a1593
+>     {OPT_FLAG, "P", (char*)&cppoutput, "Output parser as a .cpp file."},
+4012c4015
+<   out = file_open(lemp,".c","wb");
+---
+>   out = file_open(lemp,cppoutput?".cpp" : ".c","wb");
