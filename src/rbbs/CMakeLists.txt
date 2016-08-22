@@ -9,7 +9,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/rbbs/cmake/Modul
 find_package(Tclap REQUIRED)
 
 add_executable(rbbs main.cpp)
-target_link_libraries(rbbs rubberbandcore)
+target_link_libraries(rbbs rubberbandcore modloader)
 
 install(
     TARGETS rbbs RUNTIME
