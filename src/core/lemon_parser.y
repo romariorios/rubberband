@@ -25,7 +25,7 @@
 
 %extra_argument { extra_lemon_args *extra_args }
 
-%syntax_error { throw syntax_error{*yyminor.yy0}; }
+%syntax_error { throw syntax_error{*yyminor}; }
 
 %type start {literal::block *}
 %type block_body {literal::block *}

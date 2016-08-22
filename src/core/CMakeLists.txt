@@ -9,12 +9,19 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 set(deps_dir "${CMAKE_CURRENT_SOURCE_DIR}/deps")
 set(lemon_src "${deps_dir}/lemon.c")
+set(lempar_src "${deps_dir}/lempar.c")
 set(lemon_patched "${deps_dir}/LEMON_PATCHED")
 
-if (EXISTS ${lemon_src})
-    message(STATUS "${lemon_src} is present")
+if (EXISTS ${lemon_src} AND EXISTS ${lempar_src})
+    message(STATUS "${lemon_src} and ${lempar_src} are present")
 else()
-    message(FATAL_ERROR "You have to download lemon.c from https://www.sqlite.org/src/raw/tool/lemon.c?name=09a96bed19955697a5e20c49ad863ec2005815a2 and copy it to ${deps_dir}")
+    message(
+        FATAL_ERROR
+        "You have to download lemon.c from "
+        "https://www.sqlite.org/src/raw/tool/lemon.c?name=09a96bed19955697a5e20c49ad863ec2005815a2, "
+        "lempar.c from "
+        "https://www.sqlite.org/src/raw/tool/lempar.c?name=147e42a5cd83ce38275fde0d07a5df3330cb9b3b, "
+        "and copy them to ${deps_dir}")
 endif()
 
 if (EXISTS ${lemon_patched})
@@ -46,7 +53,7 @@ endif()
 
 add_executable(lemon ${lemon_src})
 file(
-    COPY lemon_parser.y lempar.c
+    COPY lemon_parser.y ${lempar_src}
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 add_custom_command(
     OUTPUT lemon_parser.cpp
