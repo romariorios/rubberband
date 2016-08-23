@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -38,7 +38,11 @@ public:
         _line{line},
         _column{column},
         _lexem{lexem},
-        _extra_message{extra_message}
+        _extra_message{extra_message},
+        _text{
+            "Invalid token (" + _lexem + ") at line " + std::to_string(_line) +
+            ", column " + std::to_string(_column) + " (" + _extra_message + ")"
+        }
     {}
     
     inline long line() const { return _line; }
@@ -47,10 +51,7 @@ public:
     inline const std::string &extra_message() const { return _extra_message; }
     inline const char *what() const noexcept
     {
-        return (
-            "Invalid token (" + _lexem + ") at line " + std::to_string(_line) +
-            ", column " + std::to_string(_column) + " (" + _extra_message + ")"
-        ).c_str();
+        return _text.c_str();
     }
     
 private:
@@ -58,25 +59,40 @@ private:
     long _column;
     std::string _lexem;
     std::string _extra_message;
+    std::string _text;
 };
 
 class syntax_error : public std::exception
 {
 public:
     syntax_error(const syntax_error &other) = default;
-    inline explicit syntax_error(const token &t) : _tok{t} {}
+
+    inline explicit syntax_error(const token &t) :
+        _tok{t},
+        _text{
+            "Syntax error at line " + std::to_string(line) +
+            ", column " + std::to_string(column)
+        }
+    {}
+
     inline const char *what() const noexcept
     {
-        return ("Syntax error at line " + std::to_string(line) +
-            ", column " + std::to_string(column)).c_str();
+        return _text.c_str();
     }
 
     inline const token &t() const { return _tok; }
     long line;
     long column;
 
+protected:
+    inline void append_what(const std::string &post)
+    {
+        _text += " " + post;
+    }
+
 private:
     token _tok;
+    std::string _text;
 };
 
 class use_without_parent_block : public std::logic_error

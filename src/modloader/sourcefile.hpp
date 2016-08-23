@@ -30,31 +30,27 @@ private:
 class could_not_open_file : public std::exception
 {
 public:
-    could_not_open_file(const std::string &f) : _f{f} {}
+    could_not_open_file(const std::string &f)
+        : _text{"Could not open file \"" + f + "\""}
+    {}
+
     inline const char *what() const noexcept
     {
-        return std::string{"Could not open file \"" + _f + "\""}.c_str();
+        return _text.c_str();
     }
 
 private:
-    std::string _f;
+    std::string _text;
 };
 
 class sourcefile_syntax_error : public rbb::syntax_error
 {
 public:
     sourcefile_syntax_error(const rbb::syntax_error &other, const std::string &filename) :
-        syntax_error{other},
-        _f{filename}
-    {}
-
-    inline const char *what() const noexcept
+        syntax_error{other}
     {
-        return (std::string{syntax_error::what()} + " of file " + _f).c_str();
+        append_what("of file " + filename);
     }
-
-private:
-    std::string _f;
 };
 
 }
