@@ -26,11 +26,6 @@ else
     tests=$TESTS
 fi
 
-if [ -z $THREADS ]
-then
-    THREADS=1
-fi
-
 if [ -z "$CXX_FLAGS" ] && ([ $CXX = "g++" ] || [ $CXX = "clang++" ])
 then
     CXX_FLAGS="-g -O0"
@@ -59,8 +54,9 @@ cd build &&
     cmake "$RUBBERBAND_SRC"\
         -DCMAKE_INSTALL_PREFIX=../inst\
         -DCMAKE_CXX_COMPILER="$CXX"\
-        -DCMAKE_CXX_FLAGS="$CXX_FLAGS" &&
-    make -j$THREADS install &&
+        -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+        -G Ninja &&
+    cmake --build . --target install &&
 cd .. &&
 
 RUBBERBAND_PATH="$PWD"/inst &&
