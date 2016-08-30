@@ -87,17 +87,17 @@ int main(int argc, char **argv)
     if (debug_mode)
         LemonCParserTrace(stdout, " -- ");
 
-    auto result = master.loader.program_from_file(file_arg.getValue());
-    if (debug_mode)
-        puts(result.to_string().c_str());
-    
     master.loader.add_path_list(paths_args.getValue());
-    
+
     auto main_context = table();
     for (auto module : modules_args.getValue()) {
         auto mod = master.load(module);
         mod << main_context << empty();
     }
+
+    auto result = master.loader.program_from_file(file_arg.getValue());
+    if (debug_mode)
+        puts(result.to_string().c_str());
 
     result << main_context << empty();
 
