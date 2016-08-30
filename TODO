@@ -1,0 +1,9 @@
+- Make rbbs/rbbi configs storable (json, ini, whatever)
+- Create modloader::native for native modules (libraries)
+- Create print module for proper printing support
+- Create pack module to export rubberband data to raw data
+- Make possible to run part of the script before continuing to run it
+- Create string module declaring string literals (deps: print, pack)
+- Make rbbi depend on the string module
+- Deprecate %inspect_object (maybe?) and to_string (maybe?)
+
