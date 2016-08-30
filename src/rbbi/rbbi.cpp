@@ -29,6 +29,7 @@
 // rubberband includes
 #include <error.hpp>
 #include <parse.hpp>
+#include <modloader/sourcefile.hpp>
 
 // std includes
 #include <exception>
@@ -42,12 +43,51 @@ using namespace std;
 class rbbi_master : public base_master
 {
 public:
-    object load(const string &) override { return empty(); }
-    object custom_operation(const string &op, const object &) override
+    rbbi_master() :
+        loader_{this}
+    {}
+
+    object load(const string &mod) override
     {
+        return loader_.load_module(mod);
+    }
+
+    object custom_operation(const string &op, const object &obj) override
+    {
+        if (op == "add_mod_search_path") {
+            auto mut_obj = const_cast<object &>(obj);
+
+            if (mut_obj << symbol("<<?") << symbol("[|]") == boolean(false))
+                throw rbb::runtime_error{parse(":error -> invalid_path")};
+
+            string path;
+            auto size_obj = mut_obj << symbol("*");
+            const auto size = size_obj.__value.integer;
+
+            for (long long i = 0; i < size; ++i) {
+                auto path_symb = mut_obj << number(i);
+                if (path_symb << symbol("<<?") << symbol("[a]") == boolean(false))
+                    throw rbb::runtime_error{parse(":error -> invalid_path")};
+
+                if (path_symb == symbol("[..]"))
+                    path += "..";
+                else
+                    path += path_symb.to_string();
+
+                path += "/";
+            }
+
+            loader_.add_path(path);
+
+            return {};
+        }
+
         if (op == "exit")
             exit(0);
     }
+
+private:
+    modloader::sourcefile loader_;
 } master;
 
 int main(int, char **)
