@@ -52,7 +52,7 @@ object sourcefile::program_from_file(const string &filename) const
         throw could_not_open_file{filename};
     }
 
-    string program;
+    string program = "{";
 
     while (!file.eof()) {
         string tmp;
@@ -60,6 +60,8 @@ object sourcefile::program_from_file(const string &filename) const
         program += tmp;
         program += "\n";
     }
+
+    program += "}";
 
     try {
         return _master.parse(program);
