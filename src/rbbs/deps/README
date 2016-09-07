@@ -1,0 +1,4 @@
+Depends:
+- json: https://github.com/nlohmann/json
+  - Copy json.hpp into include
+

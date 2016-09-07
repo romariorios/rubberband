@@ -22,12 +22,15 @@
 #include <cstdio>
 #include <fstream>
 #include <error.hpp>
+#include <fstream>
+#include <json.hpp>
 #include <modloader/sourcefile.hpp>
 #include <parse.hpp>
 #include <string>
 #include <tclap/CmdLine.h>
 #include <vector>
 
+using namespace nlohmann;
 using namespace rbb;
 using namespace std;
 using namespace TCLAP;
@@ -80,17 +83,36 @@ int main(int argc, char **argv)
         false, "Module name"
     };
     cmd.add(modules_args);
+
+    ValueArg<string> cfgfile_args{
+        "c", "cfgfile", "Set config file path (default: .cfg.json)",
+        false, ".cfg.json", "File path"
+    };
+    cmd.add(cfgfile_args);
     
     cmd.parse(argc, argv);
 
-    auto debug_mode = debug_arg.getValue();
+    const auto debug_mode = debug_arg.getValue();
     if (debug_mode)
         LemonCParserTrace(stdout, " -- ");
 
-    master.loader.add_path_list(paths_args.getValue());
+    ifstream cfgfile{cfgfile_args.getValue()};
+    json cfg;
+    if (cfgfile.good())
+        cfgfile >> cfg;
+
+    auto paths = paths_args.getValue();
+    for (const auto &p : cfg["modpaths"])
+        paths.push_back(p);
+
+    master.loader.add_path_list(paths);
+
+    auto modules = modules_args.getValue();
+    for (const auto &m : cfg["autoload"])
+        modules.push_back(m);
 
     auto main_context = table();
-    for (auto module : modules_args.getValue()) {
+    for (const auto &module : modules) {
         auto mod = master.load(module);
         mod << main_context << empty();
     }

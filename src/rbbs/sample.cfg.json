@@ -1,0 +1,11 @@
+{
+    "This is a sample rbbs config file": true,
+    "Description of the fields": {
+        "modpaths": "List of paths to look modules from",
+        "autoload": "Modules to load automatically"
+    },
+
+    "modpaths": ["mod"],
+    "autoload": ["base"]
+}
+
