@@ -1,4 +1,3 @@
-- Make rbbs/rbbi configs storable (json, ini, whatever)
 - Create modloader::native for native modules (libraries)
 - Create print module for proper printing support
 - Create pack module to export rubberband data to raw data

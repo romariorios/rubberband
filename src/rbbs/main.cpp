@@ -22,15 +22,9 @@
 #include <cstdio>
 #include <fstream>
 #include <error.hpp>
-#include <fstream>
-#include <json.hpp>
 #include <modloader/sourcefile.hpp>
-#include <parse.hpp>
-#include <string>
 #include <tclap/CmdLine.h>
-#include <vector>
 
-using namespace nlohmann;
 using namespace rbb;
 using namespace std;
 using namespace TCLAP;
@@ -40,8 +34,8 @@ extern void LemonCParserTrace(FILE *stream, char *zPrefix);
 class rbbs_master : public base_master
 {
 public:
-    rbbs_master() :
-        loader{this}
+    rbbs_master(const std::string &cfgfile_name) :
+        loader{this, cfgfile_name}
     {}
 
     object load(const string &str)
@@ -58,7 +52,7 @@ public:
     }
 
     modloader::sourcefile loader;
-} master;
+};
 
 int main(int argc, char **argv)
 {
@@ -96,23 +90,13 @@ int main(int argc, char **argv)
     if (debug_mode)
         LemonCParserTrace(stdout, " -- ");
 
-    ifstream cfgfile{cfgfile_args.getValue()};
-    json cfg;
-    if (cfgfile.good())
-        cfgfile >> cfg;
-
-    auto paths = paths_args.getValue();
-    for (const auto &p : cfg["modpaths"])
-        paths.push_back(p);
-
-    master.loader.add_path_list(paths);
-
-    auto modules = modules_args.getValue();
-    for (const auto &m : cfg["autoload"])
-        modules.push_back(m);
+    rbbs_master master{cfgfile_args.getValue()};
+    master.loader.add_path_list(paths_args.getValue());
 
     auto main_context = table();
-    for (const auto &module : modules) {
+    master.loader.autoload(main_context);
+
+    for (const auto &module : modules_args.getValue()) {
         auto mod = master.load(module);
         mod << main_context << empty();
     }

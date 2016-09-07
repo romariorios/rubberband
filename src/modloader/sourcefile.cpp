@@ -22,14 +22,33 @@
 #include "sourcefile.hpp"
 
 #include <fstream>
+#include <json.hpp>
 
+using namespace nlohmann;
 using namespace rbb;
 using namespace rbb::modloader;
 using namespace std;
 
-sourcefile::sourcefile(base_master *master) :
+// FIXME Stop using this global
+json G_cfg;
+
+sourcefile::sourcefile(base_master *master, const std::string &cfgfile_name) :
     _master{*master}
-{}
+{
+    ifstream cfgfile{cfgfile_name};
+    if (cfgfile.good())
+        cfgfile >> G_cfg;
+
+    auto &&modpaths = G_cfg["modpaths"];
+    if (modpaths.type() == json::value_t::array)
+        add_path_list(modpaths);
+}
+
+void sourcefile::autoload(object &context) const
+{
+    for (const auto &m : G_cfg["autoload"])
+        load_module(m) << context << object{};
+}
 
 object sourcefile::load_module(const string &modname) const
 {

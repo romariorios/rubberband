@@ -44,8 +44,13 @@ class rbbi_master : public base_master
 {
 public:
     rbbi_master() :
-        loader_{this}
+        loader_{this, ".cfg.json"}
     {}
+
+    void autoload(object &obj)
+    {
+        loader_.autoload(obj);
+    }
 
     object load(const string &mod) override
     {
@@ -93,6 +98,7 @@ private:
 int main(int, char **)
 {
     auto context = table();
+    master.autoload(context);
 
     for (;;) {
         auto line = readline("!");

@@ -35,8 +35,9 @@ namespace modloader
 class sourcefile final
 {
 public:
-    sourcefile(base_master *master);
+    sourcefile(base_master *master, const std::string &cfgfile_name);
 
+    void autoload(object &context) const;
     object load_module(const std::string &modname) const;
     object program_from_file(const std::string &filename) const;
 
