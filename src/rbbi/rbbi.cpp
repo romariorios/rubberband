@@ -57,20 +57,18 @@ public:
         return loader_.load_module(mod);
     }
 
-    object custom_operation(const string &op, const object &obj) override
+    object custom_operation(const string &op, object &obj) override
     {
         if (op == "add_mod_search_path") {
-            auto mut_obj = const_cast<object &>(obj);
-
-            if (mut_obj << symbol("<<?") << symbol("[|]") == boolean(false))
+            if (obj << symbol("<<?") << symbol("[|]") == boolean(false))
                 throw rbb::runtime_error{parse(":error -> invalid_path")};
 
             string path;
-            auto size_obj = mut_obj << symbol("*");
+            auto size_obj = obj << symbol("*");
             const auto size = size_obj.__value.integer;
 
             for (long long i = 0; i < size; ++i) {
-                auto path_symb = mut_obj << number(i);
+                auto path_symb = obj << number(i);
                 if (path_symb << symbol("<<?") << symbol("[a]") == boolean(false))
                     throw rbb::runtime_error{parse(":error -> invalid_path")};
 

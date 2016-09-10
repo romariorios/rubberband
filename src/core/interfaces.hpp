@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2015--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@ public:
 };
 
 template <typename... Interfaces>
-object iface_collection_follows_interface(object *thisptr, const object &msg)
+object iface_collection_follows_interface(object *thisptr, object &msg)
 {
     auto data = static_cast<metainfo_data<Interfaces...> *>(thisptr->__value.data());
 
@@ -53,7 +53,7 @@ object iface_collection_follows_interface(object *thisptr, const object &msg)
 }
 
 template <typename... Interfaces>
-object iface_collection_responds_to(object *thisptr, const object &msg)
+object iface_collection_responds_to(object *thisptr, object &msg)
 {
     auto data = static_cast<metainfo_data<Interfaces...> *>(thisptr->__value.data());
 
@@ -87,7 +87,7 @@ public:
         return follows;
     }
 
-    send_msg_function select_function(object *thisptr, const object &msg) const
+    send_msg_function select_function(object *thisptr, object &msg) const
     {
         if (msg == symbol("<<"))
             return iface_collection_responds_to<Interfaces...>;
@@ -108,7 +108,7 @@ public:
         return f;
     }
 
-    object select_response(object *thisptr, const object &msg) const
+    object select_response(object *thisptr, object &msg) const
     {
         if (msg == symbol("<<") || msg == symbol("<<?"))
             return object::create_data_object(
@@ -128,7 +128,7 @@ public:
         return f;
     }
 
-    inline bool responds_to(object *thisptr, const object &msg) const
+    inline bool responds_to(object *thisptr, object &msg) const
     {
         if (msg == symbol("<<") || msg == symbol("<<?"))
             return select_function(thisptr, msg);
@@ -159,9 +159,9 @@ interface_collection<Interfaces...> mk_interface_collection(Interfaces... interf
 #define RBB_IFACE(__name) \
 public:\
     inline const char *interface_name() const { return __name; }\
-    send_msg_function select_function(object *thisptr, const object &msg) const;\
-    bool responds_to(object *thisptr, const object &msg) const;\
-    object select_response(object *thisptr, const object &msg) const;\
+    send_msg_function select_function(object *thisptr, object &msg) const;\
+    bool responds_to(object *thisptr, object &msg) const;\
+    object select_response(object *thisptr, object &msg) const;\
 private:
 
 namespace iface

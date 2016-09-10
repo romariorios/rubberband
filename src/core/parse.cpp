@@ -131,7 +131,7 @@ public:
     base_master &master;
 };
 
-object master_load_send_msg(object *thisptr, const object &msg)
+object master_load_send_msg(object *thisptr, object &msg)
 {
     auto d = static_cast<master_data *>(thisptr->__value.data());
 
@@ -141,7 +141,7 @@ object master_load_send_msg(object *thisptr, const object &msg)
     return d->master.load(msg.to_string());
 }
 
-object master_declare_literal_send_msg(object *thisptr, const object &msg)
+object master_declare_literal_send_msg(object *thisptr, object &msg)
 {
     auto d = static_cast<master_data *>(thisptr->__value.data());
 
@@ -151,7 +151,7 @@ object master_declare_literal_send_msg(object *thisptr, const object &msg)
     if (!dynamic_cast<table_data *>(msg.__value.data()))
         throw semantic_error{"Table expected", *thisptr, msg};
 
-    auto trigger_obj = const_cast<object &>(msg) << symbol(">");
+    auto trigger_obj = msg << symbol(">");
     unsigned char trigger;
     auto trigger_error_msg =
         "The trigger should be numeric";
@@ -163,7 +163,7 @@ object master_declare_literal_send_msg(object *thisptr, const object &msg)
     else
         throw semantic_error{trigger_error_msg, *thisptr, msg};
 
-    return d->master.declare_literal(trigger, const_cast<object &>(msg) << symbol("="));
+    return d->master.declare_literal(trigger, msg << symbol("="));
 }
 
 class custom_operation_data : public shared_data_t
@@ -178,14 +178,14 @@ public:
     base_master &master;
 };
 
-object master_custom_operation_send_msg(object *thisptr, const object &msg)
+object master_custom_operation_send_msg(object *thisptr, object &msg)
 {
     auto d = static_cast<custom_operation_data *>(thisptr->__value.data());
 
     return d->master.custom_operation(d->symbol.to_string(), msg);
 }
 
-object master_send_msg(object *thisptr, const object &msg)
+object master_send_msg(object *thisptr, object &msg)
 {
     auto d = static_cast<master_data*>(thisptr->__value.data());
 

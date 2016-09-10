@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2015--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -39,20 +39,20 @@ inline object create_response(object *thisptr, send_msg_function f)
 }
 
 #define DEFAULT_SELECT_FUNCTION(__class) \
-send_msg_function __class::select_function(object *thisptr, const object &msg) const\
+send_msg_function __class::select_function(object *thisptr, object &msg) const\
 {\
     return nullptr;\
 }
 
 #define DEFAULT_SELECT_RESPONSE(__class) \
-object __class::select_response(object *thisptr, const object &msg) const\
+object __class::select_response(object *thisptr, object &msg) const\
 {\
     auto f = select_function(thisptr, msg);\
     return f? create_response(thisptr, f) : object{};\
 }
 
 #define DEFAULT_RESPONDS_TO(__class) \
-bool __class::responds_to(object *thisptr, const object &msg) const\
+bool __class::responds_to(object *thisptr, object &msg) const\
 {\
     return select_function(thisptr, msg);\
 }
@@ -68,7 +68,7 @@ iface::arith::arith(
     _div_function{div_function}
 {}
 
-send_msg_function iface::arith::select_function(object *, const object &msg) const
+send_msg_function iface::arith::select_function(object *, object &msg) const
 {
     if (msg == symbol("+"))
         return _add_function;
@@ -90,7 +90,7 @@ iface::comparable::comparable(send_msg_function eq_function, send_msg_function n
     _ne_function{ne_function}
 {}
 
-send_msg_function iface::comparable::select_function(object *, const object& msg) const
+send_msg_function iface::comparable::select_function(object *, object& msg) const
 {
     if (msg == symbol("=="))
         return _eq_function;
@@ -114,7 +114,7 @@ iface::ordered::ordered(
     _ge_function{ge_function}
 {}
 
-send_msg_function iface::ordered::select_function(object *, const object& msg) const
+send_msg_function iface::ordered::select_function(object *, object& msg) const
 {
     if (msg == symbol("<"))
         return _lt_function;
@@ -141,7 +141,7 @@ iface::numeric::numeric(send_msg_function array_send_msg) :
     _array_send_msg{array_send_msg}
 {}
 
-object iface::numeric::select_response(object *thisptr, const object &msg) const
+object iface::numeric::select_response(object *thisptr, object &msg) const
 {
     if (!responds_to(thisptr, msg))
         return {};
@@ -156,9 +156,9 @@ object iface::numeric::select_response(object *thisptr, const object &msg) const
     return object::create_data_object(new_d, _array_send_msg);
 }
 
-bool iface::numeric::responds_to(object *, const object &msg) const
+bool iface::numeric::responds_to(object *, object &msg) const
 {
-    return const_cast<object &>(msg) << symbol("<<?") << symbol("[|]") == boolean(true);
+    return msg << symbol("<<?") << symbol("[|]") == boolean(true);
 }
 
 iface::booleanoid::booleanoid(
@@ -172,7 +172,7 @@ iface::booleanoid::booleanoid(
     _raise_send_msg{raise_send_msg}
 {}
 
-send_msg_function iface::booleanoid::select_function(object *, const object &msg) const
+send_msg_function iface::booleanoid::select_function(object *, object &msg) const
 {
     if (msg == symbol("/\\"))
         return _and_send_msg;
@@ -186,12 +186,12 @@ send_msg_function iface::booleanoid::select_function(object *, const object &msg
     return nullptr;
 }
 
-bool iface::booleanoid::responds_to(object *thisptr, const object &msg) const
+bool iface::booleanoid::responds_to(object *thisptr, object &msg) const
 {
     return select_function(thisptr, msg) || msg == symbol("><");
 }
 
-object iface::booleanoid::select_response(object *thisptr, const object &msg) const
+object iface::booleanoid::select_response(object *thisptr, object &msg) const
 {
     if (!responds_to(thisptr, msg))
         return {};
@@ -207,7 +207,7 @@ iface::listable::listable(
     _slice_send_msg{slice_send_msg}
 {}
 
-send_msg_function iface::listable::select_function(object *, const object &msg) const
+send_msg_function iface::listable::select_function(object *, object &msg) const
 {
     if (msg == symbol("+"))
         return _concat_send_msg;
@@ -217,7 +217,7 @@ send_msg_function iface::listable::select_function(object *, const object &msg) 
     return nullptr;
 }
 
-bool iface::listable::responds_to(object *thisptr, const object &msg) const
+bool iface::listable::responds_to(object *thisptr, object &msg) const
 {
     if (select_function(thisptr, msg) ||
         msg == symbol("*"))
@@ -234,7 +234,7 @@ bool iface::listable::responds_to(object *thisptr, const object &msg) const
     return in_bounds(d, get_index_from_obj(msg));
 }
 
-object iface::listable::select_response(object *thisptr, const object &msg) const
+object iface::listable::select_response(object *thisptr, object &msg) const
 {
     if (!responds_to(thisptr, msg))
         return {};
@@ -265,7 +265,7 @@ iface::mapped::mapped(
     _del_send_msg{del_send_msg}
 {}
 
-send_msg_function iface::mapped::select_function(object *, const object &msg) const
+send_msg_function iface::mapped::select_function(object *, object &msg) const
 {
     if (msg == symbol("+"))
         return _merge_send_msg;
@@ -275,7 +275,7 @@ send_msg_function iface::mapped::select_function(object *, const object &msg) co
     return nullptr;
 }
 
-bool iface::mapped::responds_to(object *thisptr, const object &msg) const
+bool iface::mapped::responds_to(object *thisptr, object &msg) const
 {
     if (select_function(thisptr, msg) ||
         msg == symbol("*"))
@@ -301,7 +301,7 @@ bool iface::mapped::responds_to(object *thisptr, const object &msg) const
         table_contains_symbol(d, msg);
 }
 
-object iface::mapped::select_response(object *thisptr, const object &msg) const
+object iface::mapped::select_response(object *thisptr, object &msg) const
 {
     if (!responds_to(thisptr, msg))
         return {};
@@ -366,12 +366,12 @@ iface::executable::executable(send_msg_function execute) :
 
 DEFAULT_SELECT_FUNCTION(iface::executable)
 
-bool iface::executable::responds_to(object *, const object &) const
+bool iface::executable::responds_to(object *, object &) const
 {
     return true;
 }
 
-object iface::executable::select_response(object *thisptr, const object &msg) const
+object iface::executable::select_response(object *thisptr, object &msg) const
 {
     block_data *d = static_cast<block_data *>(thisptr->__value.data());
     auto block_l = new literal::block(*d->block_l);

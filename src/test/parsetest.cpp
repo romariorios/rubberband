@@ -2,7 +2,7 @@
 
 extern void LemonCParserTrace(FILE *stream, char *zPrefix);
 
-object __print(object *, const object &msg)
+object __print(object *, object &msg)
 {
     puts(msg.to_string().c_str());
     

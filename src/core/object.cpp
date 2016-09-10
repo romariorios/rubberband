@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,7 @@
 #include <vector>
 
 #define SEND_MSG(typename)\
-static object typename##_send_msg(object *thisptr, const object &msg)
+static object typename##_send_msg(object *thisptr, object &msg)
 
 #define IFACES(typename) \
 auto typename##_iface_collection =\
@@ -139,7 +139,11 @@ bool object::operator==(const object& other) const
     return false;
 }
 
-object object::operator<<(const object &msg)
+object object::operator<<(object &&msg) {
+    return __send_msg(this, msg);
+}
+
+object object::operator<<(object &msg)
 {
     return __send_msg(this, msg);
 }
@@ -299,9 +303,9 @@ object rbb::symbol(const std::string &val)
     return symb;
 }
 
-bool has_iface(const object &obj, const char *iface)
+bool has_iface(object &obj, const char *iface)
 {
-    return const_cast<object &>(obj) << symbol("<<?") << symbol(iface) == boolean(true);
+    return obj << symbol("<<?") << symbol(iface) == boolean(true);
 }
 
 // boolean: Boolean object
@@ -590,7 +594,7 @@ object rbb::table(
     const auto size = std::min(symbols.size(), objects.size());
 
     for (int i = 0; i < size; ++i) {
-        if (!has_iface(symbols[i], "[a]"))
+        if (!has_iface(const_cast<object &>(symbols[i]), "[a]"))
             continue;
 
         auto sym = symbols[i].__value.symbol;

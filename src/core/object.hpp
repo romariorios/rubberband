@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -58,7 +58,7 @@ struct value_t
 };
 
 class object;
-typedef object (*send_msg_function)(object *, const object &);
+typedef object (*send_msg_function)(object *, object &);
 
 // Object
 class object
@@ -78,7 +78,8 @@ public:
     bool operator==(const object &other) const;
     inline bool operator!=(const object &other) const { return !(other == *this); }
 
-    object operator<<(const object &msg); // send_msg
+    object operator<<(object &&msg);
+    object operator<<(object &msg); // send_msg
 
     std::string to_string(
         std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;

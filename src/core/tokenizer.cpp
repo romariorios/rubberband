@@ -93,7 +93,7 @@ public:
     const string &_remaining;
 };
 
-object tokenizer_send_msg(object *thisptr, const object &msg)
+object tokenizer_send_msg(object *thisptr, object &msg)
 {
     auto d = dynamic_cast<tokenizer_data*>(thisptr->__value.data());
     if (msg == symbol("[@]"))
