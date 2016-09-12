@@ -22,6 +22,8 @@
 #ifndef SOURCEFILE_HPP
 #define SOURCEFILE_HPP
 
+#include "base.hpp"
+
 #include <error.hpp>
 #include <object.hpp>
 #include <parse.hpp>
@@ -32,21 +34,16 @@ namespace rbb
 namespace modloader
 {
 
-class sourcefile final
+class sourcefile final : public base
 {
 public:
     sourcefile(base_master *master, const std::string &cfgfile_name);
 
-    void autoload(object &context) const;
-    object load_module(const std::string &modname) const;
+    object load_module(const std::string &modname) const override;
     object program_from_file(const std::string &filename) const;
 
-    void add_path_list(const std::vector<std::string> &paths);
-    inline void add_path(const std::string &path) { add_path_list({path}); }
-
 private:
-    base_master &_master;
-    std::vector<std::string> _module_paths;
+    master &_master;
 };
 
 class could_not_open_file : public std::exception

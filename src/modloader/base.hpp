@@ -19,59 +19,36 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "sourcefile.hpp"
+#ifndef RUBBERBAND_BASE_HPP
+#define RUBBERBAND_BASE_HPP
 
-#include <fstream>
-#include <json.hpp>
+#include <error.hpp>
+#include <parse.hpp>
 
-using namespace nlohmann;
-using namespace rbb;
-using namespace rbb::modloader;
-using namespace std;
-
-// FIXME Stop using this global
-json G_cfg;
-
-sourcefile::sourcefile(base_master *master, const std::string &cfgfile_name) :
-    base{cfgfile_name},
-    _master{*master}
-{}
-
-object sourcefile::load_module(const string &modname) const override
+namespace rbb
 {
-    auto file_with_path = modname + ".rbb";
 
-    for (auto path : module_paths) {
-        if (ifstream{file_with_path}.good())
-            break;
+namespace modloader
+{
 
-        file_with_path = path + "/" + modname + ".rbb";
-    }
+class base
+{
+public:
+    base(const std::string &cfgfile_name);
 
-    return program_from_file(file_with_path);
+    virtual object load_module(const std::string &modname) const = 0;
+
+    void autoload(object &context) const final;
+    void add_path_list(const std::vector<std::string> &paths) final;
+    inline void add_path(const std::string &path) final { add_path_list({path}); }
+
+protected:
+    std::vector<std::string> module_paths;
+};
+
 }
 
-object sourcefile::program_from_file(const string &filename) const
-{
-    ifstream file{filename};
-    if (!file) {
-        throw could_not_open_file{filename};
-    }
-
-    string program = "{";
-
-    while (!file.eof()) {
-        string tmp;
-        getline(file, tmp);
-        program += tmp;
-        program += "\n";
-    }
-
-    program += "}";
-
-    try {
-        return _master.parse(program);
-    } catch (const syntax_error &e) {
-        throw sourcefile_syntax_error{e, filename};
-    }
 }
+
+
+#endif //RUBBERBAND_BASE_HPP

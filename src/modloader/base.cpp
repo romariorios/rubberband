@@ -19,10 +19,10 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "sourcefile.hpp"
+#include "base.hpp"
 
-#include <fstream>
 #include <json.hpp>
+#include <fstream>
 
 using namespace nlohmann;
 using namespace rbb;
@@ -32,46 +32,24 @@ using namespace std;
 // FIXME Stop using this global
 json G_cfg;
 
-sourcefile::sourcefile(base_master *master, const std::string &cfgfile_name) :
-    base{cfgfile_name},
-    _master{*master}
-{}
-
-object sourcefile::load_module(const string &modname) const override
+base::base(const std::string &cfgfile_name)
 {
-    auto file_with_path = modname + ".rbb";
+    ifstream cfgfile{cfgfile_name};
+    if (cfgfile.good())
+        cfgfile >> G_cfg;
 
-    for (auto path : module_paths) {
-        if (ifstream{file_with_path}.good())
-            break;
-
-        file_with_path = path + "/" + modname + ".rbb";
-    }
-
-    return program_from_file(file_with_path);
+    auto &&modpaths = G_cfg["modpaths"];
+    if (modpaths.type() == json::value_t::array)
+        add_path_list(modpaths);
 }
 
-object sourcefile::program_from_file(const string &filename) const
+void base::autoload(object &context) const
 {
-    ifstream file{filename};
-    if (!file) {
-        throw could_not_open_file{filename};
-    }
+    for (const auto &m : G_cfg["autoload"])
+        load_module(m) << context << object{};
+}
 
-    string program = "{";
-
-    while (!file.eof()) {
-        string tmp;
-        getline(file, tmp);
-        program += tmp;
-        program += "\n";
-    }
-
-    program += "}";
-
-    try {
-        return _master.parse(program);
-    } catch (const syntax_error &e) {
-        throw sourcefile_syntax_error{e, filename};
-    }
+void base::add_path_list(const vector<string> &paths)
+{
+    module_paths.insert(module_paths.cbegin(), paths.begin(), paths.end());
 }

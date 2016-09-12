@@ -5,9 +5,11 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}/deps/include")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set(modloader_srcs
-    sourcefile.cpp)
+    sourcefile.cpp
+    base.cpp)
 set(modloader_header
-    sourcefile.hpp)
+    sourcefile.hpp
+    base.hpp)
 
 add_library(modloader STATIC ${modloader_srcs})
 
