@@ -19,14 +19,12 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#ifndef SOURCEFILE_HPP
-#define SOURCEFILE_HPP
+#ifndef RUBBERBAND_NATIVE_LINUX_HPP
+#define RUBBERBAND_NATIVE_LINUX_HPP
 
 #include "base.hpp"
 
-#include <error.hpp>
-#include <object.hpp>
-#include <parse.hpp>
+#include <exception>
 
 namespace rbb
 {
@@ -34,46 +32,39 @@ namespace rbb
 namespace modloader
 {
 
-class sourcefile final : public base
+class native_linux final : public base
 {
 public:
-    sourcefile(base_master *master, const std::string &cfgfile_name);
+    native_linux();
 
     object load_module(const std::string &modname) const override;
-    object program_from_file(const std::string &filename) const;
-
-private:
-    base_master &_master;
 };
 
-class could_not_open_file : public std::exception
+class dlopen_error final : public std::exception
 {
 public:
-    could_not_open_file(const std::string &f)
-        : _text{"Could not open file \"" + f + "\""}
-    {}
+    dlopen_error();
 
-    inline const char *what() const noexcept
-    {
-        return _text.c_str();
-    }
+    const char *what() const noexcept;
 
 private:
-    std::string _text;
+    const char *_error_str;
 };
 
-class sourcefile_syntax_error : public rbb::syntax_error
+class dlsym_error final : public std::exception
 {
 public:
-    sourcefile_syntax_error(const rbb::syntax_error &other, const std::string &filename) :
-        syntax_error{other}
-    {
-        append_what("of file " + filename);
-    }
+    explicit dlsym_error(char *error);
+
+    const char *what() const noexcept;
+
+private:
+    const char *_error_str;
 };
 
 }
 
 }
 
-#endif
+
+#endif //RUBBERBAND_NATIVE_LINUX_HPP

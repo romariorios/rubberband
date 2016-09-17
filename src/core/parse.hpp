@@ -35,7 +35,7 @@ public:
         const object &evaluator) final;
 
     virtual object load(const std::string &mod_name) = 0;
-    virtual object custom_operation(const std::string &name, const object &obj) = 0;
+    virtual object custom_operation(const std::string &name, object &obj) = 0;
 
 private:
     std::map<unsigned char, object> _literals;

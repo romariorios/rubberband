@@ -38,9 +38,9 @@ public:
 
     virtual object load_module(const std::string &modname) const = 0;
 
-    void autoload(object &context) const final;
-    void add_path_list(const std::vector<std::string> &paths) final;
-    inline void add_path(const std::string &path) final { add_path_list({path}); }
+    void autoload(object &context) const;
+    void add_path_list(const std::vector<std::string> &paths);
+    inline void add_path(const std::string &path) { add_path_list({path}); }
 
 protected:
     std::vector<std::string> module_paths;

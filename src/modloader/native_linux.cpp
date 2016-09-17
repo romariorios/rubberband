@@ -19,56 +19,82 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#include "sourcefile.hpp"
+#include "native_linux.hpp"
 
+#include <dlfcn.h>
 #include <fstream>
-#include <json.hpp>
 
-using namespace nlohmann;
 using namespace rbb;
 using namespace rbb::modloader;
 using namespace std;
 
-sourcefile::sourcefile(base_master *master, const std::string &cfgfile_name) :
-    base{cfgfile_name},
-    _master{*master}
+using loadobj_fun = object(*)();
+
+native_linux::native_linux() :
+    base{{}}
 {}
 
-object sourcefile::load_module(const string &modname) const
+class dl_handle
 {
-    auto file_with_path = modname + ".rbb";
+public:
+    dl_handle(void *handle) :
+        _handle{handle}
+    {
+        if (!_handle)
+            throw dlopen_error{};
 
-    for (auto path : module_paths) {
+        dlerror();  // not sure if this is necessary
+    }
+
+    ~dl_handle()
+    {
+        dlclose(_handle);
+    }
+
+    operator void *() const
+    {
+        return _handle;
+    }
+
+private:
+    void *_handle;
+};
+
+object native_linux::load_module(const string &modname) const
+{
+    auto file_with_path = "./lib" + modname + ".so";
+
+    for (const auto &path : module_paths) {
         if (ifstream{file_with_path}.good())
             break;
 
-        file_with_path = path + "/" + modname + ".rbb";
+        file_with_path = path + "/lib" + modname + ".so";
     }
 
-    return program_from_file(file_with_path);
+    dl_handle module_handle{dlopen(file_with_path.c_str(), RTLD_LAZY)};
+
+    auto rbb_loadobj = reinterpret_cast<loadobj_fun>(dlsym(module_handle, "rbb_loadobj"));
+    const auto dl_error_str = dlerror();
+    if (dl_error_str)
+        throw dlsym_error{dl_error_str};
+
+    return rbb_loadobj();
 }
 
-object sourcefile::program_from_file(const string &filename) const
+dlopen_error::dlopen_error() :
+    _error_str{dlerror()}
+{}
+
+const char *dlopen_error::what() const noexcept
 {
-    ifstream file{filename};
-    if (!file) {
-        throw could_not_open_file{filename};
-    }
+    return _error_str;
+}
 
-    string program = "{";
+dlsym_error::dlsym_error(char *error) :
+    _error_str{error}
+{}
 
-    while (!file.eof()) {
-        string tmp;
-        getline(file, tmp);
-        program += tmp;
-        program += "\n";
-    }
-
-    program += "}";
-
-    try {
-        return _master.parse(program);
-    } catch (const syntax_error &e) {
-        throw sourcefile_syntax_error{e, filename};
-    }
+const char *dlsym_error::what() const noexcept
+{
+    return _error_str;
 }
