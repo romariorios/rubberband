@@ -26,19 +26,71 @@
 #include <object.hpp>
 #include <parse.hpp>
 
+#include <fstream>
+#include <json.hpp>
+
 namespace rbb
 {
 
 namespace modloader
 {
 
-class sourcefile final
+    namespace __internal
+    {
+        using load_module_fun =
+            bool(
+                const std::vector<std::string> & /* modpaths */,
+                const std::string & /* modname */,
+                object & /* ret */);
+
+        // Base case
+        template <load_module_fun F>
+        bool load_module(const std::vector<std::string> &modpaths, const std::string &modname, object &obj)
+        {
+            const auto res = F(modpaths, modname, obj);
+            if (!res)
+                obj = empty();
+
+            return res;
+        }
+
+        // Recursive definition
+        template <load_module_fun F1, load_module_fun F2, load_module_fun... Funs>
+        bool load_module(const std::vector<std::string> &modpaths, const std::string &modname, object &obj)
+        {
+            if (load_module<F1>(modpaths, modname, obj))
+                return true;
+
+            return load_module<F2, Funs...>(modpaths, modname, obj);
+        }
+    }
+
+template <__internal::load_module_fun... Funs>
+class loader final
 {
 public:
-    sourcefile(base_master *master, const std::string &cfgfile_name);
+    loader(base_master *master, const std::string &cfgfile_name) :
+        _master{*master}
+    {
+        std::ifstream cfgfile{cfgfile_name};
+        if (cfgfile.good())
+            cfgfile >> _cfg;
+
+        auto &&modpaths = _cfg["modpaths"];
+        if (modpaths.type() == nlohmann::json::value_t::array)
+            add_path_list(modpaths);
+    }
 
     void autoload(object &context) const;
-    object load_module(const std::string &modname) const;
+
+    object load_module(const std::string &modname) const
+    {
+        object obj;
+        __internal::load_module<Funs>(_module_paths, modname, obj);
+
+        return obj;
+    }
+
     object program_from_file(const std::string &filename) const;
 
     void add_path_list(const std::vector<std::string> &paths);
@@ -47,6 +99,7 @@ public:
 private:
     base_master &_master;
     std::vector<std::string> _module_paths;
+    nlohmann::json _cfg;
 };
 
 class could_not_open_file : public std::exception
