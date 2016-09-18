@@ -19,40 +19,38 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#ifndef RUBBERBAND_NATIVE_LINUX_HPP
-#define RUBBERBAND_NATIVE_LINUX_HPP
+#include "multi.hpp"
 
-#include "base.hpp"
+using namespace rbb;
+using namespace rbb::modloader;
+using namespace std;
 
-#include <exception>
-
-namespace rbb
+object multi::load_module(const std::string &modname) const
 {
+    multi_load_error error;
 
-namespace modloader
-{
+    for (auto &&loader : _loaders) {
+        try {
+            return loader->load_module(modname);
+        } catch (const load_error &err) {
+            error.add_error(err);
+        }
+    }
 
-class native_linux final : public base
-{
-public:
-    object load_module(const std::string &modname) const override;
-};
-
-class dlopen_error final : public load_error
-{
-public:
-    dlopen_error();
-};
-
-class dlsym_error final : public load_error
-{
-public:
-    explicit dlsym_error(char *error);
-};
-
+    throw error;
 }
 
+multi_load_error::multi_load_error() :
+    _err_str{"The following errors occurred while trying to load the module: "}
+{}
+
+void multi_load_error::add_error(const load_error &err)
+{
+    _err_str += err.what();
+    _err_str += "; ";
 }
 
-
-#endif //RUBBERBAND_NATIVE_LINUX_HPP
+const char *multi_load_error::what() const noexcept
+{
+    return _err_str.c_str();
+}

@@ -36,7 +36,7 @@ namespace modloader
 class base
 {
 public:
-    base(const std::string &cfgfile_name);
+    base(const std::string &cfgfile_name = {});
 
     virtual object load_module(const std::string &modname) const = 0;
 

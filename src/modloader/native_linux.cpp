@@ -30,10 +30,6 @@ using namespace std;
 
 using loadobj_fun = object(*)();
 
-native_linux::native_linux() :
-    base{{}}
-{}
-
 class dl_handle
 {
 public:

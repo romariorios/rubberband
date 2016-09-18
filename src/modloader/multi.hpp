@@ -19,12 +19,15 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-#ifndef RUBBERBAND_NATIVE_LINUX_HPP
-#define RUBBERBAND_NATIVE_LINUX_HPP
+#ifndef RUBBERBAND_MULTI_HPP
+#define RUBBERBAND_MULTI_HPP
 
 #include "base.hpp"
 
-#include <exception>
+#include <initializer_list>
+#include <memory>
+#include <utility>
+#include <vector>
 
 namespace rbb
 {
@@ -32,27 +35,46 @@ namespace rbb
 namespace modloader
 {
 
-class native_linux final : public base
+class multi final : public base
 {
 public:
     object load_module(const std::string &modname) const override;
+
+    // Loader with no constructor args
+    template <typename LoaderT>
+    void add_loader()
+    {
+        _loaders.emplace_back(new LoaderT);
+    }
+
+    // Loader with one or more constructor args
+    template <typename LoaderT, typename TArg, typename... TOtherArgs>
+    void add_loader(TArg &&a, TOtherArgs &&... otherA)
+    {
+        _loaders.emplace_back(
+            new LoaderT{
+                std::forward<TArg>(a),
+                std::forward<TOtherArgs>(otherA)...});
+    };
+
+private:
+    std::vector<std::unique_ptr<base>> _loaders;
 };
 
-class dlopen_error final : public load_error
+class multi_load_error final : public load_error
 {
 public:
-    dlopen_error();
-};
+    multi_load_error();
 
-class dlsym_error final : public load_error
-{
-public:
-    explicit dlsym_error(char *error);
+    void add_error(const load_error &err);
+    const char *what() const noexcept;
+
+private:
+    std::string _err_str;
 };
 
 }
 
 }
 
-
-#endif //RUBBERBAND_NATIVE_LINUX_HPP
+#endif //RUBBERBAND_MULTI_HPP
