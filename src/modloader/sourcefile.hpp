@@ -38,6 +38,7 @@ class sourcefile final : public base
 {
 public:
     sourcefile(base_master *master, const std::string &cfgfile_name);
+    sourcefile(base_master *master, std::vector<std::string> &parent_module_paths);
 
     object load_module(const std::string &modname) const override;
     object program_from_file(const std::string &filename) const;

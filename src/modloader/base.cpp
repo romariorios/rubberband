@@ -32,7 +32,9 @@ using namespace std;
 // FIXME Stop using this global
 json G_cfg;
 
-base::base(const std::string &cfgfile_name)
+base::base(const std::string &cfgfile_name) :
+    _module_paths_concrete{new vector<string>},
+    module_paths{*_module_paths_concrete.get()}
 {
     ifstream cfgfile{cfgfile_name};
     if (cfgfile.good())
@@ -42,6 +44,10 @@ base::base(const std::string &cfgfile_name)
     if (modpaths.type() == json::value_t::array)
         add_path_list(modpaths);
 }
+
+base::base(std::vector<std::string> &parent_module_paths) :
+    module_paths{parent_module_paths}
+{}
 
 void base::autoload(object &context) const
 {

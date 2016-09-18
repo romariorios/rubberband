@@ -22,15 +22,18 @@
 #include "sourcefile.hpp"
 
 #include <fstream>
-#include <json.hpp>
 
-using namespace nlohmann;
 using namespace rbb;
 using namespace rbb::modloader;
 using namespace std;
 
-sourcefile::sourcefile(base_master *master, const std::string &cfgfile_name) :
+sourcefile::sourcefile(base_master *master, const string &cfgfile_name) :
     base{cfgfile_name},
+    _master{*master}
+{}
+
+sourcefile::sourcefile(base_master *master, vector<string> &parent_module_paths) :
+    base{parent_module_paths},
     _master{*master}
 {}
 

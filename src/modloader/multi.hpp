@@ -38,13 +38,15 @@ namespace modloader
 class multi final : public base
 {
 public:
+    explicit multi(const std::string &cfgfile_path = {});
+
     object load_module(const std::string &modname) const override;
 
     // Loader with no constructor args
     template <typename LoaderT>
     void add_loader()
     {
-        _loaders.emplace_back(new LoaderT);
+        _loaders.emplace_back(new LoaderT{module_paths});
     }
 
     // Loader with one or more constructor args
@@ -54,7 +56,8 @@ public:
         _loaders.emplace_back(
             new LoaderT{
                 std::forward<TArg>(a),
-                std::forward<TOtherArgs>(otherA)...});
+                std::forward<TOtherArgs>(otherA)...,
+                module_paths});
     };
 
 private:

@@ -25,6 +25,10 @@ using namespace rbb;
 using namespace rbb::modloader;
 using namespace std;
 
+multi::multi(const std::string &cfgfile_path) :
+    base{cfgfile_path}
+{}
+
 object multi::load_module(const std::string &modname) const
 {
     multi_load_error error;

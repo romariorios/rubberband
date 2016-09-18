@@ -28,6 +28,10 @@ using namespace rbb;
 using namespace rbb::modloader;
 using namespace std;
 
+native_linux::native_linux(std::vector<std::string> &parent_module_paths) :
+    base{parent_module_paths}
+{}
+
 using loadobj_fun = object(*)();
 
 class dl_handle

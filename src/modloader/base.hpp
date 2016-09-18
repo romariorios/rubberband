@@ -26,6 +26,7 @@
 #include <parse.hpp>
 
 #include <exception>
+#include <memory>
 
 namespace rbb
 {
@@ -37,6 +38,7 @@ class base
 {
 public:
     base(const std::string &cfgfile_name = {});
+    base(std::vector<std::string> &parent_module_paths);
 
     virtual object load_module(const std::string &modname) const = 0;
 
@@ -44,8 +46,12 @@ public:
     void add_path_list(const std::vector<std::string> &paths);
     inline void add_path(const std::string &path) { add_path_list({path}); }
 
+private:
+    // Must come before module_paths
+    std::unique_ptr<std::vector<std::string>> _module_paths_concrete;
+
 protected:
-    std::vector<std::string> module_paths;
+    std::vector<std::string> &module_paths;
 };
 
 class load_error : public std::exception

@@ -43,7 +43,7 @@ public:
         return loader.load_module(str);
     }
 
-    object custom_operation(const string &name, const object &obj)
+    object custom_operation(const string &name, object &obj)
     {
         if (name == "inspect_object")
             puts(obj.to_string().c_str());
