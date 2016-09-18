@@ -62,14 +62,22 @@ private:
     std::string _text;
 };
 
-class sourcefile_syntax_error : public rbb::syntax_error
+class sourcefile_syntax_error final : public load_error
 {
 public:
     sourcefile_syntax_error(const rbb::syntax_error &other, const std::string &filename) :
-        syntax_error{other}
+        _syntax_error{other}
     {
-        append_what("of file " + filename);
+        _syntax_error.append_what("of file " + filename);
     }
+
+    const char *what() const noexcept
+    {
+        return _syntax_error.what();
+    }
+
+private:
+    rbb::syntax_error _syntax_error;
 };
 
 }

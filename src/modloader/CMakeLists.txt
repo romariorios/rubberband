@@ -23,6 +23,6 @@ install(
     FILES ${modloader_headers}
     DESTINATION include/rbb/modloader)
 
-if (PLUGIN_TESTS)
+if (MODLOADER_PLUGIN_TESTS)
     add_subdirectory(test)
 endif()

@@ -25,6 +25,8 @@
 #include <error.hpp>
 #include <parse.hpp>
 
+#include <exception>
+
 namespace rbb
 {
 
@@ -44,6 +46,17 @@ public:
 
 protected:
     std::vector<std::string> module_paths;
+};
+
+class load_error : public std::exception
+{
+public:
+    explicit load_error(const std::string &error_str = {});
+
+    const char *what() const noexcept;
+
+private:
+    std::string _error_str;
 };
 
 }

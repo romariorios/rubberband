@@ -84,7 +84,6 @@ public:
     long line;
     long column;
 
-protected:
     inline void append_what(const std::string &post)
     {
         _text += " " + post;

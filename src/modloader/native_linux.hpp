@@ -40,26 +40,16 @@ public:
     object load_module(const std::string &modname) const override;
 };
 
-class dlopen_error final : public std::exception
+class dlopen_error final : public load_error
 {
 public:
     dlopen_error();
-
-    const char *what() const noexcept;
-
-private:
-    const char *_error_str;
 };
 
-class dlsym_error final : public std::exception
+class dlsym_error final : public load_error
 {
 public:
     explicit dlsym_error(char *error);
-
-    const char *what() const noexcept;
-
-private:
-    const char *_error_str;
 };
 
 }

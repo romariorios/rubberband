@@ -82,19 +82,9 @@ object native_linux::load_module(const string &modname) const
 }
 
 dlopen_error::dlopen_error() :
-    _error_str{dlerror()}
+    load_error{dlerror()}
 {}
-
-const char *dlopen_error::what() const noexcept
-{
-    return _error_str;
-}
 
 dlsym_error::dlsym_error(char *error) :
-    _error_str{error}
+    load_error{error}
 {}
-
-const char *dlsym_error::what() const noexcept
-{
-    return _error_str;
-}

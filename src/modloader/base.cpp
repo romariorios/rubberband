@@ -53,3 +53,12 @@ void base::add_path_list(const vector<string> &paths)
 {
     module_paths.insert(module_paths.cbegin(), paths.begin(), paths.end());
 }
+
+load_error::load_error(const std::string &error_str) :
+    _error_str{error_str}
+{}
+
+const char *load_error::what() const noexcept
+{
+    return _error_str.c_str();
+}
