@@ -29,6 +29,8 @@
 // rubberband includes
 #include <error.hpp>
 #include <parse.hpp>
+#include <modloader/multi.hpp>
+#include <modloader/native_linux.hpp>
 #include <modloader/sourcefile.hpp>
 
 // std includes
@@ -44,8 +46,11 @@ class rbbi_master : public base_master
 {
 public:
     rbbi_master() :
-        loader_{this, ".cfg.json"}
-    {}
+        loader_{".cfg.json"}
+    {
+        loader_.add_loader<modloader::native_linux>();
+        loader_.add_loader<modloader::sourcefile>(this);
+    }
 
     void autoload(object &obj)
     {
@@ -90,7 +95,7 @@ public:
     }
 
 private:
-    modloader::sourcefile loader_;
+    modloader::multi loader_;
 } master;
 
 int main(int, char **)

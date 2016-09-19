@@ -51,13 +51,16 @@ public:
 
     // Loader with one or more constructor args
     template <typename LoaderT, typename TArg, typename... TOtherArgs>
-    void add_loader(TArg &&a, TOtherArgs &&... otherA)
+    LoaderT &add_loader(TArg &&a, TOtherArgs &&... otherA)
     {
-        _loaders.emplace_back(
-            new LoaderT{
-                std::forward<TArg>(a),
-                std::forward<TOtherArgs>(otherA)...,
-                module_paths});
+        // Pointer will be passed to emplace_back right away, so it should be okay
+        auto new_loader = new LoaderT{
+            std::forward<TArg>(a),
+            std::forward<TOtherArgs>(otherA)...,
+            module_paths};
+        _loaders.emplace_back(new_loader);
+
+        return *new_loader;
     };
 
 private:

@@ -22,6 +22,8 @@
 #include <cstdio>
 #include <fstream>
 #include <error.hpp>
+#include <modloader/multi.hpp>
+#include <modloader/native_linux.hpp>
 #include <modloader/sourcefile.hpp>
 #include <tclap/CmdLine.h>
 
@@ -35,12 +37,15 @@ class rbbs_master : public base_master
 {
 public:
     rbbs_master(const std::string &cfgfile_name) :
-        loader{this, cfgfile_name}
-    {}
+        _loader{cfgfile_name},
+        file_loader{_loader.add_loader<modloader::sourcefile>(this)}
+    {
+        _loader.add_loader<modloader::native_linux>();
+    }
 
     object load(const string &str)
     {
-        return loader.load_module(str);
+        return _loader.load_module(str);
     }
 
     object custom_operation(const string &name, object &obj)
@@ -51,7 +56,12 @@ public:
         return {};
     }
 
-    modloader::sourcefile loader;
+private:
+    modloader::multi _loader;
+
+public:
+    // Needs to be after _loader
+    modloader::sourcefile &file_loader;
 };
 
 int main(int argc, char **argv)
@@ -91,17 +101,17 @@ int main(int argc, char **argv)
         LemonCParserTrace(stdout, " -- ");
 
     rbbs_master master{cfgfile_args.getValue()};
-    master.loader.add_path_list(paths_args.getValue());
+    master.file_loader.add_path_list(paths_args.getValue());
 
     auto main_context = table();
-    master.loader.autoload(main_context);
+    master.file_loader.autoload(main_context);
 
     for (const auto &module : modules_args.getValue()) {
         auto mod = master.load(module);
         mod << main_context << empty();
     }
 
-    auto result = master.loader.program_from_file(file_arg.getValue());
+    auto result = master.file_loader.program_from_file(file_arg.getValue());
     if (debug_mode)
         puts(result.to_string().c_str());
 
