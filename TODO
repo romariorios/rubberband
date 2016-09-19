@@ -1,4 +1,3 @@
-- Create modloader::native for native modules (libraries)
 - Create print module for proper printing support
 - Create pack module to export rubberband data to raw data
 - Make possible to run part of the script before continuing to run it
