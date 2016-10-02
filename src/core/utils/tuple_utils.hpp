@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2015--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -30,6 +30,11 @@ enum class control
     continue_loop = 0,
     break_loop
 };
+
+static control continue_unless(bool cond)
+{
+    return cond? control::break_loop : control::continue_loop;
+}
 
 template <std::size_t I, typename Func, typename... Types>
 typename std::enable_if<I == sizeof...(Types), void>::type for_each(

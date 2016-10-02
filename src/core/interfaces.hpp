@@ -80,8 +80,7 @@ public:
 
             follows = name == symbol(iface_name);
 
-            if (follows)
-                return control::break_loop;
+            return continue_unless(follows);
         });
 
         return follows;
@@ -101,8 +100,7 @@ public:
         {
             f = interface.select_function(thisptr, msg);
 
-            if (f)
-                return control::break_loop;
+            return continue_unless(f);
         });
 
         return f;
@@ -121,8 +119,7 @@ public:
         {
             f = interface.select_response(thisptr, msg);
 
-            if (f != empty())
-                return control::break_loop;
+            return continue_unless(f != empty());
         });
 
         return f;
@@ -139,8 +136,7 @@ public:
         {
             responds = interface.responds_to(thisptr, msg);
 
-            if (responds)
-                return control::break_loop;
+            return continue_unless(responds);
         });
 
         return responds;
