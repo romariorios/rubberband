@@ -71,11 +71,20 @@ int main(int argc, char **argv)
         "File", "Load program from script file",
         true, "", "Script filename"};
     cmd.add(file_arg);
-    
+
+#ifndef NDEBUG
     SwitchArg debug_arg{
         "d", "debug",
         "Enable debug mode (Show parse trace and resulting program)"};
     cmd.add(debug_arg);
+
+    const auto debug_mode = debug_arg.getValue();
+    if (debug_mode)
+        LemonCParserTrace(stdout, " -- ");
+#else
+    // LemonCParserTrace is not available in Release mode, so debugging is unavailable in Release
+    const auto debug_mode = false;
+#endif
     
     MultiArg<string> paths_args{
         "p", "path", "Module lookup path",
@@ -95,10 +104,6 @@ int main(int argc, char **argv)
     cmd.add(cfgfile_args);
     
     cmd.parse(argc, argv);
-
-    const auto debug_mode = debug_arg.getValue();
-    if (debug_mode)
-        LemonCParserTrace(stdout, " -- ");
 
     rbbs_master master{cfgfile_args.getValue()};
     master.file_loader.add_path_list(paths_args.getValue());
