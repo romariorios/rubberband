@@ -65,10 +65,10 @@ private:
 class syntax_error : public std::exception
 {
 public:
-    syntax_error(const syntax_error &other) = default;
-
-    inline explicit syntax_error(const token &t) :
-        _tok{t},
+    inline syntax_error(long line, long column, const token &t) :
+        t{t},
+        line{line},
+        column{column},
         _text{
             "Syntax error at line " + std::to_string(line) +
             ", column " + std::to_string(column)
@@ -80,17 +80,16 @@ public:
         return _text.c_str();
     }
 
-    inline const token &t() const { return _tok; }
-    long line;
-    long column;
-
     inline void append_what(const std::string &post)
     {
         _text += " " + post;
     }
 
+    const token t;
+    const long line;
+    const long column;
+
 private:
-    token _tok;
     std::string _text;
 };
 

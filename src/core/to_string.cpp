@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -76,13 +76,14 @@ std::string block_statement::to_string() const
 {
     std::string result;
 
-    for (auto &expression : expressions) {
-        auto sub_expression = typeid(*expression) == typeid(block_statement);
+    for (const auto &expr_ptr : expressions) {
+        const auto &expr = *expr_ptr;
+        auto sub_expression = typeid(expr) == typeid(block_statement);
 
         if (sub_expression)
             result += "(";
 
-        result += expression->to_string();
+        result += expr.to_string();
 
         if (sub_expression)
             result += ")";
@@ -212,6 +213,7 @@ string token::to_string() const
 
     switch (type) {
     CASE_TOKEN(invalid)
+    CASE_TOKEN(start_of_input)
     CASE_TOKEN(curly_open)
     CASE_TOKEN(parenthesis_open)
     CASE_TOKEN(end_of_input)

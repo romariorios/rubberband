@@ -45,6 +45,7 @@ inline int token_to_tokcode(token t)
 {
     switch (t.type) {
     case token::t::invalid:
+    case token::t::start_of_input:  // not a valid token either
         return -1;
     case token::t::curly_open:
         return CURLY_OPEN;
@@ -232,11 +233,8 @@ object base_master::parse(const string &code)
             p.parse(tok);
             continue;
         }
-    } catch (const syntax_error &e) {
-        syntax_error new_e{e};
-        new_e.line = tokenizer.cur_line();
-        new_e.column = tokenizer.cur_col();
-        throw new_e;
+    } catch (const internal_syntax_error &e) {
+        throw syntax_error{tokenizer.cur_line(), tokenizer.cur_col(), e.t};
     }
 
     p.parse(token::t::end_of_input);

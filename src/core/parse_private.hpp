@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2015, 2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@
 #define PARSE_PRIVATE_HPP
 
 #include "object.hpp"
+#include "tokenizer.hpp"
 
 namespace rbb
 {
@@ -31,6 +32,16 @@ struct extra_lemon_args
 
     object master;
     object result;
+};
+
+class internal_syntax_error
+{
+public:
+    internal_syntax_error(const token &t) :
+        t{t}
+    {}
+
+    const token t;
 };
 
 }

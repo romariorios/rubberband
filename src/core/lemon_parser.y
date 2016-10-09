@@ -1,7 +1,6 @@
 %include
 {
     #include "block.hpp"
-    #include "error.hpp"
     #include "object.hpp"
     #include "parse.hpp"
     #include "parse_private.hpp"
@@ -25,7 +24,7 @@
 
 %extra_argument { extra_lemon_args *extra_args }
 
-%syntax_error { throw syntax_error{*yyminor}; }
+%syntax_error { throw internal_syntax_error{*yyminor}; }
 
 %type start {literal::block *}
 %type block_body {literal::block *}

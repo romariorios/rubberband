@@ -92,6 +92,8 @@ public:
 
         if (op == "exit")
             exit(0);
+
+        throw message_not_recognized_error{symbol("Master object"), obj};
     }
 
 private:
