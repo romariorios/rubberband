@@ -90,7 +90,7 @@ class dummy_master_t : public base_master
 {
 public:
     object load(const string &) { return {}; }
-    object custom_operation(const string &, const object &) { return {}; }
+    object custom_operation(const string &, object &) { return {}; }
 };
 
 static dummy_master_t dummy_master;
