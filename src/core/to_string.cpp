@@ -239,6 +239,12 @@ string token::to_string() const
     case token::t::symbol:
         res += "symbol (" + *lexem.str + ")";
         break;
+    case token::t::boolean:
+        res += string{"boolean ("} + (lexem.boolean? "true" : "false") + ")";
+        break;
+    case token::t::custom_literal:
+        res = "custom literal (" + lexem.obj->to_string() + ")";
+        break;
     }
 
     return res;

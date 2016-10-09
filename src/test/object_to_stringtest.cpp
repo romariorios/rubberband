@@ -84,4 +84,9 @@ TESTS_INIT()
             "{ ~ (:a -> 10); ~ (:b -> 20); ~ (:c -> (|thirty, trinta, 30)) }"
         )
     }
+
+    TEST_STRINGFICATION(token::boolean(true), "boolean (true)")
+    TEST_STRINGFICATION(
+        token::custom_literal(rbb::array({number(10), number(20), number(30)})),
+        "custom literal ((|10, 20, 30))")
 TESTS_END()
