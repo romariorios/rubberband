@@ -91,7 +91,7 @@ TESTS_INIT()
                 "Syntax error at line %ld and column %ld (token: %s)\n",\
                 e.line,\
                 e.column,\
-                e.t().to_string().c_str());
+                e.t.to_string().c_str());
         }
 
         auto hello_world = dummy_master.parse(R"("Hello, world")");
