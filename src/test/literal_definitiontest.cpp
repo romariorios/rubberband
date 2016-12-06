@@ -116,5 +116,19 @@ TESTS_INIT()
                    number(','), number(' '), number('w'), number('o'), number('r'),
                    number('l'), number('d')
                }).to_string().c_str()))
+
+        auto define_object_wrapper_literal = dummy_master.parse(R"({
+            %+:
+                > -> 'o,
+                = -> {
+                    !~parse_until 'u
+                }
+        })");
+        define_object_wrapper_literal << empty() << empty();
+
+        auto o_table = dummy_master.parse(R"(o:a -> 10, b -> 20u)");
+        TEST_CONDITION_WITH_EXCEPTION(
+            o_table << symbol("<<?") << symbol("[:]") == boolean(true),
+            puts("Could not parse custom literal"))
     }
 TESTS_END()
