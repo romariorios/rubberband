@@ -132,8 +132,14 @@ public:
 class message_not_recognized_error : public semantic_error
 {
 public:
-    message_not_recognized_error(const object &receiver, const object &message) :
-        semantic_error{"Message not recognized", receiver, message}
+    message_not_recognized_error(
+        const object &receiver,
+        const object &message,
+        const std::string &details = {}) :
+        semantic_error{
+            "Message not recognized" + (details.empty()? std::string{} : " (" + details + ")"),
+            receiver,
+            message}
     {}
 };
 
