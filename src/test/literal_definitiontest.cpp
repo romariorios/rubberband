@@ -117,11 +117,30 @@ TESTS_INIT()
                    number('l'), number('d')
                }).to_string().c_str()))
 
+        // Define user-literals containing language expressions
+        // field >
+        //   Trigger
+        // field =
+        //   Evaluate static parts of the literal and determine dynamic ones
+        //   current char: ~[@]
+        //   skip char: ~>
+        //   append expression until some char: ~<< (some char)
+        // field [$]
+        //   Evaluate dynamic parts of the literal
+        //   (if empty, will just return the result of the static evaluator)
+        //   current object: ~[<<@]
+        //   skip object: ~<<
         auto define_object_wrapper_literal = dummy_master.parse(R"({
             %+:
                 > -> 'o,
                 = -> {
-                    !~parse_until 'u
+                    # skip o, read expression until u, skip u
+                    ~>; ~<< 'u; ~>
+                    # returns nothing because there's no static part in this literal
+                },
+                [$] -> {
+                    # returns value of first expression
+                    !~[<<@]
                 }
         })");
         define_object_wrapper_literal << empty() << empty();
