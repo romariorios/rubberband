@@ -203,7 +203,7 @@ TESTS_INIT()
         literal::block block_lit_;
 
         auto &block_ret_ = block_lit_.return_statement();
-        block_ret_.add_expr<evaluated_object>(table({symbol("a")}, {number(100)}));
+        block_ret_.add_expr<literal::user_defined>(table({symbol("a")}, {number(100)}));
         block_ret_.add_expr<literal::symbol>("a");
 
         auto block_ = block_lit_.eval();
@@ -224,7 +224,7 @@ TESTS_INIT()
         block_ret_.add_expr<literal::number>(1);
 
         auto &inner_ret = inner_block.return_statement();
-        inner_ret.add_expr<evaluated_object>(rbb::array({number(10), number(12)}));
+        inner_ret.add_expr<literal::user_defined>(rbb::array({number(10), number(12)}));
         inner_ret.add_expr<literal::message>();
 
         auto block_ = block_lit_.eval();
@@ -233,5 +233,54 @@ TESTS_INIT()
         TEST_CONDITION(
             result_ == number(12),
             printf("Number is %s (expected 12)\n", result_.to_string().c_str()))
+    }
+
+    // { ~:a -> $ !<custom literal containing expression ~a> }
+    // the value of the literal will be :a -> 10, b -> ~a
+    {
+        literal::block bl;
+
+        auto &assign_a = bl.add_statement();
+        assign_a.add_expr<literal::context>();
+
+        auto &tab = assign_a.add_expr<literal::table>();
+        tab.add_symbol<literal::symbol>("a");
+        tab.add_object<literal::message>();
+
+        auto &ret = bl.return_statement();
+        auto &user_literal = ret.add_expr<literal::user_defined>();
+        user_literal.set_partial_value(table({symbol("a")}, {number(10)}));
+
+        auto &var_a = user_literal.add_statement();
+        var_a.add_expr<literal::context>();
+        var_a.add_expr<literal::symbol>("a");
+
+        literal::block post_ev;
+        auto &post_ret = post_ev.return_statement();
+        post_ret.add_expr<literal::context>();
+        post_ret.add_expr<literal::symbol>("[<<@]");
+
+        user_literal.set_post_evaluator(post_ev.eval());
+
+        auto block = bl.eval();
+        auto instance = block << table();
+
+        // call instance with 10
+        auto call_1 = instance << number(10);
+
+        TEST_CONDITION(
+            call_1 << symbol("b") == number(10),
+            printf(
+                "User literal was not properly evaluated: expected 10, got %s\n",
+                (call_1 << symbol("b")).to_string().c_str()))
+
+        // call instance with 20
+        auto call_2 = instance << number(20);
+
+        TEST_CONDITION(
+            call_2 << symbol("b") == number(20),
+            printf(
+                "User literal was not properly evaluated: expected 20, got %s\n",
+                (call_2 << symbol("b")).to_string().c_str()))
     }
 TESTS_END()

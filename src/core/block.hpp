@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,7 @@
 
 #include <forward_list>
 #include <memory>
+#include <vector>
 
 using namespace std;
 
@@ -72,20 +73,6 @@ public:
 
 private:
     std::forward_list<expr::ptr>::iterator list_end = before_begin();
-};
-
-class evaluated_object : public expr
-{
-public:
-    inline evaluated_object(const object &obj) : _obj{obj} {}
-
-    inline object const_eval() const
-    {
-        return _obj;
-    }
-
-private:
-    object _obj;
 };
 
 class block_data;
@@ -221,6 +208,40 @@ namespace literal
         inline message() {}
         object eval(block *parent_block);
         inline std::string to_string() const { return "$"; }
+    };
+
+    class user_defined : public expr
+    {
+    public:
+        user_defined() = default;
+        inline user_defined(const object &obj) : _obj{obj} {}
+
+        inline void set_partial_value(const object &obj)
+        {
+            _obj = obj;
+        }
+
+        inline void set_post_evaluator(const object &obj)
+        {
+            _post_evaluator = obj;
+        }
+
+        inline block_statement &add_statement()
+        {
+            _statements.emplace_back();
+
+            return *(_statements.end() - 1);
+        }
+
+        inline object const_eval() const
+        {
+            return _obj;
+        }
+
+    private:
+        object _obj;
+        object _post_evaluator;
+        std::vector<block_statement> _statements;
     };
 
     class block_private;
