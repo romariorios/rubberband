@@ -39,7 +39,7 @@ TESTS_INIT()
         {
             %+:
                 > -> 39,           # ASCII for '
-                = -> { ~> !~[@] }  # ~>: go to next char; ~[@]: current char
+                = -> { ~> !~* }  # ~>: go to next char; ~*: current char
         }
         )");
         define_char_literal << empty() << empty();
@@ -55,7 +55,7 @@ TESTS_INIT()
                     = -> {
                         !{
                             ~chars>
-                            ~:self -> @, cur -> ~chars[@]
+                            ~:self -> @, cur -> ~chars*
 
                             # First, create a linked list until a second " is found
                             !~cur /= '"?~ {
@@ -122,14 +122,15 @@ TESTS_INIT()
         //   Trigger
         // field =
         //   Evaluate static parts of the literal and determine dynamic ones
-        //   current char: ~[@]
+        //   current char: ~*
         //   skip char: ~>
         //   append expression until some char: ~<< (some char)
         // field [$]
         //   Evaluate dynamic parts of the literal
         //   (if empty, will just return the result of the static evaluator)
-        //   current object: ~[<<@]
-        //   skip object: ~<<
+        //   result of field =: ~=
+        //   eval current expression: ~[!]
+        //   skip object: ~>>
         auto define_object_wrapper_literal = dummy_master.parse(R"({
             %+:
                 > -> 'o,
@@ -140,7 +141,7 @@ TESTS_INIT()
                 },
                 [$] -> {
                     # returns value of first expression
-                    !~[<<@]
+                    !~[!]
                 }
         })");
         define_object_wrapper_literal << empty() << empty();

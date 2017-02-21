@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -96,7 +96,7 @@ public:
 object tokenizer_send_msg(object *thisptr, object &msg)
 {
     auto d = dynamic_cast<tokenizer_data*>(thisptr->__value.data());
-    if (msg == symbol("[@]"))
+    if (msg == symbol("*"))
         return number(static_cast<unsigned char>(d->_increment_by(0)));
 
     if (msg == symbol(">"))
