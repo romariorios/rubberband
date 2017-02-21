@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -213,8 +213,7 @@ namespace literal
     class user_defined : public expr
     {
     public:
-        user_defined() = default;
-        inline user_defined(const object &obj) : _obj{obj} {}
+        inline user_defined(const object &obj = {}) : _obj{obj} {}
 
         inline void set_partial_value(const object &obj)
         {
@@ -233,10 +232,7 @@ namespace literal
             return *(_statements.end() - 1);
         }
 
-        inline object const_eval() const
-        {
-            return _obj;
-        }
+        object eval(literal::block *parent);
 
     private:
         object _obj;
