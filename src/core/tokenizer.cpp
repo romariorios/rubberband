@@ -430,3 +430,91 @@ token tokenizer::_look_token(_look_token_args &args) const
     --args.length;
     return token::t::end_of_input;
 }
+
+token &token::operator=(const token &other)
+{
+    type = other.type;
+
+    if (other.type == t::symbol)
+        lexem.str = new std::string{*other.lexem.str};
+    else if (other.type == t::custom_literal)
+        lexem.obj = new object{*other.lexem.obj};
+    else
+        lexem = other.lexem;
+
+    return *this;
+}
+
+token::token(token &&other) :
+    type{other.type}
+{
+    other.type = t::invalid;
+    lexem = other.lexem;
+}
+
+token::~token()
+{
+    if (type == t::symbol)
+        delete lexem.str;
+    else if (type == t::custom_literal)
+        delete lexem.obj;
+}
+
+token token::number(long integer)
+{
+    token ret{t::number};
+    ret.lexem.integer = integer;
+
+    return ret;
+}
+
+token token::number_f(double floating)
+{
+    token ret{t::number_f};
+    ret.lexem.floating = floating;
+
+    return ret;
+}
+
+token token::boolean(bool val)
+{
+    token ret{t::boolean};
+    ret.lexem.boolean = val;
+
+    return ret;
+}
+
+token token::symbol(const string &str)
+{
+    token ret{t::symbol};
+    ret.lexem.str = new std::string{str};
+
+    return ret;
+}
+
+token token::custom_literal(const object &value)
+{
+    token ret{token::t::custom_literal};
+    ret.lexem.obj = new object{value};
+
+    return ret;
+}
+
+bool token::operator==(const token &other) const
+{
+    if (type != other.type)
+        return false;
+
+    switch (type) {
+    case t::number:
+        return lexem.integer == other.lexem.integer;
+    case t::number_f:
+        return lexem.floating == other.lexem.floating;
+    case t::symbol:
+        return *lexem.str == *other.lexem.str;
+    case t::custom_literal:
+        return lexem.obj == other.lexem.obj;
+    default:
+        return true;
+    }
+}
