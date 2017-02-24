@@ -28,6 +28,8 @@
 namespace rbb
 {
 
+class base_master;
+
 struct token
 {
     enum class t {
@@ -153,6 +155,8 @@ public:
     std::vector<token> all();
     std::vector<token> look_all() const;
     
+    void set_master(base_master *master);
+    
     inline long cur_line() const { return _cur_state.line; }
     inline long cur_col() const { return _cur_state.col; }
     void _par_depth(int arg1);
@@ -178,12 +182,15 @@ private:
 
     static void _rewind(_look_token_args &args, char ch, long prevcol);
     token _look_token(_look_token_args &args) const;
+    std::string _get_substr_until(_look_token_args &args, char ch) const;
 
     token _previous_token = token{token::t::start_of_input};
     std::string _remaining;
     const std::map<unsigned char, rbb::object> &_literals;
+    base_master *_master = nullptr;
 };
 
 }
 
 #endif
+

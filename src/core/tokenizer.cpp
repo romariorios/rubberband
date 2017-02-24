@@ -18,9 +18,12 @@
 #include "tokenizer.hpp"
 
 #include "error.hpp"
+#include "parse.hpp"
 #include "shared_data_t.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <vector>
 
 using namespace rbb;
 using namespace std;
@@ -58,6 +61,21 @@ std::vector<token> tokenizer::look_all() const
     return tok.all();
 }
 
+void tokenizer::set_master(base_master *master)
+{
+    _master = master;
+}
+
+string tokenizer::_get_substr_until(_look_token_args &args, char ch) const
+{
+    const auto begin_ind = args.length - 1;
+    const auto it = find(_remaining.cbegin() + begin_ind, _remaining.cend(), ch);
+    if (it == _remaining.cend())
+        return {};
+
+    return _remaining.substr(begin_ind, it - _remaining.cbegin() - 1);
+}
+
 void tokenizer::_rewind(_look_token_args& args, char ch, long int prevcol)
 {
     --args.length;
@@ -84,14 +102,42 @@ static void throw_invalid_interface_error(
 class tokenizer_data : public shared_data_t
 {
 public:
-    tokenizer_data(function<char(int)> &&increment_by, const string &remaining) :
+    tokenizer_data(
+        function<char(int)> &&increment_by,
+        function<string(char)> &&substr_until,
+        const string &remaining,
+        vector<object> &parsed_exprs,
+        base_master *master) :
+
         _increment_by{increment_by},
-        _remaining{remaining}
+        _substr_until{substr_until},
+        _remaining{remaining},
+        _parsed_exprs{parsed_exprs},
+        _master{master}
     {}
 
+    tokenizer_data(const tokenizer_data &other) = default;
+
     function<char(int)> _increment_by;
+    function<string(char)> _substr_until;
     const string &_remaining;
+    vector<object> &_parsed_exprs;
+    base_master *_master;
 };
+
+object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
+{
+    auto d = dynamic_cast<tokenizer_data *>(thisptr->__value.data());
+
+    // TODO check if the message actually is a character
+    const auto ch = static_cast<unsigned char>(msg.__value.integer);
+    const auto expr = d->_substr_until(ch);
+    
+    // FIXME HACK this only works if the expression does not contain a self-reference (@)
+    d->_parsed_exprs.emplace_back(d->_master->parse("{!" + expr + "}"));
+
+    return {};
+}
 
 object tokenizer_send_msg(object *thisptr, object &msg)
 {
@@ -103,6 +149,10 @@ object tokenizer_send_msg(object *thisptr, object &msg)
         d->_increment_by(1);
     else if (msg == symbol("<"))
         d->_increment_by(-1);
+    else if (msg == symbol("<<"))
+        return object::create_data_object(
+            new tokenizer_data{*d},
+            tokenizer_append_expr_send_msg);
     // TODO make tokenizer throw on error
 
     return {};
@@ -133,6 +183,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 const auto cur_literal = _literals.find(uch);
 
                 if (cur_literal != _literals.end()) {
+                    vector<object> parsed_exprs;
                     auto context = object::create_data_object(
                         new tokenizer_data{
                             [this, &args](int increment)
@@ -141,7 +192,10 @@ token tokenizer::_look_token(_look_token_args &args) const
                                 args.length += increment;
                                 return _remaining[args.length - 1];
                             },
-                            _remaining},
+                            [this, &args](char ch) { return _get_substr_until(args, ch); },
+                            _remaining,
+                            parsed_exprs,
+                            _master},
                         tokenizer_send_msg);
 
                     auto evaluator = cur_literal->second;
