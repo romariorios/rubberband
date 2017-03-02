@@ -22,6 +22,7 @@
 
 #include <forward_list>
 #include <memory>
+#include <utility>
 #include <vector>
 
 using namespace std;
@@ -65,7 +66,7 @@ public:
     template <class T, class... Args>
     T &append(Args&&... a)
     {
-        list_end = emplace_after(list_end, new T{a...});
+        list_end = emplace_after(list_end, new T{std::forward<Args>(a)...});
         return *static_cast<T *>(list_end->get());
     }
 
@@ -86,7 +87,7 @@ public:
     template <class T, class... Args>
     T &add_expr(Args&&... a)
     {
-        return expressions.append<T>(a...);
+        return expressions.append<T>(std::forward<Args>(a)...);
     }
 
     void add_expr_ptr(expr *e);
@@ -213,23 +214,14 @@ namespace literal
     class user_defined : public expr
     {
     public:
-        inline user_defined(const object &obj = {}) : _obj{obj} {}
-
-        inline void set_partial_value(const object &obj)
-        {
-            _obj = obj;
-        }
+        inline user_defined(const object &obj, vector<object> &&exprs = {}) :
+            _obj{obj},
+            _exprs{exprs}
+        {}
 
         inline void set_post_evaluator(const object &obj)
         {
             _post_evaluator = obj;
-        }
-
-        inline block_statement &add_statement()
-        {
-            _statements.emplace_back();
-
-            return *(_statements.end() - 1);
         }
 
         object eval(literal::block *parent);
@@ -237,7 +229,7 @@ namespace literal
     private:
         object _obj;
         object _post_evaluator;
-        std::vector<block_statement> _statements;
+        std::vector<object> _exprs;
     };
 
     class block_private;

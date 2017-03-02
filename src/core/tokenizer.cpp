@@ -183,7 +183,8 @@ token tokenizer::_look_token(_look_token_args &args) const
                 const auto cur_literal = _literals.find(uch);
 
                 if (cur_literal != _literals.end()) {
-                    vector<object> parsed_exprs;
+                    auto data = new token::custom_literal_data;
+                    
                     auto context = object::create_data_object(
                         new tokenizer_data{
                             [this, &args](int increment)
@@ -194,13 +195,13 @@ token tokenizer::_look_token(_look_token_args &args) const
                             },
                             [this, &args](char ch) { return _get_substr_until(args, ch); },
                             _remaining,
-                            parsed_exprs,
+                            data->parsed_exprs,
                             _master},
                         tokenizer_send_msg);
 
                     auto evaluator = cur_literal->second;
-                    auto res = evaluator << context << empty();
-                    return token::custom_literal(res);
+                    data->obj = evaluator << context << empty();
+                    return token::custom_literal(data);
                 }
             }
 
@@ -492,7 +493,7 @@ token &token::operator=(const token &other)
     if (other.type == t::symbol)
         lexem.str = new std::string{*other.lexem.str};
     else if (other.type == t::custom_literal)
-        lexem.obj = new object{*other.lexem.obj};
+        lexem.data = new custom_literal_data{*other.lexem.data};
     else
         lexem = other.lexem;
 
@@ -511,7 +512,7 @@ token::~token()
     if (type == t::symbol)
         delete lexem.str;
     else if (type == t::custom_literal)
-        delete lexem.obj;
+        delete lexem.data;
 }
 
 token token::number(long integer)
@@ -546,10 +547,10 @@ token token::symbol(const string &str)
     return ret;
 }
 
-token token::custom_literal(const object &value)
+token token::custom_literal(custom_literal_data *d)
 {
     token ret{token::t::custom_literal};
-    ret.lexem.obj = new object{value};
+    ret.lexem.data = d;
 
     return ret;
 }
@@ -567,7 +568,7 @@ bool token::operator==(const token &other) const
     case t::symbol:
         return *lexem.str == *other.lexem.str;
     case t::custom_literal:
-        return lexem.obj == other.lexem.obj;
+        return lexem.data == other.lexem.data;
     default:
         return true;
     }

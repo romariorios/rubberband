@@ -68,13 +68,22 @@ struct token
         bar,
         colon
     } type;
+    
+    struct custom_literal_data
+    {
+        custom_literal_data() = default;
+        explicit custom_literal_data(const custom_literal_data &) = default;
+        
+        object obj;
+        std::vector<object> parsed_exprs;
+    };
 
     union {
         long integer;
         double floating;
         bool boolean;
         std::string *str;
-        object *obj;
+        custom_literal_data *data;
     } lexem;
 
     token(t type) :
@@ -95,7 +104,7 @@ struct token
     static token number_f(double floating);
     static token boolean(bool val);
     static token symbol(const std::string &str);
-    static token custom_literal(const object &value);
+    static token custom_literal(custom_literal_data *d);
 
     bool operator==(const token &other) const;
 

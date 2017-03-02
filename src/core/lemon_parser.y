@@ -7,6 +7,7 @@
     #include "tokenizer.hpp"
 
     #include <cassert>
+    #include <utility>
 
     using namespace rbb;
 
@@ -111,7 +112,11 @@ literal(l)          ::= DOLLAR. { l = new literal::message; }
 literal(l)          ::= TILDE. { l = new literal::context; }
 literal(l)          ::= AT. { l = new literal::self_ref; }
 literal(l)          ::= PERCENT. { l = new literal::user_defined{extra_args->master}; }
-literal(l)          ::= CUSTOM_LITERAL(tok). { l = new literal::user_defined{*tok->lexem.obj}; }
+literal(l)          ::= CUSTOM_LITERAL(tok).
+{
+    auto d = tok->lexem.data;
+    l = new literal::user_defined{d->obj, std::move(d->parsed_exprs)};
+}
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR maybe_empty_a(arr_a). { arr = arr_a; }
 array_elements(arr) ::= stm(e) COMMA array_elements(arr_a).

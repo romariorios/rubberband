@@ -19,6 +19,7 @@
 #include "error.hpp"
 
 #include "block_private.hpp"
+#include "object_private.hpp"
 #include "shared_data_t.hpp"
 
 using namespace rbb;
@@ -130,16 +131,16 @@ class post_eval_ctx_data : public shared_data_t
 public:
     post_eval_ctx_data(
         object obj,
-        std::vector<block_statement> &statements,
+        std::vector<object> &parsed_exprs,
         literal::block *parent) :
 
         obj{obj},
-        statements{statements},
+        parsed_exprs{parsed_exprs},
         parent{parent}
     {}
 
     object obj;
-    std::vector<block_statement> &statements;
+    std::vector<object> &parsed_exprs;
     literal::block *parent;
     size_t current_index = 0;
 };
@@ -150,8 +151,16 @@ object post_eval_ctx_fun(object *thisptr, object &msg)
 
     if (msg == symbol("="))
         return d->obj;
-    if (msg == symbol("[!]"))
-        return d->statements[d->current_index++].eval(d->parent);
+
+    if (msg == symbol("[!]")) {
+        // FIXME HACK to extract the return expression from a block object
+        auto &cur_expr_block = d->parsed_exprs[d->current_index++];
+        auto block_d = dynamic_cast<block_data *>(cur_expr_block.__value.data());
+        auto &ret_stm = block_d->block_l->return_statement();
+
+        return ret_stm.eval(d->parent);
+    }
+
     if (msg == symbol(">>")) {
         ++d->current_index;
         return {};
@@ -167,7 +176,7 @@ object literal::user_defined::eval(literal::block *parent)
 
     auto post_eval_ctx =
         object::create_data_object(
-            new post_eval_ctx_data{_obj, _statements, parent},
+            new post_eval_ctx_data{_obj, _exprs, parent},
             post_eval_ctx_fun);
     auto evaluator = _post_evaluator << post_eval_ctx;
 

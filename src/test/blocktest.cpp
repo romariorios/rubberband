@@ -248,28 +248,13 @@ TESTS_INIT()
         tab.add_object<literal::message>();
 
         auto &ret = bl.return_statement();
-        auto &user_literal = ret.add_expr<literal::user_defined>();
-        user_literal.set_partial_value(table({symbol("a")}, {number(10)}));
-
-        auto &var_a = user_literal.add_statement();
-        var_a.add_expr<literal::context>();
-        var_a.add_expr<literal::symbol>("a");
+        auto &user_literal = ret.add_expr<literal::user_defined>(
+            table({symbol("a")}, {number(10)}),
+            vector<object>{dummy_master.parse("{!~a}")});
 
         // [$] -> {!~= + :b -> ~[!]}
-        literal::block post_ev;
-        auto &post_ret = post_ev.return_statement();
-        post_ret.add_expr<literal::context>();
-        post_ret.add_expr<literal::symbol>("=");
-        post_ret.add_expr<literal::symbol>("+");
-        
-        auto &post_ev_b_table = post_ret.add_expr<literal::table>();
-        post_ev_b_table.add_symbol<literal::symbol>("b");
-        
-        auto &post_ev_expr = post_ev_b_table.add_object<block_statement>();
-        post_ev_expr.add_expr<literal::context>();
-        post_ev_expr.add_expr<literal::symbol>("[!]");
-
-        user_literal.set_post_evaluator(post_ev.eval());
+        auto post_ev = dummy_master.parse("{!~= + :b -> ~[!]}");
+        user_literal.set_post_evaluator(post_ev);
 
         auto block = bl.eval();
         auto instance = block << table();
