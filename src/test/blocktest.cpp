@@ -255,10 +255,19 @@ TESTS_INIT()
         var_a.add_expr<literal::context>();
         var_a.add_expr<literal::symbol>("a");
 
+        // [$] -> {!~= + :b -> ~[!]}
         literal::block post_ev;
         auto &post_ret = post_ev.return_statement();
         post_ret.add_expr<literal::context>();
-        post_ret.add_expr<literal::symbol>("[<<@]");
+        post_ret.add_expr<literal::symbol>("=");
+        post_ret.add_expr<literal::symbol>("+");
+        
+        auto &post_ev_b_table = post_ret.add_expr<literal::table>();
+        post_ev_b_table.add_symbol<literal::symbol>("b");
+        
+        auto &post_ev_expr = post_ev_b_table.add_object<block_statement>();
+        post_ev_expr.add_expr<literal::context>();
+        post_ev_expr.add_expr<literal::symbol>("[!]");
 
         user_literal.set_post_evaluator(post_ev.eval());
 
