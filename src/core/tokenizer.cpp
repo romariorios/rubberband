@@ -73,7 +73,9 @@ string tokenizer::_get_substr_until(_look_token_args &args, char ch) const
     if (it == _remaining.cend())
         return {};
 
-    return _remaining.substr(begin_ind, it - _remaining.cbegin() - 1);
+    const auto new_len = it - _remaining.cbegin();
+    args.length = new_len;
+    return _remaining.substr(begin_ind, new_len - 1);
 }
 
 void tokenizer::_rewind(_look_token_args& args, char ch, long int prevcol)
