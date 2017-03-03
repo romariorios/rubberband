@@ -214,15 +214,15 @@ namespace literal
     class user_defined : public expr
     {
     public:
-        inline user_defined(const object &obj, vector<object> &&exprs = {}) :
+        inline user_defined(
+            const object &obj,
+            const object &post_evaluator = {},
+            vector<object> &&exprs = {}) :
+
             _obj{obj},
+            _post_evaluator{post_evaluator},
             _exprs{exprs}
         {}
-
-        inline void set_post_evaluator(const object &obj)
-        {
-            _post_evaluator = obj;
-        }
 
         object eval(literal::block *parent);
 

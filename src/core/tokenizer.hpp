@@ -75,6 +75,7 @@ struct token
         explicit custom_literal_data(const custom_literal_data &) = default;
         
         object obj;
+        object post_evaluator;
         std::vector<object> parsed_exprs;
     };
 
@@ -147,14 +148,14 @@ class tokenizer
 public:
     tokenizer(
         const std::string &str,
-        const std::map<unsigned char, rbb::object> &literals = {}) :
+        const std::map<unsigned char, std::pair<rbb::object, rbb::object>> &literals = {}) :
         _remaining{str},
         _literals{literals}
     {}
 
     tokenizer(
         std::string &&str = {},
-        const std::map<unsigned char, rbb::object> &literals = {}) :
+        const std::map<unsigned char, std::pair<rbb::object, rbb::object>> &literals = {}) :
         _remaining{str},
         _literals{literals}
     {}
@@ -195,7 +196,7 @@ private:
 
     token _previous_token = token{token::t::start_of_input};
     std::string _remaining;
-    const std::map<unsigned char, rbb::object> &_literals;
+    const std::map<unsigned char, std::pair<rbb::object, rbb::object>> &_literals;
     base_master *_master = nullptr;
 };
 

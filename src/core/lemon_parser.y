@@ -115,7 +115,10 @@ literal(l)          ::= PERCENT. { l = new literal::user_defined{extra_args->mas
 literal(l)          ::= CUSTOM_LITERAL(tok).
 {
     auto d = tok->lexem.data;
-    l = new literal::user_defined{d->obj, std::move(d->parsed_exprs)};
+    l = new literal::user_defined{
+        d->obj,
+        d->post_evaluator,
+        std::move(d->parsed_exprs)};
 }
 empty(e)            ::= PARENTHESIS_OPEN PARENTHESIS_CLOSE. { e = new literal::empty; }
 array(arr)          ::= BAR maybe_empty_a(arr_a). { arr = arr_a; }

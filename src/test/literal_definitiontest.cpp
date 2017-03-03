@@ -149,6 +149,8 @@ TESTS_INIT()
         auto o_table = dummy_master.parse(R"(o:a -> 10, b -> 20u)");
         TEST_CONDITION_WITH_EXCEPTION(
             o_table << symbol("<<?") << symbol("[:]") == boolean(true),
-            puts("Could not parse custom literal"))
+            printf(
+                "Could not parse custom literal (expecting table, got %s)\n",
+                o_table.to_string().c_str()))
     }
 TESTS_END()

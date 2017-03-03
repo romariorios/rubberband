@@ -22,6 +22,7 @@
 
 #include <map>
 #include <string>
+#include <utility>
 
 namespace rbb
 {
@@ -32,13 +33,14 @@ public:
     virtual object parse(const std::string &code) final;
     virtual object declare_literal(
         unsigned char trigger,
-        const object &evaluator) final;
+        const object &evaluator,
+        const object &post_evaluator) final;
 
     virtual object load(const std::string &mod_name) = 0;
     virtual object custom_operation(const std::string &name, object &obj) = 0;
 
 private:
-    std::map<unsigned char, object> _literals;
+    std::map<unsigned char, std::pair<object, object>> _literals;
 };
 
 }

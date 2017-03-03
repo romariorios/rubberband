@@ -164,7 +164,11 @@ object master_declare_literal_send_msg(object *thisptr, object &msg)
     else
         throw semantic_error{trigger_error_msg, *thisptr, msg};
 
-    return d->master.declare_literal(trigger, msg << symbol("="));
+    return d->master.declare_literal(
+        trigger,
+        msg << symbol("="),
+        msg << symbol("<<") << symbol("[$]") == boolean(true)?
+            msg << symbol("[$]") : empty());
 }
 
 class custom_operation_data : public shared_data_t
@@ -245,9 +249,10 @@ object base_master::parse(const string &code)
 
 object base_master::declare_literal(
     unsigned char trigger,
-    const object &evaluator)
+    const object &evaluator,
+    const object &post_evaluator)
 {
-    _literals[trigger] = evaluator;
+    _literals[trigger] = {evaluator, post_evaluator};
 
     return {};
 }

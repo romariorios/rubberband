@@ -201,8 +201,10 @@ token tokenizer::_look_token(_look_token_args &args) const
                             _master},
                         tokenizer_send_msg);
 
-                    auto evaluator = cur_literal->second;
+                    auto evaluators = cur_literal->second;
+                    auto evaluator = evaluators.first;
                     data->obj = evaluator << context << empty();
+                    data->post_evaluator = evaluators.second;
                     return token::custom_literal(data);
                 }
             }

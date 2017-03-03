@@ -250,11 +250,8 @@ TESTS_INIT()
         auto &ret = bl.return_statement();
         auto &user_literal = ret.add_expr<literal::user_defined>(
             table({symbol("a")}, {number(10)}),
+            dummy_master.parse("{!~= + :b -> ~[!]}"),
             vector<object>{dummy_master.parse("{!~a}")});
-
-        // [$] -> {!~= + :b -> ~[!]}
-        auto post_ev = dummy_master.parse("{!~= + :b -> ~[!]}");
-        user_literal.set_post_evaluator(post_ev);
 
         auto block = bl.eval();
         auto instance = block << table();
