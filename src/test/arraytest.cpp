@@ -50,21 +50,21 @@ TEST_MSG_NOT_RECOGNIZED(arr, rbb::number(__index))
 
 TESTS_INIT()
     {
-        auto arr = rbb::number(3) << rbb::array({});
-        arr << rbb::array({rbb::number(0), rbb::number(10)});
+        auto arr = number(3) << objarr();
+        arr << objarr(0, 10);
 
         TEST_SIZE(3)
         TEST_INDEX_ELEMENT(0, rbb::number(10))
     }
 
     {
-        auto arr = rbb::number(2) << rbb::array({rbb::number(1), rbb::number(2), rbb::number(3)});
+        auto arr = number(2) << objarr(1, 2, 3);
 
         TEST_SIZE(2)
         TEST_OUT_OF_BOUNDS_INDEX(2)
     }
 
-    auto l = rbb::array({rbb::number(1), rbb::number(4), rbb::number(9)});
+    auto l = objarr(1, 4, 9);
 
     TEST_CONDITION(
         l << rbb::symbol("==") << l == rbb::boolean(true),
@@ -95,27 +95,19 @@ TESTS_INIT()
         TEST_OUT_OF_BOUNDS_INDEX(3)
     }
 
-    auto ch_0 = rbb::array({ rbb::number(0), rbb::symbol("number_array") });
-
-    l << ch_0;
+    l << objarr(0, "number_array");
 
     TEST_CONDITION(
         l << rbb::number(0) == rbb::symbol("number_array"),
         puts("Assigning an object to a position has no effect"))
 
-    auto l2 = rbb::array({rbb::number(2), rbb::number(3), rbb::number(5)});
-    auto l3 = l << rbb::symbol("+") << l2;
-
-    auto l4 = rbb::array({
-        rbb::symbol("number_array"), rbb::number(4), rbb::number(9),
-        rbb::number(2), rbb::number(3), rbb::number(5)
-    });
+    auto l3 = l << "+" << objarr(2, 3, 5);
+    auto l4 = objarr("number_array", 4, 9, 2, 3, 5);
 
     TEST_CONDITION(cmp_array(l3, l4), puts("Concatenation doesn't work"));
 
-    auto sb = rbb::array({rbb::number(1), rbb::number(3)});
-    auto l5 = l3 << rbb::symbol("/") << sb;
-    auto el = rbb::array({rbb::number(4), rbb::number(9), rbb::number(2)});
+    auto l5 = l3 << "/" << objarr(1, 3);
+    auto el = objarr(4, 9, 2);
 
     TEST_CONDITION(cmp_array(l5, el), puts("Slicing doesn't work"))
 

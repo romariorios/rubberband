@@ -101,12 +101,37 @@ object symbol(const std::string &val);
 
 object boolean(bool val);
 
+inline object to_object(double val) { return number(val); }
+inline object to_object(std::string &&sym) { return symbol(sym); }
+inline object to_object(const object &obj) { return obj; }
+inline object to_object(object &&obj) { return obj; }
+
 // NEVER assign pointers directly to other objects
 
 object array(const std::vector<object> &objects = std::vector<object> {});
 inline object array(const std::initializer_list<object> &objects)
 {
     return array(std::vector<object> {objects});
+}
+
+template <int I = 0>
+inline void fill_objvec(std::vector<object> &) {}
+
+template <int I = 0, typename T, typename... OtherTypes>
+void fill_objvec(std::vector<object> &vec, T &&val, OtherTypes &&... other_vals)
+{
+    vec[I] = to_object(std::forward<T>(val));
+    fill_objvec<I + 1>(vec, std::forward<OtherTypes>(other_vals)...);
+}
+
+template <typename... Types>
+object objarr(Types &&... vals)
+{
+    std::vector<object> vec;
+    vec.resize(sizeof...(Types));
+    fill_objvec(vec, std::forward<Types>(vals)...);
+    
+    return array(vec);
 }
 
 object table(
