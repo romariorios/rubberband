@@ -260,18 +260,18 @@ TESTS_INIT()
         auto call_1 = instance << number(10);
 
         TEST_CONDITION(
-            call_1 << symbol("b") == number(10),
+            call_1 << "b" == number(10),
             printf(
                 "User literal was not properly evaluated: expected 10, got %s\n",
-                (call_1 << symbol("b")).to_string().c_str()))
+                (call_1 << "b").to_string().c_str()))
 
         // call instance with 20
-        auto call_2 = instance << number(20);
+        auto call_2 = instance << 20;
 
         TEST_CONDITION(
-            call_2 << symbol("b") == number(20),
+            call_2 << "b" == number(20),
             printf(
                 "User literal was not properly evaluated: expected 20, got %s\n",
-                (call_2 << symbol("b")).to_string().c_str()))
+                (call_2 << "b").to_string().c_str()))
     }
 TESTS_END()

@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -146,6 +146,16 @@ object object::operator<<(object &&msg) {
 object object::operator<<(object &msg)
 {
     return __send_msg(this, msg);
+}
+
+object object::operator<<(double num)
+{
+    return *this << number(num);
+}
+
+object object::operator<<(string &&sym)
+{
+    return *this << symbol(sym);
 }
 
 // empty: Empty object

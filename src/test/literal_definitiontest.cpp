@@ -27,8 +27,8 @@ TESTS_INIT()
 
         auto table_with_literals = dummy_master.parse(":a -> ', b -> ' + 10");
         TEST_CONDITION(
-            table_with_literals << symbol("a") == number(12) &&
-            table_with_literals << symbol("b") == number(22),
+            table_with_literals << "a" == number(12) &&
+            table_with_literals << "b" == number(22),
             printf(
                 "Error: unexpected parsed value %s",
                 table_with_literals.to_string().c_str()))
@@ -96,18 +96,18 @@ TESTS_INIT()
 
         auto hello_world = dummy_master.parse(R"("Hello, world")");
         TEST_CONDITION_WITH_EXCEPTION(
-            hello_world << number(0) == number('H') &&
-            hello_world << number(1) == number('e') &&
-            hello_world << number(2) == number('l') &&
-            hello_world << number(3) == number('l') &&
-            hello_world << number(4) == number('o') &&
-            hello_world << number(5) == number(',') &&
-            hello_world << number(6) == number(' ') &&
-            hello_world << number(7) == number('w') &&
-            hello_world << number(8) == number('o') &&
-            hello_world << number(9) == number('r') &&
-            hello_world << number(10) == number('l') &&
-            hello_world << number(11) == number('d'),
+            hello_world << 0 == number('H') &&
+            hello_world << 1 == number('e') &&
+            hello_world << 2 == number('l') &&
+            hello_world << 3 == number('l') &&
+            hello_world << 4 == number('o') &&
+            hello_world << 5 == number(',') &&
+            hello_world << 6 == number(' ') &&
+            hello_world << 7 == number('w') &&
+            hello_world << 8 == number('o') &&
+            hello_world << 9 == number('r') &&
+            hello_world << 10 == number('l') &&
+            hello_world << 11 == number('d'),
             printf(
                 "Unexpected result for string literal: %s (expecting %s)\n",
                 hello_world.to_string().c_str(),
@@ -148,7 +148,7 @@ TESTS_INIT()
 
         auto o_table = dummy_master.parse(R"(o:a -> 10, b -> 20u)");
         TEST_CONDITION_WITH_EXCEPTION(
-            o_table << symbol("<<?") << symbol("[:]") == boolean(true),
+            o_table << "<<?" << "[:]" == boolean(true),
             printf(
                 "Could not parse custom literal (expecting table, got %s)\n",
                 o_table.to_string().c_str()))

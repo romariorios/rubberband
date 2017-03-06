@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -80,6 +80,10 @@ public:
 
     object operator<<(object &&msg);
     object operator<<(object &msg); // send_msg
+    
+    // useful overloads
+    object operator<<(double num);
+    object operator<<(std::string &&sym);
 
     std::string to_string(
         std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
