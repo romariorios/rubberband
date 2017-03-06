@@ -72,7 +72,7 @@ struct token
     struct custom_literal_data
     {
         custom_literal_data() = default;
-        explicit custom_literal_data(const custom_literal_data &) = default;
+        custom_literal_data(const custom_literal_data &) = default;
         
         object obj;
         object post_evaluator;
