@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2015--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2015--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -257,12 +257,20 @@ class listable
     RBB_IFACE("[|]")
 
 public:
-    listable(send_msg_function concat_send_msg, send_msg_function slice_send_msg);
+    listable(
+        send_msg_function concat_send_msg,
+        send_msg_function slice_send_msg,
+        int (*get_size)(object *),
+        object (*get_element)(object *, int),
+        void (*set_element)(object *, int, const object &));
 
 private:
     send_msg_function
         _concat_send_msg,
         _slice_send_msg;
+    int (*_get_size)(object *);
+    object (*_get_element)(object *, int);
+    void (*_set_element)(object *, int, const object &);
 };
 
 class mapped

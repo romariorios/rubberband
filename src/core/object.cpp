@@ -469,10 +469,15 @@ SEND_MSG(array);
 
 static constexpr const char array_name[] = "Array";
 
+static array_data *arr_d(object *thisptr)
+{
+    return dynamic_cast<array_data *>(thisptr->__value.data());
+}
+
 SEND_MSG(array_concatenation)
 {
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
-    array_data *d = static_cast<array_data *>(d_obj.__value.data());
+    array_data *d = arr_d(&d_obj);
 
     if (!has_iface(msg, "[|]"))
         throw wrong_type_error<array_name>{*thisptr, msg};
@@ -494,7 +499,7 @@ static constexpr const char number_name[] = "Number";
 SEND_MSG(array_slicing)
 {
     object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
-    array_data *d = static_cast<array_data *>(d_obj.__value.data());
+    array_data *d = arr_d(&d_obj);
 
     if (!has_iface(msg, "[|]"))
         throw wrong_type_error<array_name>{*thisptr, msg};
@@ -525,6 +530,21 @@ SEND_MSG(array_slicing)
     return create_array_object(new_d);
 }
 
+static int array_get_size(object *thisptr)
+{
+    return arr_d(thisptr)->size;
+}
+
+static object array_get_element(object *thisptr, int index)
+{
+    return arr_d(thisptr)->arr[index];
+}
+
+static void array_set_element(object *thisptr, int index, const object &el)
+{
+    arr_d(thisptr)->arr[index] = el;
+}
+
 IFACES(array)
 (
     iface::comparable{
@@ -533,7 +553,10 @@ IFACES(array)
     },
     iface::listable{
         array_concatenation_send_msg,
-        array_slicing_send_msg
+        array_slicing_send_msg,
+        array_get_size,
+        array_get_element,
+        array_set_element
     }
 );
 
