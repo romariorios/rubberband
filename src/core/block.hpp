@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -22,6 +22,8 @@
 
 #include <forward_list>
 #include <memory>
+#include <utility>
+#include <vector>
 
 using namespace std;
 
@@ -64,7 +66,7 @@ public:
     template <class T, class... Args>
     T &append(Args&&... a)
     {
-        list_end = emplace_after(list_end, new T{a...});
+        list_end = emplace_after(list_end, new T{std::forward<Args>(a)...});
         return *static_cast<T *>(list_end->get());
     }
 
@@ -72,20 +74,6 @@ public:
 
 private:
     std::forward_list<expr::ptr>::iterator list_end = before_begin();
-};
-
-class evaluated_object : public expr
-{
-public:
-    inline evaluated_object(const object &obj) : _obj{obj} {}
-
-    inline object const_eval() const
-    {
-        return _obj;
-    }
-
-private:
-    object _obj;
 };
 
 class block_data;
@@ -99,7 +87,7 @@ public:
     template <class T, class... Args>
     T &add_expr(Args&&... a)
     {
-        return expressions.append<T>(a...);
+        return expressions.append<T>(std::forward<Args>(a)...);
     }
 
     void add_expr_ptr(expr *e);
@@ -221,6 +209,27 @@ namespace literal
         inline message() {}
         object eval(block *parent_block);
         inline std::string to_string() const { return "$"; }
+    };
+
+    class user_defined : public expr
+    {
+    public:
+        inline user_defined(
+            const object &obj,
+            const object &post_evaluator = {},
+            vector<object> &&exprs = {}) :
+
+            _obj{obj},
+            _post_evaluator{post_evaluator},
+            _exprs{exprs}
+        {}
+
+        object eval(literal::block *parent);
+
+    private:
+        object _obj;
+        object _post_evaluator;
+        std::vector<object> _exprs;
     };
 
     class block_private;

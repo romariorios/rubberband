@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2015--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2015--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -202,9 +202,16 @@ object iface::booleanoid::select_response(object *thisptr, object &msg) const
 
 iface::listable::listable(
     send_msg_function concat_send_msg,
-    send_msg_function slice_send_msg) :
+    send_msg_function slice_send_msg,
+    int (*get_size)(object *),
+    object (*get_element)(object *, int),
+    void (*set_element)(object *, int, const object &)) :
+
     _concat_send_msg{concat_send_msg},
-    _slice_send_msg{slice_send_msg}
+    _slice_send_msg{slice_send_msg},
+    _get_size{get_size},
+    _get_element{get_element},
+    _set_element{set_element}
 {}
 
 send_msg_function iface::listable::select_function(object *, object &msg) const
@@ -223,15 +230,12 @@ bool iface::listable::responds_to(object *thisptr, object &msg) const
         msg == symbol("*"))
         return true;
 
-    auto d = static_cast<array_data *>(thisptr->__value.data());
-
-    auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true))
+    if (msg << symbol("<<?") << symbol("[|]") == boolean(true))
         return
-            msg_copy << symbol("*") == number(2) &&
-            in_bounds(d, get_index_from_obj(msg_copy << number(0)));
+            msg << symbol("*") == number(2) &&
+            in_bounds(*thisptr, msg << number(0));
 
-    return in_bounds(d, get_index_from_obj(msg));
+    return in_bounds(*thisptr, msg);
 }
 
 object iface::listable::select_response(object *thisptr, object &msg) const
@@ -239,18 +243,15 @@ object iface::listable::select_response(object *thisptr, object &msg) const
     if (!responds_to(thisptr, msg))
         return {};
 
-    auto d = static_cast<array_data *>(thisptr->__value.data());
-
     if (msg == symbol("*"))
-        return number(d->size);
+        return number(_get_size(thisptr));
 
     if (is_numeric(msg))
-        return d->arr[get_index_from_obj(msg)];
+        return _get_element(thisptr, get_index_from_obj(msg));
 
-    auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true)) {
-        auto index = get_index_from_obj(msg_copy << number(0));
-        d->arr[index] = msg_copy << number(1);
+    if (msg << symbol("<<?") << symbol("[|]") == boolean(true)) {
+        auto index = get_index_from_obj(msg << 0);
+        _set_element(thisptr, index, msg << 1);
 
         return {};
     }

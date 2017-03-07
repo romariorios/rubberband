@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -18,9 +18,12 @@
 #include "tokenizer.hpp"
 
 #include "error.hpp"
+#include "parse.hpp"
 #include "shared_data_t.hpp"
 
+#include <algorithm>
 #include <functional>
+#include <vector>
 
 using namespace rbb;
 using namespace std;
@@ -58,6 +61,23 @@ std::vector<token> tokenizer::look_all() const
     return tok.all();
 }
 
+void tokenizer::set_master(base_master *master)
+{
+    _master = master;
+}
+
+string tokenizer::_get_substr_until(_look_token_args &args, char ch) const
+{
+    const auto begin_ind = args.length - 1;
+    const auto it = find(_remaining.cbegin() + begin_ind, _remaining.cend(), ch);
+    if (it == _remaining.cend())
+        return {};
+
+    const auto new_len = it - _remaining.cbegin();
+    args.length = new_len;
+    return _remaining.substr(begin_ind, new_len - 1);
+}
+
 void tokenizer::_rewind(_look_token_args& args, char ch, long int prevcol)
 {
     --args.length;
@@ -84,25 +104,57 @@ static void throw_invalid_interface_error(
 class tokenizer_data : public shared_data_t
 {
 public:
-    tokenizer_data(function<char(int)> &&increment_by, const string &remaining) :
+    tokenizer_data(
+        function<char(int)> &&increment_by,
+        function<string(char)> &&substr_until,
+        const string &remaining,
+        vector<object> &parsed_exprs,
+        base_master *master) :
+
         _increment_by{increment_by},
-        _remaining{remaining}
+        _substr_until{substr_until},
+        _remaining{remaining},
+        _parsed_exprs{parsed_exprs},
+        _master{master}
     {}
 
+    tokenizer_data(const tokenizer_data &other) = default;
+
     function<char(int)> _increment_by;
+    function<string(char)> _substr_until;
     const string &_remaining;
+    vector<object> &_parsed_exprs;
+    base_master *_master;
 };
+
+object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
+{
+    auto d = dynamic_cast<tokenizer_data *>(thisptr->__value.data());
+
+    // TODO check if the message actually is a character
+    const auto ch = static_cast<unsigned char>(msg.__value.integer);
+    const auto expr = d->_substr_until(ch);
+    
+    // FIXME HACK this only works if the expression does not contain a self-reference (@)
+    d->_parsed_exprs.emplace_back(d->_master->parse("{!" + expr + "}"));
+
+    return {};
+}
 
 object tokenizer_send_msg(object *thisptr, object &msg)
 {
     auto d = dynamic_cast<tokenizer_data*>(thisptr->__value.data());
-    if (msg == symbol("[@]"))
+    if (msg == symbol("*"))
         return number(static_cast<unsigned char>(d->_increment_by(0)));
 
     if (msg == symbol(">"))
         d->_increment_by(1);
     else if (msg == symbol("<"))
         d->_increment_by(-1);
+    else if (msg == symbol("<<"))
+        return object::create_data_object(
+            new tokenizer_data{*d},
+            tokenizer_append_expr_send_msg);
     // TODO make tokenizer throw on error
 
     return {};
@@ -133,6 +185,8 @@ token tokenizer::_look_token(_look_token_args &args) const
                 const auto cur_literal = _literals.find(uch);
 
                 if (cur_literal != _literals.end()) {
+                    auto data = new token::custom_literal_data;
+                    
                     auto context = object::create_data_object(
                         new tokenizer_data{
                             [this, &args](int increment)
@@ -141,12 +195,17 @@ token tokenizer::_look_token(_look_token_args &args) const
                                 args.length += increment;
                                 return _remaining[args.length - 1];
                             },
-                            _remaining},
+                            [this, &args](char ch) { return _get_substr_until(args, ch); },
+                            _remaining,
+                            data->parsed_exprs,
+                            _master},
                         tokenizer_send_msg);
 
-                    auto evaluator = cur_literal->second;
-                    auto res = evaluator << context << empty();
-                    return token::custom_literal(res);
+                    auto evaluators = cur_literal->second;
+                    auto evaluator = evaluators.first;
+                    data->obj = evaluator << context << empty();
+                    data->post_evaluator = evaluators.second;
+                    return token::custom_literal(data);
                 }
             }
 
@@ -429,4 +488,92 @@ token tokenizer::_look_token(_look_token_args &args) const
 
     --args.length;
     return token::t::end_of_input;
+}
+
+token &token::operator=(const token &other)
+{
+    type = other.type;
+
+    if (other.type == t::symbol)
+        lexem.str = new std::string{*other.lexem.str};
+    else if (other.type == t::custom_literal)
+        lexem.data = new custom_literal_data{*other.lexem.data};
+    else
+        lexem = other.lexem;
+
+    return *this;
+}
+
+token::token(token &&other) :
+    type{other.type}
+{
+    other.type = t::invalid;
+    lexem = other.lexem;
+}
+
+token::~token()
+{
+    if (type == t::symbol)
+        delete lexem.str;
+    else if (type == t::custom_literal)
+        delete lexem.data;
+}
+
+token token::number(long integer)
+{
+    token ret{t::number};
+    ret.lexem.integer = integer;
+
+    return ret;
+}
+
+token token::number_f(double floating)
+{
+    token ret{t::number_f};
+    ret.lexem.floating = floating;
+
+    return ret;
+}
+
+token token::boolean(bool val)
+{
+    token ret{t::boolean};
+    ret.lexem.boolean = val;
+
+    return ret;
+}
+
+token token::symbol(const string &str)
+{
+    token ret{t::symbol};
+    ret.lexem.str = new std::string{str};
+
+    return ret;
+}
+
+token token::custom_literal(custom_literal_data *d)
+{
+    token ret{token::t::custom_literal};
+    ret.lexem.data = d;
+
+    return ret;
+}
+
+bool token::operator==(const token &other) const
+{
+    if (type != other.type)
+        return false;
+
+    switch (type) {
+    case t::number:
+        return lexem.integer == other.lexem.integer;
+    case t::number_f:
+        return lexem.floating == other.lexem.floating;
+    case t::symbol:
+        return *lexem.str == *other.lexem.str;
+    case t::custom_literal:
+        return lexem.data == other.lexem.data;
+    default:
+        return true;
+    }
 }

@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -27,6 +27,8 @@
 
 namespace rbb
 {
+
+class base_master;
 
 struct token
 {
@@ -66,13 +68,23 @@ struct token
         bar,
         colon
     } type;
+    
+    struct custom_literal_data
+    {
+        custom_literal_data() = default;
+        custom_literal_data(const custom_literal_data &) = default;
+        
+        object obj;
+        object post_evaluator;
+        std::vector<object> parsed_exprs;
+    };
 
     union {
         long integer;
         double floating;
         bool boolean;
         std::string *str;
-        object *obj;
+        custom_literal_data *data;
     } lexem;
 
     token(t type) :
@@ -84,93 +96,18 @@ struct token
         *this = other;
     }
     
-    token &operator=(const token &other)
-    {
-        type = other.type;
-        
-        if (other.type == t::symbol)
-            lexem.str = new std::string{*other.lexem.str};
-        else if (other.type == t::custom_literal)
-            lexem.obj = new object{*other.lexem.obj};
-        else
-            lexem = other.lexem;
+    token &operator=(const token &other);
 
-        return *this;
-    }
-    
-    token(token &&other) :
-        type{other.type}
-    {
-        other.type = t::invalid;
-        lexem = other.lexem;
-    }
+    token(token &&other);
+    ~token();
 
-    ~token()
-    {
-        if (type == t::symbol)
-            delete lexem.str;
-        else if (type == t::custom_literal)
-            delete lexem.obj;
-    }
+    static token number(long integer);
+    static token number_f(double floating);
+    static token boolean(bool val);
+    static token symbol(const std::string &str);
+    static token custom_literal(custom_literal_data *d);
 
-    static token number(long integer)
-    {
-        token ret{t::number};
-        ret.lexem.integer = integer;
-
-        return ret;
-    }
-
-    static token number_f(double floating)
-    {
-        token ret{t::number_f};
-        ret.lexem.floating = floating;
-
-        return ret;
-    }
-
-    static token boolean(bool val)
-    {
-        token ret{t::boolean};
-        ret.lexem.boolean = val;
-
-        return ret;
-    }
-
-    static token symbol(const std::string &str)
-    {
-        token ret{t::symbol};
-        ret.lexem.str = new std::string{str};
-
-        return ret;
-    }
-
-    static token custom_literal(const object &value)
-    {
-        token ret{token::t::custom_literal};
-        ret.lexem.obj = new object{value};
-
-        return ret;
-    }
-
-    bool operator==(const token &other) const
-    {
-        if (type != other.type)
-            return false;
-
-        switch (type) {
-        case t::number:
-            return lexem.integer == other.lexem.integer;
-        case t::number_f:
-            return lexem.floating == other.lexem.floating;
-        case t::symbol:
-            return *lexem.str == *other.lexem.str;
-        case t::custom_literal:
-            return lexem.obj == other.lexem.obj;
-        default:
-            return true;
-        }
-    }
+    bool operator==(const token &other) const;
 
     inline bool operator!=(const token &other) const
     {
@@ -211,14 +148,14 @@ class tokenizer
 public:
     tokenizer(
         const std::string &str,
-        const std::map<unsigned char, rbb::object> &literals = {}) :
+        const std::map<unsigned char, std::pair<rbb::object, rbb::object>> &literals = {}) :
         _remaining{str},
         _literals{literals}
     {}
 
     tokenizer(
         std::string &&str = {},
-        const std::map<unsigned char, rbb::object> &literals = {}) :
+        const std::map<unsigned char, std::pair<rbb::object, rbb::object>> &literals = {}) :
         _remaining{str},
         _literals{literals}
     {}
@@ -227,6 +164,8 @@ public:
     token look_next() const;
     std::vector<token> all();
     std::vector<token> look_all() const;
+    
+    void set_master(base_master *master);
     
     inline long cur_line() const { return _cur_state.line; }
     inline long cur_col() const { return _cur_state.col; }
@@ -253,12 +192,15 @@ private:
 
     static void _rewind(_look_token_args &args, char ch, long prevcol);
     token _look_token(_look_token_args &args) const;
+    std::string _get_substr_until(_look_token_args &args, char ch) const;
 
     token _previous_token = token{token::t::start_of_input};
     std::string _remaining;
-    const std::map<unsigned char, rbb::object> &_literals;
+    const std::map<unsigned char, std::pair<rbb::object, rbb::object>> &_literals;
+    base_master *_master = nullptr;
 };
 
 }
 
 #endif
+

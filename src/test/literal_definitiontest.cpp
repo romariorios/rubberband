@@ -27,8 +27,8 @@ TESTS_INIT()
 
         auto table_with_literals = dummy_master.parse(":a -> ', b -> ' + 10");
         TEST_CONDITION(
-            table_with_literals << symbol("a") == number(12) &&
-            table_with_literals << symbol("b") == number(22),
+            table_with_literals << "a" == number(12) &&
+            table_with_literals << "b" == number(22),
             printf(
                 "Error: unexpected parsed value %s",
                 table_with_literals.to_string().c_str()))
@@ -39,7 +39,7 @@ TESTS_INIT()
         {
             %+:
                 > -> 39,           # ASCII for '
-                = -> { ~> !~[@] }  # ~>: go to next char; ~[@]: current char
+                = -> { ~> !~* }  # ~>: go to next char; ~*: current char
         }
         )");
         define_char_literal << empty() << empty();
@@ -55,7 +55,7 @@ TESTS_INIT()
                     = -> {
                         !{
                             ~chars>
-                            ~:self -> @, cur -> ~chars[@]
+                            ~:self -> @, cur -> ~chars*
 
                             # First, create a linked list until a second " is found
                             !~cur /= '"?~ {
@@ -91,23 +91,23 @@ TESTS_INIT()
                 "Syntax error at line %ld and column %ld (token: %s)\n",\
                 e.line,\
                 e.column,\
-                e.t().to_string().c_str());
+                e.t.to_string().c_str());
         }
 
         auto hello_world = dummy_master.parse(R"("Hello, world")");
         TEST_CONDITION_WITH_EXCEPTION(
-            hello_world << number(0) == number('H') &&
-            hello_world << number(1) == number('e') &&
-            hello_world << number(2) == number('l') &&
-            hello_world << number(3) == number('l') &&
-            hello_world << number(4) == number('o') &&
-            hello_world << number(5) == number(',') &&
-            hello_world << number(6) == number(' ') &&
-            hello_world << number(7) == number('w') &&
-            hello_world << number(8) == number('o') &&
-            hello_world << number(9) == number('r') &&
-            hello_world << number(10) == number('l') &&
-            hello_world << number(11) == number('d'),
+            hello_world << 0 == number('H') &&
+            hello_world << 1 == number('e') &&
+            hello_world << 2 == number('l') &&
+            hello_world << 3 == number('l') &&
+            hello_world << 4 == number('o') &&
+            hello_world << 5 == number(',') &&
+            hello_world << 6 == number(' ') &&
+            hello_world << 7 == number('w') &&
+            hello_world << 8 == number('o') &&
+            hello_world << 9 == number('r') &&
+            hello_world << 10 == number('l') &&
+            hello_world << 11 == number('d'),
             printf(
                 "Unexpected result for string literal: %s (expecting %s)\n",
                 hello_world.to_string().c_str(),
@@ -116,5 +116,41 @@ TESTS_INIT()
                    number(','), number(' '), number('w'), number('o'), number('r'),
                    number('l'), number('d')
                }).to_string().c_str()))
+
+        // Define user-literals containing language expressions
+        // field >
+        //   Trigger
+        // field =
+        //   Evaluate static parts of the literal and determine dynamic ones
+        //   current char: ~*
+        //   skip char: ~>
+        //   append expression until some char: ~<< (some char)
+        // field [$]
+        //   Evaluate dynamic parts of the literal
+        //   (if empty, will just return the result of the static evaluator)
+        //   result of field =: ~=
+        //   eval current expression: ~[!]
+        //   skip object: ~>>
+        auto define_object_wrapper_literal = dummy_master.parse(R"({
+            %+:
+                > -> 'o,
+                = -> {
+                    # skip o, read expression until u, skip u
+                    ~>; ~<< 'u; ~>
+                    # returns nothing because there's no static part in this literal
+                },
+                [$] -> {
+                    # returns value of first expression
+                    !~[!]
+                }
+        })");
+        define_object_wrapper_literal << empty() << empty();
+
+        auto o_table = dummy_master.parse(R"(o:a -> 10, b -> 20u)");
+        TEST_CONDITION_WITH_EXCEPTION(
+            o_table << "<<?" << "[:]" == boolean(true),
+            printf(
+                "Could not parse custom literal (expecting table, got %s)\n",
+                o_table.to_string().c_str()))
     }
 TESTS_END()

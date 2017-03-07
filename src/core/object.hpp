@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -80,6 +80,10 @@ public:
 
     object operator<<(object &&msg);
     object operator<<(object &msg); // send_msg
+    
+    // useful overloads
+    object operator<<(double num);
+    object operator<<(std::string &&sym);
 
     std::string to_string(
         std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
@@ -97,12 +101,37 @@ object symbol(const std::string &val);
 
 object boolean(bool val);
 
+inline object to_object(double val) { return number(val); }
+inline object to_object(std::string &&sym) { return symbol(sym); }
+inline object to_object(const object &obj) { return obj; }
+inline object to_object(object &&obj) { return obj; }
+
 // NEVER assign pointers directly to other objects
 
 object array(const std::vector<object> &objects = std::vector<object> {});
 inline object array(const std::initializer_list<object> &objects)
 {
     return array(std::vector<object> {objects});
+}
+
+template <int I = 0>
+inline void fill_objvec(std::vector<object> &) {}
+
+template <int I = 0, typename T, typename... OtherTypes>
+void fill_objvec(std::vector<object> &vec, T &&val, OtherTypes &&... other_vals)
+{
+    vec[I] = to_object(std::forward<T>(val));
+    fill_objvec<I + 1>(vec, std::forward<OtherTypes>(other_vals)...);
+}
+
+template <typename... Types>
+object objarr(Types &&... vals)
+{
+    std::vector<object> vec;
+    vec.resize(sizeof...(Types));
+    fill_objvec(vec, std::forward<Types>(vals)...);
+    
+    return array(vec);
 }
 
 object table(

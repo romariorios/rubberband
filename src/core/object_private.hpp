@@ -87,9 +87,13 @@ static bool is_numeric(const object &val)
     return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
 }
 
-static bool in_bounds(array_data *d, int i)
+static bool in_bounds(object obj, object index)
 {
-    return i >= 0 && i < d->size;
+    auto size = obj << "*";
+    if (!is_numeric(size))
+        return false;
+    
+    return index << ">=" << 0 << "/\\" << (index << "<" << size) == boolean(true);
 }
 
 static int get_index_from_obj(const object &obj)

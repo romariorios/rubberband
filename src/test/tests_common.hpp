@@ -40,7 +40,7 @@ int main() {\
             "Syntax error at line %ld and column %ld (token: %s)\n",\
             e.line,\
             e.column,\
-            e.t().to_string().c_str());\
+            e.t.to_string().c_str());\
     }
 
 #define TEST_MSG_NOT_RECOGNIZED(__obj, __msg) \
@@ -57,7 +57,7 @@ int main() {\
         not_recognized,\
         printf(\
             "Expected rbb::message_not_recognized_error exception; got %s",\
-            res.to_string()))\
+            res.to_string().c_str()))\
 }
 
 // this assumes obj1 and obj2 are different
@@ -132,7 +132,7 @@ static dummy_master_t dummy_master;
                 program,\
                 to_string(e.line).c_str(),\
                 to_string(e.column).c_str(),\
-                e.t().to_string().c_str()))\
+                e.t.to_string().c_str()))\
     } catch (std::exception &e) {\
         TEST_CONDITION(\
             false,\

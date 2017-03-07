@@ -12,7 +12,7 @@ object __print(object *, object &msg)
 class test_master_t : public base_master
 {
 public:
-    object load(const string &str)
+    object load(const string &str) override
     {
         if (str != "__parsetestmodule")
             return {};
@@ -20,7 +20,7 @@ public:
         return parse(R"({ ~:a -> 10 })");
     }
 
-    object custom_operation(const string &, const object &)
+    object custom_operation(const string &, object &) override
     {
         return {};
     }

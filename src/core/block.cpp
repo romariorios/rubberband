@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013--2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2015, 2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,8 @@
 #include "error.hpp"
 
 #include "block_private.hpp"
+#include "object_private.hpp"
+#include "shared_data_t.hpp"
 
 using namespace rbb;
 
@@ -118,6 +120,67 @@ object literal::message::eval(literal::block* parent_block)
         throw use_without_parent_block{'$'};
 
     return parent_block->_message;
+}
+
+// The post-eval context should have the following:
+// - result of "=":     =
+// - eval current expr: [!]
+// - skip expression:   >>
+class post_eval_ctx_data : public shared_data_t
+{
+public:
+    post_eval_ctx_data(
+        object obj,
+        std::vector<object> &parsed_exprs,
+        literal::block *parent) :
+
+        obj{obj},
+        parsed_exprs{parsed_exprs},
+        parent{parent}
+    {}
+
+    object obj;
+    std::vector<object> &parsed_exprs;
+    literal::block *parent;
+    size_t current_index = 0;
+};
+
+object post_eval_ctx_fun(object *thisptr, object &msg)
+{
+    auto d = static_cast<post_eval_ctx_data *>(thisptr->__value.data());
+
+    if (msg == symbol("="))
+        return d->obj;
+
+    if (msg == symbol("[!]")) {
+        // FIXME HACK to extract the return expression from a block object
+        auto &cur_expr_block = d->parsed_exprs[d->current_index++];
+        auto block_d = dynamic_cast<block_data *>(cur_expr_block.__value.data());
+        auto &ret_stm = block_d->block_l->return_statement();
+
+        return ret_stm.eval(d->parent);
+    }
+
+    if (msg == symbol(">>")) {
+        ++d->current_index;
+        return {};
+    }
+
+    throw message_not_recognized_error{*thisptr, msg};
+}
+
+object literal::user_defined::eval(literal::block *parent)
+{
+    if (_post_evaluator == rbb::empty())
+        return _obj;
+
+    auto post_eval_ctx =
+        object::create_data_object(
+            new post_eval_ctx_data{_obj, _exprs, parent},
+            post_eval_ctx_fun);
+    auto evaluator = _post_evaluator << post_eval_ctx;
+
+    return evaluator << rbb::empty();
 }
 
 literal::block::block() :

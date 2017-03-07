@@ -87,6 +87,6 @@ TESTS_INIT()
 
     TEST_STRINGFICATION(token::boolean(true), "boolean (true)")
     TEST_STRINGFICATION(
-        token::custom_literal(rbb::array({number(10), number(20), number(30)})),
-        "custom literal ((|10, 20, 30))")
+        token::custom_literal(new token::custom_literal_data),
+        "custom literal")
 TESTS_END()
