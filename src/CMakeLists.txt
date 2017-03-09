@@ -12,6 +12,7 @@ link_directories(
     ${CMAKE_CURRENT_BINARY_DIR}/core/lib)
 set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
 
+add_subdirectory(mod)
 add_subdirectory(modloader)
 add_subdirectory(rbbs)
 add_subdirectory(rbbi)
