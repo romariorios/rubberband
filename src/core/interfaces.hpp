@@ -23,8 +23,31 @@
 #include "symbol.hpp"
 #include "utils/tuple_utils.hpp"
 
+#define IFACES(typename) \
+auto typename##_iface_collection =\
+    mk_interface_collection
+
+#define SELECT_RESPONSE_FOR(typename)\
+object typename##_send_msg(object *thisptr, object &msg)\
+{\
+    if (msg != symbol("<<") && *thisptr << symbol("<<") << msg != boolean(true))\
+        throw message_not_recognized_error{*thisptr, msg};\
+\
+    return typename##_iface_collection.select_response(thisptr, msg);\
+}
+
 namespace rbb
 {
+
+class object_data : public shared_data_t
+{
+public:
+    object_data(const object &obj) :
+        obj{obj}
+    {}
+
+    object obj;
+};
 
 template <typename... Interfaces>
 class interface_collection;
@@ -262,7 +285,7 @@ public:
         send_msg_function slice_send_msg,
         int (*get_size)(object *),
         object (*get_element)(object *, int),
-        void (*set_element)(object *, int, const object &));
+        void (*set_element)(object *, int, object));
 
 private:
     send_msg_function
@@ -270,7 +293,7 @@ private:
         _slice_send_msg;
     int (*_get_size)(object *);
     object (*_get_element)(object *, int);
-    void (*_set_element)(object *, int, const object &);
+    void (*_set_element)(object *, int, object);
 };
 
 class mapped

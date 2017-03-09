@@ -23,16 +23,6 @@
 using namespace rbb;
 using namespace std;
 
-class object_data : public shared_data_t
-{
-public:
-    object_data(const object &obj) :
-        obj{obj}
-    {}
-
-    object obj;
-};
-
 inline object create_response(object *thisptr, send_msg_function f)
 {
     return object::create_data_object(new object_data{*thisptr}, f);
@@ -205,7 +195,7 @@ iface::listable::listable(
     send_msg_function slice_send_msg,
     int (*get_size)(object *),
     object (*get_element)(object *, int),
-    void (*set_element)(object *, int, const object &)) :
+    void (*set_element)(object *, int, object)) :
 
     _concat_send_msg{concat_send_msg},
     _slice_send_msg{slice_send_msg},

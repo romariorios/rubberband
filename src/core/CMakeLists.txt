@@ -74,6 +74,7 @@ set(rubberbandcore_sources
 set(rubberbandcore_headers
     block.hpp
     error.hpp
+    interfaces.hpp
     object.hpp
     parse.hpp
     shared_data_t.hpp

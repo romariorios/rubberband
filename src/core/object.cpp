@@ -30,23 +30,12 @@
 #define SEND_MSG(typename)\
 static object typename##_send_msg(object *thisptr, object &msg)
 
-#define IFACES(typename) \
-auto typename##_iface_collection =\
-    mk_interface_collection
-
-#define SELECT_RESPONSE_FOR(typename)\
-SEND_MSG(typename)\
-{\
-    if (msg != symbol("<<") && *thisptr << symbol("<<") << msg != boolean(true))\
-        throw message_not_recognized_error{*thisptr, msg};\
-\
-    return typename##_iface_collection.select_response(thisptr, msg);\
-}
-
 using namespace rbb;
 
 // Helper create_object functions
-static object create_object(value_t::type_t type, send_msg_function send_msg = 0)
+object object::create_object(
+    value_t::type_t type,
+    send_msg_function send_msg)
 {
     object ret;
     ret.__value.type = type;
@@ -65,16 +54,6 @@ object object::create_data_object(
 
     return ret;
 }
-
-class object_data : public shared_data_t
-{
-public:
-    object_data(const object &obj) :
-        obj(obj)
-    {}
-
-    object obj;
-};
 
 // object: The base for everything
 SEND_MSG(empty);
@@ -540,7 +519,7 @@ static object array_get_element(object *thisptr, int index)
     return arr_d(thisptr)->arr[index];
 }
 
-static void array_set_element(object *thisptr, int index, const object &el)
+static void array_set_element(object *thisptr, int index, object el)
 {
     arr_d(thisptr)->arr[index] = el;
 }

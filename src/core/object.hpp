@@ -64,6 +64,10 @@ typedef object (*send_msg_function)(object *, object &);
 class object
 {
 public:
+    static object create_object(
+        value_t::type_t type,
+        send_msg_function send_msg = 0);
+
     static object create_data_object(
         shared_data_t *data,
         send_msg_function send_msg = nullptr,
