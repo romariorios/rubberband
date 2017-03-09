@@ -1,5 +1,5 @@
 // Rubberband modloader: Load external Rubberband modules
-// Copyright (c) 2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (c) 2016--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -48,7 +48,8 @@ public:
 
     ~dl_handle()
     {
-        dlclose(_handle);
+        // FIXME: find a way to close the module after it's no longer used
+        // dlclose(_handle);
     }
 
     operator void *() const

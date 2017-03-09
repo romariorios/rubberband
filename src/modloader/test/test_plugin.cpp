@@ -3,7 +3,12 @@
 using namespace rbb;
 using namespace std;
 
+object thing(object *, object &)
+{
+    return symbol("sup");
+}
+
 extern "C" object rbb_loadobj()
 {
-    return table({symbol("a"), symbol("b")}, {number(10), number(20)});
+    return object::create_object(value_t::no_data_t, thing);
 }
