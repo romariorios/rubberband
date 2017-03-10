@@ -1,0 +1,8 @@
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_library(rbbpack SHARED pack.cpp)
+
+install(TARGETS rbbpack
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib)
