@@ -73,7 +73,7 @@ do
         -I"$RUBBERBAND_PATH/include"\
         -L"$RUBBERBAND_PATH/lib"\
         -std=c++11 &&
-    LD_LIBRARY_PATH="$RUBBERBAND_PATH/lib" ./$test_name &&
+    LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$RUBBERBAND_PATH/lib" ./$test_name &&
     rm $test_name
 done
 
