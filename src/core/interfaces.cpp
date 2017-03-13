@@ -51,11 +51,13 @@ iface::arith::arith(
     send_msg_function add_function,
     send_msg_function sub_function,
     send_msg_function mul_function,
-    send_msg_function div_function) :
+    send_msg_function div_function,
+    send_msg_function mod_function) :
     _add_function{add_function},
     _sub_function{sub_function},
     _mul_function{mul_function},
-    _div_function{div_function}
+    _div_function{div_function},
+    _mod_function{mod_function}
 {}
 
 send_msg_function iface::arith::select_function(object *, object &msg) const
@@ -68,6 +70,8 @@ send_msg_function iface::arith::select_function(object *, object &msg) const
         return _mul_function;
     if (msg == symbol("/"))
         return _div_function;
+    if (msg == symbol("mod"))
+        return _mod_function;
 
     return nullptr;
 }

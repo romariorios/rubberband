@@ -195,14 +195,16 @@ public:
         send_msg_function add_function,
         send_msg_function sub_function,
         send_msg_function mul_function,
-        send_msg_function div_function);
+        send_msg_function div_function,
+        send_msg_function mod_function);
 
 private:
     send_msg_function
         _add_function,
         _sub_function,
         _mul_function,
-        _div_function;
+        _div_function,
+        _mod_function;
 };
 
 class comparable

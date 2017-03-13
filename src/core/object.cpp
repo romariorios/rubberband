@@ -212,6 +212,21 @@ NUM_OPERATION(sub, -, number)
 NUM_OPERATION(mul, *, number)
 NUM_OPERATION(div, /, number)
 
+object mod_int(long long a, long long b)
+{
+    return number(a % b);
+}
+
+object mod_double(double a, double b)
+{
+    throw semantic_error{"Can't take mod from a fractional number", number(a), number(b)};
+}
+
+SEND_MSG(mod_operation)
+{
+    return num_operation(*thisptr, msg, mod_int, mod_double);
+}
+
 SEND_MSG(array);
 
 static object create_array_object(array_data *d)
@@ -225,7 +240,8 @@ IFACES(number)
         num_op_add_send_msg,
         num_op_sub_send_msg,
         num_op_mul_send_msg,
-        num_op_div_send_msg
+        num_op_div_send_msg,
+        mod_operation_send_msg
     },
     iface::comparable{
         num_op_eq_send_msg,
