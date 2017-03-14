@@ -223,7 +223,7 @@ object pack(object *, object &msg)
         throw message_not_recognized_error{symbol("pack"), msg, details};
     };
 
-    if (msg << symbol("<<?") << symbol("[|]") == boolean(false))  // If msg isn't an array
+    if (msg << symbol("<<?") << SY_I_ARR == boolean(false))  // If msg isn't an array
         throw_msg_error("array expected");
 
     const auto size = number_to_double(msg << symbol("*"));

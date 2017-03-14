@@ -19,6 +19,7 @@
 #include "parse_private.hpp"
 
 #include "block.hpp"
+#include "common_syms.hpp"
 #include "error.hpp"
 #include "tokenizer.hpp"
 #include "object_private.hpp"
@@ -152,7 +153,7 @@ object master_declare_literal_send_msg(object *thisptr, object &msg)
     if (!dynamic_cast<table_data *>(msg.__value.data()))
         throw semantic_error{"Table expected", *thisptr, msg};
 
-    auto trigger_obj = msg << symbol(">");
+    auto trigger_obj = msg << SY_GT;
     unsigned char trigger;
     auto trigger_error_msg =
         "The trigger should be numeric";
@@ -166,9 +167,9 @@ object master_declare_literal_send_msg(object *thisptr, object &msg)
 
     return d->master.declare_literal(
         trigger,
-        msg << symbol("="),
-        msg << symbol("<<") << symbol("[$]") == boolean(true)?
-            msg << symbol("[$]") : empty());
+        msg << SY_EQ,
+        msg << SY_DLT << SY_BR_DOL == boolean(true)?
+            msg << SY_BR_DOL : empty());
 }
 
 class custom_operation_data : public shared_data_t
@@ -195,13 +196,13 @@ object master_send_msg(object *thisptr, object &msg)
     auto d = static_cast<master_data*>(thisptr->__value.data());
 
     // load
-    if (msg == symbol("^"))
+    if (msg == SY_CIRC)
         return object::create_data_object(
             new master_data{d->master},
             master_load_send_msg);
 
     // declare literal
-    if (msg == symbol("+"))
+    if (msg == SY_PLUS)
         return object::create_data_object(
             new master_data{d->master},
             master_declare_literal_send_msg);

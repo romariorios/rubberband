@@ -18,6 +18,7 @@
 #ifndef INTERFACES_HPP
 #define INTERFACES_HPP
 
+#include "common_syms.hpp"
 #include "object.hpp"
 #include "shared_data_t.hpp"
 #include "symbol.hpp"
@@ -30,7 +31,7 @@ auto typename##_iface_collection =\
 #define SELECT_RESPONSE_FOR(typename)\
 object typename##_send_msg(object *thisptr, object &msg)\
 {\
-    if (msg != symbol("<<") && *thisptr << symbol("<<") << msg != boolean(true))\
+    if (msg != SY_DLT && *thisptr << SY_DLT << msg != boolean(true))\
         throw message_not_recognized_error{*thisptr, msg};\
 \
     return typename##_iface_collection.select_response(thisptr, msg);\
@@ -97,11 +98,7 @@ public:
 
         for_each(_interfaces, [&](const auto &interface)
         {
-            auto iface_name = interface.interface_name();
-            if (!iface_name)
-                return control::break_loop;
-
-            follows = name == symbol(iface_name);
+            follows = name == interface.interface_sym();
 
             return continue_unless(follows);
         });
@@ -111,10 +108,10 @@ public:
 
     send_msg_function select_function(object *thisptr, object &msg) const
     {
-        if (msg == symbol("<<"))
+        if (msg == SY_DLT)
             return iface_collection_responds_to<Interfaces...>;
 
-        if (msg == symbol("<<?"))
+        if (msg == SY_DLTQM)
             return iface_collection_follows_interface<Interfaces...>;
 
         send_msg_function f;
@@ -131,7 +128,7 @@ public:
 
     object select_response(object *thisptr, object &msg) const
     {
-        if (msg == symbol("<<") || msg == symbol("<<?"))
+        if (msg == SY_DLT || msg == SY_DLTQM)
             return object::create_data_object(
                 new metainfo_data<Interfaces...>{*this, *thisptr},
                 select_function(thisptr, msg));
@@ -150,7 +147,7 @@ public:
 
     inline bool responds_to(object *thisptr, object &msg) const
     {
-        if (msg == symbol("<<") || msg == symbol("<<?"))
+        if (msg == SY_DLT || msg == SY_DLTQM)
             return select_function(thisptr, msg);
 
         bool responds;
@@ -177,11 +174,12 @@ interface_collection<Interfaces...> mk_interface_collection(Interfaces... interf
 
 #define RBB_IFACE(__name) \
 public:\
-    inline const char *interface_name() const { return __name; }\
+    inline const object &interface_sym() const { return _iface; }\
     send_msg_function select_function(object *thisptr, object &msg) const;\
     bool responds_to(object *thisptr, object &msg) const;\
     object select_response(object *thisptr, object &msg) const;\
-private:
+private:\
+    object _iface = symbol(__name);
 
 namespace iface
 {

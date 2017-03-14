@@ -17,6 +17,7 @@
 
 #include "tokenizer.hpp"
 
+#include "common_syms.hpp"
 #include "error.hpp"
 #include "parse.hpp"
 #include "shared_data_t.hpp"
@@ -144,14 +145,14 @@ object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
 object tokenizer_send_msg(object *thisptr, object &msg)
 {
     auto d = dynamic_cast<tokenizer_data*>(thisptr->__value.data());
-    if (msg == symbol("*"))
+    if (msg == SY_ASTER)
         return number(static_cast<unsigned char>(d->_increment_by(0)));
 
-    if (msg == symbol(">"))
+    if (msg == SY_GT)
         d->_increment_by(1);
-    else if (msg == symbol("<"))
+    else if (msg == SY_LT)
         d->_increment_by(-1);
-    else if (msg == symbol("<<"))
+    else if (msg == SY_DLT)
         return object::create_data_object(
             new tokenizer_data{*d},
             tokenizer_append_expr_send_msg);

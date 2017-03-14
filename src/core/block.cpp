@@ -19,6 +19,7 @@
 #include "error.hpp"
 
 #include "block_private.hpp"
+#include "common_syms.hpp"
 #include "object_private.hpp"
 #include "shared_data_t.hpp"
 
@@ -149,10 +150,10 @@ object post_eval_ctx_fun(object *thisptr, object &msg)
 {
     auto d = static_cast<post_eval_ctx_data *>(thisptr->__value.data());
 
-    if (msg == symbol("="))
+    if (msg == SY_EQ)
         return d->obj;
 
-    if (msg == symbol("[!]")) {
+    if (msg == SY_BR_EXCL) {
         // FIXME HACK to extract the return expression from a block object
         auto &cur_expr_block = d->parsed_exprs[d->current_index++];
         auto block_d = dynamic_cast<block_data *>(cur_expr_block.__value.data());
@@ -161,7 +162,7 @@ object post_eval_ctx_fun(object *thisptr, object &msg)
         return ret_stm.eval(d->parent);
     }
 
-    if (msg == symbol(">>")) {
+    if (msg == SY_GT) {
         ++d->current_index;
         return {};
     }

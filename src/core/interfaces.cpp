@@ -16,6 +16,7 @@
 // Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "block.hpp"
+#include "common_syms.hpp"
 #include "interfaces.hpp"
 #include "object.hpp"
 #include "object_private.hpp"
@@ -62,13 +63,13 @@ iface::arith::arith(
 
 send_msg_function iface::arith::select_function(object *, object &msg) const
 {
-    if (msg == symbol("+"))
+    if (msg == SY_PLUS)
         return _add_function;
-    if (msg == symbol("-"))
+    if (msg == SY_DASH)
         return _sub_function;
-    if (msg == symbol("*"))
+    if (msg == SY_ASTER)
         return _mul_function;
-    if (msg == symbol("/"))
+    if (msg == SY_SLASH)
         return _div_function;
     if (msg == symbol("mod"))
         return _mod_function;
@@ -86,9 +87,9 @@ iface::comparable::comparable(send_msg_function eq_function, send_msg_function n
 
 send_msg_function iface::comparable::select_function(object *, object& msg) const
 {
-    if (msg == symbol("=="))
+    if (msg == SY_DEQ)
         return _eq_function;
-    if (msg == symbol("/="))
+    if (msg == SY_NE)
         return _ne_function;
 
     return nullptr;
@@ -110,13 +111,13 @@ iface::ordered::ordered(
 
 send_msg_function iface::ordered::select_function(object *, object& msg) const
 {
-    if (msg == symbol("<"))
+    if (msg == SY_LT)
         return _lt_function;
-    if (msg == symbol(">"))
+    if (msg == SY_GT)
         return _gt_function;
-    if (msg == symbol("<="))
+    if (msg == SY_LE)
         return _le_function;
-    if (msg == symbol(">="))
+    if (msg == SY_GE)
         return _ge_function;
 
     return nullptr;
@@ -141,7 +142,7 @@ object iface::numeric::select_response(object *thisptr, object &msg) const
         return {};
 
     auto msg_copy = msg;
-    int msg_size = number_to_double(msg_copy << symbol("*"));
+    int msg_size = number_to_double(msg_copy << SY_ASTER);
     auto new_d = new array_data{get_index_from_obj(*thisptr)};
 
     for (auto i = 0; i < min(msg_size, new_d->size); ++i)
@@ -152,7 +153,7 @@ object iface::numeric::select_response(object *thisptr, object &msg) const
 
 bool iface::numeric::responds_to(object *, object &msg) const
 {
-    return msg << symbol("<<?") << symbol("[|]") == boolean(true);
+    return msg << SY_DLTQM << SY_I_ARR == boolean(true);
 }
 
 iface::booleanoid::booleanoid(
@@ -168,13 +169,13 @@ iface::booleanoid::booleanoid(
 
 send_msg_function iface::booleanoid::select_function(object *, object &msg) const
 {
-    if (msg == symbol("/\\"))
+    if (msg == SY_L_AND)
         return _and_send_msg;
-    if (msg == symbol("\\/"))
+    if (msg == SY_L_OR)
         return _or_send_msg;
-    if (msg == symbol("?"))
+    if (msg == SY_QM)
         return _get_context_send_msg;
-    if (msg == symbol("^"))
+    if (msg == SY_CIRC)
         return _raise_send_msg;
 
     return nullptr;
@@ -182,7 +183,7 @@ send_msg_function iface::booleanoid::select_function(object *, object &msg) cons
 
 bool iface::booleanoid::responds_to(object *thisptr, object &msg) const
 {
-    return select_function(thisptr, msg) || msg == symbol("><");
+    return select_function(thisptr, msg) || msg == SY_L_NOT;
 }
 
 object iface::booleanoid::select_response(object *thisptr, object &msg) const
@@ -210,9 +211,9 @@ iface::listable::listable(
 
 send_msg_function iface::listable::select_function(object *, object &msg) const
 {
-    if (msg == symbol("+"))
+    if (msg == SY_PLUS)
         return _concat_send_msg;
-    if (msg == symbol("/"))
+    if (msg == SY_SLASH)
         return _slice_send_msg;
 
     return nullptr;
@@ -221,12 +222,12 @@ send_msg_function iface::listable::select_function(object *, object &msg) const
 bool iface::listable::responds_to(object *thisptr, object &msg) const
 {
     if (select_function(thisptr, msg) ||
-        msg == symbol("*"))
+        msg == SY_ASTER)
         return true;
 
-    if (msg << symbol("<<?") << symbol("[|]") == boolean(true))
+    if (msg << SY_DLTQM << SY_I_ARR == boolean(true))
         return
-            msg << symbol("*") == number(2) &&
+            msg << SY_ASTER == number(2) &&
             in_bounds(*thisptr, msg << number(0));
 
     return in_bounds(*thisptr, msg);
@@ -237,13 +238,13 @@ object iface::listable::select_response(object *thisptr, object &msg) const
     if (!responds_to(thisptr, msg))
         return {};
 
-    if (msg == symbol("*"))
+    if (msg == SY_ASTER)
         return number(_get_size(thisptr));
 
     if (is_numeric(msg))
         return _get_element(thisptr, get_index_from_obj(msg));
 
-    if (msg << symbol("<<?") << symbol("[|]") == boolean(true)) {
+    if (msg << SY_DLTQM << SY_I_ARR == boolean(true)) {
         auto index = get_index_from_obj(msg << 0);
         _set_element(thisptr, index, msg << 1);
 
@@ -262,9 +263,9 @@ iface::mapped::mapped(
 
 send_msg_function iface::mapped::select_function(object *, object &msg) const
 {
-    if (msg == symbol("+"))
+    if (msg == SY_PLUS)
         return _merge_send_msg;
-    if (msg == symbol("-"))
+    if (msg == SY_DASH)
         return _del_send_msg;
 
     return nullptr;
@@ -273,17 +274,17 @@ send_msg_function iface::mapped::select_function(object *, object &msg) const
 bool iface::mapped::responds_to(object *thisptr, object &msg) const
 {
     if (select_function(thisptr, msg) ||
-        msg == symbol("*"))
+        msg == SY_ASTER)
         return true;
 
     auto d = static_cast<table_data *>(thisptr->__value.data());
 
     auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("[:]") == boolean(true))
+    if (msg_copy << SY_DLTQM << SY_I_TABLE == boolean(true))
         return true;
 
-    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true)) {
-        int size = number_to_double(msg_copy << symbol("*"));
+    if (msg_copy << SY_DLTQM << SY_I_ARR == boolean(true)) {
+        int size = number_to_double(msg_copy << SY_ASTER);
         for (int i = 0; i < size; ++i)
             if (!((msg_copy << number(i)).__value.type & value_t::symbol_t))
                 return false;
@@ -292,7 +293,7 @@ bool iface::mapped::responds_to(object *thisptr, object &msg) const
     }
 
     return
-        msg_copy << symbol("<<?") << symbol("[:]") == boolean(true) ||
+        msg_copy << SY_DLTQM << SY_I_TABLE == boolean(true) ||
         table_contains_symbol(d, msg);
 }
 
@@ -307,7 +308,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
 
     auto d = static_cast<table_data *>(thisptr->__value.data());
 
-    if (msg == symbol("*")) {
+    if (msg == SY_ASTER) {
         vector<object> l_el;
 
         for (auto pair : d->objtree) {
@@ -321,9 +322,9 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
     }
 
     auto msg_copy = msg;
-    if (msg_copy << symbol("<<?") << symbol("[:]") == boolean(true)) {
-        auto sym_array = msg_copy << symbol("*");
-        int sym_array_len = number_to_double(sym_array << symbol("*"));
+    if (msg_copy << SY_DLTQM << SY_I_TABLE == boolean(true)) {
+        auto sym_array = msg_copy << SY_ASTER;
+        int sym_array_len = number_to_double(sym_array << SY_ASTER);
 
         for (int i = 0; i < sym_array_len; ++i) {
             auto cur_sym = sym_array << number(i);
@@ -334,8 +335,8 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
         return *thisptr;
     }
 
-    if (msg_copy << symbol("<<?") << symbol("[|]") == boolean(true)) {
-        int size = number_to_double(msg_copy << symbol("*"));
+    if (msg_copy << SY_DLTQM << SY_I_ARR == boolean(true)) {
+        int size = number_to_double(msg_copy << SY_ASTER);
         auto new_table = table();
         auto new_table_d = static_cast<table_data *>(new_table.__value.data());
 
