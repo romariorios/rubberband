@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2014, 2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -18,30 +18,15 @@
 #ifndef SYMBOL_HPP
 #define SYMBOL_HPP
 
-#include <set>
 #include <string>
+#include <unordered_set>
 
 namespace rbb
 {
 
-struct symbol_node;
+using symbol_node = const std::string *;
 
-struct cmp_symbol_nodes
-{
-    bool operator()(symbol_node *const node1, symbol_node *const node2) const;
-};
-
-struct symbol_node
-{
-    char ch;
-    symbol_node *up = nullptr;
-    std::set<symbol_node *, cmp_symbol_nodes> down;
-
-    static symbol_node *retrieve(const std::string &string);
-    symbol_node(char ch);
-    
-    std::string to_string() const;
-};
+symbol_node retrieve_symbol(const std::string &sym);
 
 }
 

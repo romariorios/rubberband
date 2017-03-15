@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2014, 2015  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2014--2015, 2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -28,7 +28,6 @@ namespace rbb
 {
 
 class object;
-class symbol_node;
 
 namespace literal
 {
@@ -64,7 +63,7 @@ public:
     std::string to_string(
         std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
     
-    std::map<symbol_node *, object> objtree;
+    std::map<symbol_node, object> objtree;
 };
 
 class block_data : public shared_data_t

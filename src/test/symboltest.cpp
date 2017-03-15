@@ -46,17 +46,6 @@ TESTS_INIT()
         rbb::symbol("a12345") << rbb::symbol("/=") << rbb::symbol("a1234") == rbb::boolean(true),
         puts("Error when cheking two symbols for inequality"))
 
-    const char *valhalla_s = "valhalla";
-    rbb::object valhalla = rbb::symbol("valhalla");
-    int valhalla_ind = 7;
-    for (
-        auto cur_ch = valhalla.__value.symbol;
-        valhalla_ind >= 0 && cur_ch && valhalla_s[valhalla_ind] == cur_ch->ch;
-        --valhalla_ind, cur_ch = cur_ch->up
-    );
-
-    TEST_CONDITION(valhalla_ind < 0, puts("Error when retrieving the string of a symbol"))
-
     // Test all special symbols
     COMPARE_WITH_SPECIAL_SYMBOLS("==")
     COMPARE_WITH_SPECIAL_SYMBOLS("/=")

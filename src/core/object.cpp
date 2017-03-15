@@ -308,7 +308,7 @@ object rbb::symbol(const std::string &val)
     object symb;
     symb.__send_msg = symbol_send_msg;
     symb.__value.type = value_t::symbol_t;
-    symb.__value.symbol = symbol_node::retrieve(val);
+    symb.__value.symbol = retrieve_symbol(val);
 
     return symb;
 }

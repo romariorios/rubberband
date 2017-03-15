@@ -1,5 +1,5 @@
 // Rubberband language
-// Copyright (C) 2013, 2014  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (C) 2013--2014, 2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // This library is free software; you can redistribute it and/or
 // modify it under the terms of the GNU Lesser General Public
@@ -21,39 +21,26 @@
 #include <cstring>
 
 using namespace rbb;
+using namespace std;
 
-bool cmp_symbol_nodes::operator()(symbol_node *const node1, symbol_node *const node2) const
+static unordered_set<string> *all_symbols = nullptr;
+
+struct __symbols_lifetime
 {
-    return node1->ch < node2->ch;
-}
-
-symbol_node::symbol_node(char ch) :
-    ch {ch}
-{}
-
-static symbol_node *trie_head = 0;
-
-symbol_node *rbb::symbol_node::retrieve(const std::string &string)
-{
-    if (!trie_head)
-        trie_head = new symbol_node('\0');
-
-    symbol_node *node = trie_head;
-
-    for (auto ch : string) {
-        symbol_node ch_node {ch};
-        auto result = node->down.find(&ch_node);
-        
-        if (result == node->down.end()) {
-            auto sym = new symbol_node {ch};
-            sym->up = node;
-            
-            node->down.insert(sym);
-            node = sym;
-        } else {
-            node = *result;
-        }
+    ~__symbols_lifetime()
+    {
+        delete all_symbols;
     }
+} __lifetime;
 
-    return node;
+symbol_node rbb::retrieve_symbol(const string &sym)
+{
+    if (!all_symbols)
+        all_symbols = new unordered_set<string>;
+    
+    auto found = all_symbols->find(sym);
+    if (found != all_symbols->end())
+        return &*found;
+    
+    return &*all_symbols->insert(sym).first;
 }

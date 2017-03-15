@@ -24,10 +24,10 @@
 #include <unordered_set>
 #include <vector>
 
+#include "symbol.hpp"
+
 namespace rbb
 {
-
-class symbol_node;
 
 class shared_data_t;
 
@@ -50,7 +50,7 @@ struct value_t
         long long integer;
         double floating;
         bool boolean;
-        symbol_node *symbol;
+        symbol_node symbol;
         std::shared_ptr<shared_data_t> *shared_data;
     };
 

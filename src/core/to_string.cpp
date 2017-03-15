@@ -29,14 +29,6 @@
 namespace rbb
 {
 
-std::string symbol_node::to_string() const
-{
-    if (!up)
-        return std::string{};
-
-    return up->to_string() + std::string{ch};
-}
-
 std::string array_data::to_string(
     shared_ptr<unordered_set<const object *>> visited) const
 {
@@ -60,7 +52,7 @@ std::string table_data::to_string(
     std::string result{"(:"};
 
     for (auto &entry : objtree) {
-        result += entry.first->to_string() + " -> " + entry.second.to_string(visited);
+        result += *entry.first + " -> " + entry.second.to_string(visited);
         result += ", ";
     }
 
@@ -192,7 +184,7 @@ std::string object::to_string(
     case value_t::floating_t:
         return std::to_string(__value.floating);
     case value_t::symbol_t:
-        return __value.symbol->to_string();
+        return *__value.symbol;
     case value_t::boolean_t:
         return __value.boolean? "?1" : "?0";
     case value_t::data_t:
