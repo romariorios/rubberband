@@ -21,7 +21,7 @@ $ /= array? ~ {
   ~:val -> $0
   ~:ba -> $
 
-  !~val >= 256?~ {
+  ~val >= 256?~ {
     ~ba|0, ~val mod 256
 
     ~ba* == 1?~ {
@@ -29,10 +29,12 @@ $ /= array? ~ {
     }
 
     ~ba|1, ~ba 1 + (~val / 256)
-
-    !(|~ba 0) + (~adjust ((|~ba 1) + (~ba / |2, ~ba* - 2)))
-  } {
+  }
+  
+  !~ba* <= 1?~ {
     !~ba
+  } {
+    !(|~ba 0) + (~adjust ((|~ba 1) + (~ba / |2, ~ba* - 2)))
   }
 }~
 
@@ -40,9 +42,9 @@ $ /= array? ~ {
   ~:ba -> $0, n -> $1
 
   !~ba* <= 1?~ {
-    !~ba
+    !(|~ba 0 * (~n))
   } {
-    !(|~ba 0 * (~n)) + ~mult(~ba / |1, ~ba* - 1)
+    !(|~ba 0 * (~n)) + (~mult|(~ba / |1, ~ba* - 1), ~n)
   }
 }~
 
@@ -58,8 +60,8 @@ $ /= array? ~ {
         ~:cur_char -> ~parser*
 
         !~isdigit (~cur_char)?~ {
-          ~:val1 -> ~val << 1?~ { !~val 1 } { !0 }
-          ~val|0, ~val 0 + (~val1 * 256) * 10 + (~cur_char - '0)
+          ~:val -> ~mult|~val, 10
+          ~val|0, ~val 0 + (~cur_char) - '0
           ~:val -> ~adjust (~val)
 
           ~parser>
@@ -74,5 +76,5 @@ $ /= array? ~ {
 
       !~loop~()
     }~
-  }(~|adjust, isdigit, pack)
+  }(~|adjust, isdigit, mult, pack)
 
