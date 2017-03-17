@@ -48,6 +48,55 @@ $ /= array? ~ {
   }
 }~
 
+~:plus -> {
+  ~:nums -> $
+  
+  !~nums 0* == 0?~ {
+    !~nums 1
+  } {
+    !~nums 1* == 0?~ {
+      !~nums 0
+    } {
+      !(
+        (|~nums 0 0 + (~nums 1 0)) +
+        (~plus|
+          (~nums 0 / |1, ~nums 0* - 1),
+          (~nums 1 / |1, ~nums 1* - 1))
+      )
+    }
+  }
+}~
+
+~:make_bignum -> {
+  ~:make_bignum -> @~
+
+  !{
+    ~:arg -> $
+    ~:sel -> {
+      ~:val -> $1
+      ~arg == ($0)?~ {
+        ~:res -> ~val
+      }
+    }~
+
+    ~sel|*, {!~make_bignum (~_mult~$)}~
+    ~sel|+, {!~make_bignum (~_plus~($data))}~
+    ~sel|==, {!~d == ($data)}~  # will not work for arrays
+    ~sel|/=, {!~d /= ($data)}~
+    ~sel|data, ~d
+
+    ~ << res >< ^:error -> unknown_method, got -> ~arg
+    
+    !~res
+  }(~ + :d -> $)
+}((~|adjust, mult, plus) + :
+  _mult -> {
+    !~adjust (~mult|~d, $)
+  },
+  _plus -> {
+    !~adjust (~plus|~d, $)
+  })
+
 %+:
   > -> 'N,
   = -> {
@@ -70,11 +119,11 @@ $ /= array? ~ {
         } {
           ~parser<
 
-          !~pack(~val)
+          !~make_bignum (~pack (~val))
         }
       }
 
       !~loop~()
     }~
-  }(~|adjust, isdigit, mult, pack)
+  }(~|adjust, isdigit, make_bignum, mult, pack)
 
