@@ -38,13 +38,13 @@ $ /= array? ~ {
   }
 }~
 
-~:mult -> {
+~:mult_n -> {
   ~:ba -> $0, n -> $1
 
   !~ba* <= 1?~ {
     !(|~ba 0 * (~n))
   } {
-    !(|~ba 0 * (~n)) + (~mult|(~ba / |1, ~ba* - 1), ~n)
+    !(|~ba 0 * (~n)) + (~mult_n|(~ba / |1, ~ba* - 1), ~n)
   }
 }~
 
@@ -67,6 +67,21 @@ $ /= array? ~ {
   }
 }~
 
+~:mult -> {
+  ~:nums -> $
+  
+  !~nums 1* == 0?~ {
+    !(|)
+  } {
+    !~plus|
+      (~mult_n|~nums 0, ~nums 1 0),
+      (|0) + (
+        ~mult|
+          ~nums 0,
+          ~nums 1 / (|1, ~nums 1* - 1))
+  }
+}~
+
 ~:make_bignum -> {
   ~:make_bignum -> @~
 
@@ -79,8 +94,8 @@ $ /= array? ~ {
       }
     }~
 
-    ~sel|*, {!~make_bignum (~_mult~$)}~
-    ~sel|+, {!~make_bignum (~_plus~($data))}~
+    ~sel|*, {!~make_bignum (~pack (~_mult~($data)))}~
+    ~sel|+, {!~make_bignum (~pack (~_plus~($data)))}~
     ~sel|==, {!~d == ($data)}~  # will not work for arrays
     ~sel|/=, {!~d /= ($data)}~
     ~sel|data, ~d
@@ -89,7 +104,7 @@ $ /= array? ~ {
     
     !~res
   }(~ + :d -> $)
-}((~|adjust, mult, plus) + :
+}((~|adjust, mult, pack, plus) + :
   _mult -> {
     !~adjust (~mult|~d, $)
   },
@@ -109,7 +124,7 @@ $ /= array? ~ {
         ~:cur_char -> ~parser*
 
         !~isdigit (~cur_char)?~ {
-          ~:val -> ~mult|~val, 10
+          ~:val -> ~mult_n|~val, 10
           ~val|0, ~val 0 + (~cur_char) - '0
           ~:val -> ~adjust (~val)
 
@@ -125,5 +140,5 @@ $ /= array? ~ {
 
       !~loop~()
     }~
-  }(~|adjust, isdigit, make_bignum, mult, pack)
+  }(~|adjust, isdigit, make_bignum, mult_n, pack)
 
