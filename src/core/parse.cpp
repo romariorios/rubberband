@@ -159,9 +159,9 @@ object master_declare_literal_send_msg(object *thisptr, object &msg)
         "The trigger should be numeric";
 
     if (trigger_obj.__value.type == value_t::integer_t)
-        trigger = static_cast<unsigned char>(trigger_obj.__value.integer);
+        trigger = static_cast<unsigned char>(trigger_obj.__value.integer());
     else if (trigger_obj.__value.type == value_t::floating_t)
-        trigger = static_cast<unsigned char>(trigger_obj.__value.floating);
+        trigger = static_cast<unsigned char>(trigger_obj.__value.floating());
     else
         throw semantic_error{trigger_error_msg, *thisptr, msg};
 

@@ -133,7 +133,7 @@ object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
     auto d = dynamic_cast<tokenizer_data *>(thisptr->__value.data());
 
     // TODO check if the message actually is a character
-    const auto ch = static_cast<unsigned char>(msg.__value.integer);
+    const auto ch = static_cast<unsigned char>(msg.__value.integer());
     const auto expr = d->_substr_until(ch);
     
     // FIXME HACK this only works if the expression does not contain a self-reference (@)

@@ -54,51 +54,16 @@ object object::create_data_object(
     send_msg_function send_msg,
     value_t::type_t extra_type)
 {
-    object ret = create_object(static_cast<value_t::type_t>(value_t::data_t | extra_type), send_msg);
-    ret.__value.shared_data = new shared_ptr<shared_data_t>(data);
+    object ret;
+    ret.__value = value_t{data};
+    ret.__value.type = static_cast<value_t::type_t>(value_t::data_t | extra_type);
+    ret.__send_msg = send_msg;
 
     return ret;
 }
 
 // object: The base for everything
 SEND_MSG(empty);
-
-object::object() :
-    __send_msg(empty_send_msg)
-{}
-
-object::object(const object &other)
-{
-    *this = other;
-}
-
-object::object(object&& other) :
-    __value{other.__value},
-    __send_msg{other.__send_msg}
-{
-    other.__value = value_t{};
-}
-
-object& object::operator=(const object& other)
-{
-    this->~object();
-
-    if (other.__value.type & value_t::data_t) {
-        __value.shared_data = new shared_ptr<shared_data_t>(*other.__value.shared_data);
-        __value.type = other.__value.type;
-    } else
-        __value = other.__value;
-
-    __send_msg = other.__send_msg;
-
-    return *this;
-}
-
-object::~object()
-{
-    if (__value.type & value_t::data_t)
-        delete __value.shared_data;
-}
 
 bool object::operator==(const object& other) const
 {
@@ -109,13 +74,13 @@ bool object::operator==(const object& other) const
     case value_t::empty_t:
         return true;
     case value_t::integer_t:
-        return __value.integer == other.__value.integer;
+        return __value.integer() == other.__value.integer();
     case value_t::floating_t:
-        return __value.floating == other.__value.floating;
+        return __value.floating() == other.__value.floating();
     case value_t::boolean_t:
-        return __value.boolean == other.__value.boolean;
+        return __value.boolean() == other.__value.boolean();
     case value_t::symbol_t:
-        return __value.symbol == other.__value.symbol;
+        return __value.symbol() == other.__value.symbol();
     default:
         return __value.data() == other.__value.data();
     }
@@ -169,7 +134,7 @@ double rbb::number_to_double(const object &num)
         return NAN;
 
     return num.__value.type & value_t::floating_t?
-        num.__value.floating : (double) num.__value.integer;
+        num.__value.floating() : (double) num.__value.integer();
 }
 
 static object num_operation(const object &thisobj, const object &msg,
@@ -184,7 +149,7 @@ static object num_operation(const object &thisobj, const object &msg,
     if (obj.__value.type & value_t::integer_t &&
         msg.__value.type & value_t::integer_t
     ) {
-        return int_operation(obj.__value.integer, msg.__value.integer);
+        return int_operation(obj.__value.integer(), msg.__value.integer());
     }
 
     double this_val = number_to_double(obj);
@@ -271,11 +236,9 @@ object rbb::number(double val)
     num.__send_msg = number_send_msg;
 
     if (val - trunc(val) != 0) {
-        num.__value.type = value_t::floating_t;
-        num.__value.floating = val;
+        num.__value = value_t{static_cast<long long>(val), value_t::integer_v};
     } else {
-        num.__value.type = value_t::integer_t;
-        num.__value.integer = val;
+        num.__value = value_t{val, value_t::floating_v};
     }
 
     return num;
@@ -307,8 +270,7 @@ object rbb::symbol(const std::string &val)
 {
     object symb;
     symb.__send_msg = symbol_send_msg;
-    symb.__value.type = value_t::symbol_t;
-    symb.__value.symbol = retrieve_symbol(val);
+    symb.__value = value_t{retrieve_symbol(val)};
 
     return symb;
 }
@@ -325,9 +287,9 @@ SEND_MSG(boolean_comp)
         return boolean(false);
 
     auto thisval =
-        static_cast<object_data *>(thisptr->__value.data())->obj.__value.boolean;
+        static_cast<object_data *>(thisptr->__value.data())->obj.__value.boolean();
 
-    if (msg.__value.boolean != thisval)
+    if (msg.__value.boolean() != thisval)
         return boolean(false);
 
     return boolean(true);
@@ -335,7 +297,7 @@ SEND_MSG(boolean_comp)
 
 SEND_MSG(boolean_comp_ne)
 {
-    return boolean(!boolean_comp_send_msg(thisptr, msg).__value.boolean);
+    return boolean(!boolean_comp_send_msg(thisptr, msg).__value.boolean());
 }
 
 class boolean_decision_data : public shared_data_t
@@ -363,7 +325,7 @@ SEND_MSG(boolean_get_iffalse_block)
     if (!has_iface(msg, SY_I_BL))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
-    return d->boolean_obj.__value.boolean?
+    return d->boolean_obj.__value.boolean()?
         d->true_result :
         block << d->context << empty();
 }
@@ -380,7 +342,7 @@ SEND_MSG(boolean_get_iftrue_block)
     if (!has_iface(msg, SY_I_BL))
         throw wrong_type_error<block_name>{*thisptr, msg};
 
-    if (d->boolean_obj.__value.boolean)
+    if (d->boolean_obj.__value.boolean())
         d_ret->true_result = block << d->context << empty();
 
     return object::create_data_object(d_ret, boolean_get_iffalse_block_send_msg);
@@ -407,7 +369,7 @@ SEND_MSG(boolean_do_##op)\
     if (!d)\
         return empty();\
 \
-    return rbb::boolean(d->obj.__value.boolean sym msg.__value.boolean);\
+    return rbb::boolean(d->obj.__value.boolean() sym msg.__value.boolean());\
 }
 
 BOOLEAN_DO(AND, &&)
@@ -443,8 +405,7 @@ object rbb::boolean(bool val)
 {
     object b;
     b.__send_msg = boolean_send_msg;
-    b.__value.type = value_t::boolean_t;
-    b.__value.boolean = val;
+    b.__value = value_t{val, value_t::boolean_v};
 
     return b;
 }
@@ -600,7 +561,7 @@ SEND_MSG(del_element)
             ->obj.__value.data())
         ->objtree;
 
-    objtree.erase(msg.__value.symbol);
+    objtree.erase(msg.__value.symbol());
 
     return {};
 }
@@ -630,7 +591,7 @@ object rbb::table(
         if (!has_iface(const_cast<object &>(symbols[i]), SY_I_SYM))
             continue;
 
-        auto sym = symbols[i].__value.symbol;
+        auto sym = symbols[i].__value.symbol();
         d->objtree[sym] = objects[i];
     }
 

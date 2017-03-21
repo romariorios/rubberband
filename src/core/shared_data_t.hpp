@@ -24,6 +24,8 @@
 namespace rbb
 {
 
+class object;
+
 class shared_data_t
 {
 public:

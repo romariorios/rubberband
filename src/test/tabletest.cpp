@@ -7,7 +7,7 @@ using namespace rbb;
 
 bool array_contains(rbb::object l, rbb::object obj)
 {
-    int size = (l << rbb::symbol("*")).__value.integer;
+    int size = (l << rbb::symbol("*")).__value.integer();
 
     for (int i = 0; i < size; ++i) {
         if (l << rbb::number(i) == obj)
@@ -19,8 +19,8 @@ bool array_contains(rbb::object l, rbb::object obj)
 
 bool arrays_have_same_elements(rbb::object l1, rbb::object l2)
 {
-    int size1 = (l1 << rbb::symbol("*")).__value.integer;
-    int size2 = (l2 << rbb::symbol("*")).__value.integer;
+    int size1 = (l1 << rbb::symbol("*")).__value.integer();
+    int size2 = (l2 << rbb::symbol("*")).__value.integer();
 
     if (size1 != size2)
         return false;

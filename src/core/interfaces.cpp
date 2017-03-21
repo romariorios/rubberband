@@ -192,7 +192,7 @@ object iface::booleanoid::select_response(object *thisptr, object &msg) const
         return {};
 
     auto f = select_function(thisptr, msg);
-    return f? create_response(thisptr, f) : boolean(!thisptr->__value.boolean);
+    return f? create_response(thisptr, f) : boolean(!thisptr->__value.boolean());
 }
 
 iface::listable::listable(
@@ -313,7 +313,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
 
         for (auto pair : d->objtree) {
             auto sym = symbol("");
-            sym.__value.symbol = pair.first;
+            sym.__value = value_t{pair.first};
 
             l_el.push_back(sym);
         }
@@ -328,7 +328,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
 
         for (int i = 0; i < sym_array_len; ++i) {
             auto cur_sym = sym_array << number(i);
-            auto cur_sym_ptr = cur_sym.__value.symbol;
+            auto cur_sym_ptr = cur_sym.__value.symbol();
             d->objtree[cur_sym_ptr] = msg_copy << cur_sym;
         }
 
@@ -342,7 +342,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
 
         for (int i = 0; i < size; ++i) {
             auto obj = msg_copy << number(i);
-            auto sym = obj.__value.symbol;
+            auto sym = obj.__value.symbol();
 
             if (d->objtree.find(sym) == d->objtree.end())
                 continue;
@@ -353,7 +353,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
         return new_table;
     }
 
-    return d->objtree.at(msg.__value.symbol);
+    return d->objtree.at(msg.__value.symbol());
 }
 
 iface::executable::executable(send_msg_function execute) :

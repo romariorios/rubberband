@@ -8,8 +8,8 @@ TESTS_INIT()
     rbb::object false_obj = rbb::boolean(false);
     rbb::object equals = rbb::symbol("==");
 
-    TEST_CONDITION(true_obj.__value.boolean == true, puts("True object is false"))
-    TEST_CONDITION(false_obj.__value.boolean == false, puts("False object is true"))
+    TEST_CONDITION(true_obj.__value.boolean() == true, puts("True object is false"))
+    TEST_CONDITION(false_obj.__value.boolean() == false, puts("False object is true"))
     TEST_CONDITION((true_obj << equals << true_obj).__value.type == rbb::value_t::boolean_t,
                    puts("The comparison block isn't returning a boolean"))
     TEST_CONDITION(true_obj << equals << true_obj == true_obj, puts("(true == true) /= true"))

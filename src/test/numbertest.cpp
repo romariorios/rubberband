@@ -29,7 +29,7 @@ TESTS_INIT()
         rbb::number(12.4).__value.type == rbb::value_t::floating_t,
         puts("Type isn't floating but argument was"))
     TEST_CONDITION(
-        rbb::number(15).__value.integer == 15,
+        rbb::number(15).__value.integer() == 15,
         puts("rbb::number doesn't initialize integer numbers correctly"))
 
     TEST_NUMBER_COMPARISON(15, 15, "/=", false)

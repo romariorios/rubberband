@@ -29,13 +29,12 @@
 namespace rbb
 {
 
-std::string array_data::to_string(
-    shared_ptr<unordered_set<const object *>> visited) const
+std::string array_data::to_string() const
 {
     std::string result{"(|"};
 
     for (int i = 0; i < size; ++i) {
-        result += arr[i].to_string(visited);
+        result += arr[i].to_string();
 
         if (i + 1 < size)
             result += ", ";
@@ -46,13 +45,12 @@ std::string array_data::to_string(
     return result;
 }
 
-std::string table_data::to_string(
-    shared_ptr<unordered_set<const object *>> visited) const
+std::string table_data::to_string() const
 {
     std::string result{"(:"};
 
     for (auto &entry : objtree) {
-        result += *entry.first + " -> " + entry.second.to_string(visited);
+        result += *entry.first + " -> " + entry.second.to_string();
         result += ", ";
     }
 
@@ -157,38 +155,29 @@ std::string block::to_string() const
 
 }
 
-std::string block_data::to_string(
-    shared_ptr<unordered_set<const object *>>) const
+std::string block_data::to_string() const
 {
     return block_l->to_string();
 }
 
 
-std::string object::to_string(
-    shared_ptr<unordered_set<const object *>> visited) const
+std::string object::to_string() const
 {
-    bool first_call = !visited;
-    if (first_call)
-        visited = make_shared<unordered_set<const object *>>();
-    else if (visited->find(this) != visited->end())
-        return "...";
-    visited->emplace(this);
-
     const auto type = __value.type;
 
     switch (type) {
     case value_t::empty_t:
         return "()";
     case value_t::integer_t:
-        return std::to_string(__value.integer);
+        return std::to_string(__value.integer());
     case value_t::floating_t:
-        return std::to_string(__value.floating);
+        return std::to_string(__value.floating());
     case value_t::symbol_t:
-        return *__value.symbol;
+        return *__value.symbol();
     case value_t::boolean_t:
-        return __value.boolean? "?1" : "?0";
+        return __value.boolean()? "?1" : "?0";
     case value_t::data_t:
-        return __value.data()->to_string(visited);
+        return __value.data()->to_string();
     default:
         return "[unknown]";
     }

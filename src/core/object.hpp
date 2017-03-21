@@ -21,10 +21,12 @@
 #include <initializer_list>
 #include <memory>
 #include <string>
+#include <type_traits>
 #include <unordered_set>
 #include <vector>
 
 #include "symbol.hpp"
+#include "shared_data_t.hpp"
 
 namespace rbb
 {
@@ -44,17 +46,80 @@ struct value_t
         symbol_t   = 0x20,
         data_t     = 0x40
     } type = value_t::empty_t;
+    
+    std::aligned_union<
+        0, long long, double, bool, symbol_node, std::shared_ptr<shared_data_t>>::type _s;
+    void *s = static_cast<void *>(&_s);
 
-    union
+    static struct __integer{} integer_v;
+    static struct __floating{} floating_v;
+    static struct __boolean{} boolean_v;
+    
+    value_t() :
+        type{no_type_t}
+    {}
+    
+    value_t(type_t t) :
+        type{t}
+    {}
+
+    value_t(long long val, __integer) :
+        type{integer_t}
     {
-        long long integer;
-        double floating;
-        bool boolean;
-        symbol_node symbol;
-        std::shared_ptr<shared_data_t> *shared_data;
-    };
+        ::new (s) long long{val};
+    }
 
-    shared_data_t *data() const { return shared_data->get(); }
+    value_t(double val, __floating) :
+        type{floating_t}
+    {
+        ::new (s) double{val};
+    }
+
+    value_t(bool val, __boolean) :
+        type{boolean_t}
+    {
+        ::new (s) bool{val};
+    }
+
+    value_t(symbol_node sym) :
+        type{symbol_t}
+    {
+        ::new (s) symbol_node{sym};
+    }
+
+    value_t(shared_data_t *data) :
+        type{data_t}
+    {
+        ::new (s) std::shared_ptr<shared_data_t>{data};
+    }
+
+    value_t(const value_t &other)
+    {
+        if (type & data_t)
+            ::new (s) std::shared_ptr<shared_data_t>{*static_cast<std::shared_ptr<shared_data_t> *>(other.s)};
+    }
+    
+    value_t(value_t &&other) = default;
+    
+    value_t &operator=(value_t &&other) = default;
+    value_t &operator=(const value_t &other)
+    {
+        this->~value_t();
+        if (type & data_t)
+            static_cast<std::shared_ptr<shared_data_t> *>(s)->~shared_ptr<shared_data_t>();
+    }
+
+    ~value_t()
+    {
+        if (type & data_t)
+            static_cast<std::shared_ptr<shared_data_t> *>(s)->~shared_ptr<shared_data_t>();
+    }
+
+    long long integer() const { return *static_cast<long long *>(s); }
+    double floating() const { return *static_cast<double *>(s); }
+    bool boolean() const { return *static_cast<bool *>(s); }
+    symbol_node symbol() const { return *static_cast<symbol_node *>(s); }
+    shared_data_t *data() const { return static_cast<std::shared_ptr<shared_data_t> *>(s)->get(); }
 };
 
 class object;
@@ -73,12 +138,6 @@ public:
         send_msg_function send_msg = nullptr,
         value_t::type_t extra_type = value_t::no_type_t);
 
-    object();
-    object(const object &other);
-    object(object &&other);
-    object &operator=(const object &other);
-    ~object();
-
     bool operator==(const object &other) const;
     inline bool operator!=(const object &other) const { return !(other == *this); }
 
@@ -89,8 +148,7 @@ public:
     object operator<<(double num);
     object operator<<(std::string &&sym);
 
-    std::string to_string(
-        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
+    std::string to_string() const;
 
     value_t __value;
     send_msg_function __send_msg;

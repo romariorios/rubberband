@@ -50,8 +50,7 @@ public:
         delete[] arr;
     }
     
-    std::string to_string(
-        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
+    std::string to_string() const;
 
     object *arr;
     int size;
@@ -60,8 +59,7 @@ public:
 class table_data : public shared_data_t
 {
 public:
-    std::string to_string(
-        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
+    std::string to_string() const;
     
     std::map<symbol_node, object> objtree;
 };
@@ -75,8 +73,7 @@ public:
         delete block_l;
     }
     
-    std::string to_string(
-        std::shared_ptr<std::unordered_set<const object *>> = nullptr) const;
+    std::string to_string() const;
 
     literal::block *block_l;
 };
@@ -102,16 +99,16 @@ static int get_index_from_obj(const object &obj)
         return -1;
 
     if (obj.__value.type & value_t::floating_t)
-        return obj.__value.floating;
+        return obj.__value.floating();
 
-    return obj.__value.integer;
+    return obj.__value.integer();
 }
 
 static bool table_contains_symbol(table_data *d, const object &msg)
 {
     return
         msg.__value.type & value_t::symbol_t &&
-        d->objtree.find(msg.__value.symbol) != d->objtree.end();
+        d->objtree.find(msg.__value.symbol()) != d->objtree.end();
 }
 
 }

@@ -70,7 +70,7 @@ public:
 
             string path;
             auto size_obj = obj << symbol("*");
-            const auto size = size_obj.__value.integer;
+            const auto size = size_obj.__value.integer();
 
             for (long long i = 0; i < size; ++i) {
                 auto path_symb = obj << number(i);

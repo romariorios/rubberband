@@ -6,8 +6,8 @@ bool cmp_array(rbb::object &l1, rbb::object &l2)
         l2.__value.type != rbb::value_t::data_t)
         return false;
 
-    int l1_len = (l1 << rbb::symbol("*")).__value.integer;
-    int l2_len = (l2 << rbb::symbol("*")).__value.integer;
+    int l1_len = (l1 << rbb::symbol("*")).__value.integer();
+    int l2_len = (l2 << rbb::symbol("*")).__value.integer();
 
     if (l1_len != l2_len)
         return false;
