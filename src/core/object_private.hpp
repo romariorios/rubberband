@@ -80,6 +80,8 @@ public:
 
 static bool is_numeric(const object &val)
 {
+    printf("type & integer: %d\n", val.__value.type & value_t::integer_t);
+    printf("type & floating: %d\n", val.__value.type & value_t::floating_t);
     return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
 }
 

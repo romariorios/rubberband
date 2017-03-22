@@ -75,7 +75,7 @@ bool object::operator==(const object& other) const
     case value_t::symbol_t:
         return __value.symbol() == other.__value.symbol();
     default:
-        return __value.data() == other.__value.data();
+        return false;
     }
 
     return false;

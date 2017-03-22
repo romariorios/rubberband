@@ -100,14 +100,16 @@ struct value_t
         type{static_cast<type_t>(data_t | extra_type)}
     {
         ::new (st()) data_ptr{data};
+        printf("[Constructed data value] address: %p, count: %ld\n", this->data().get(), this->data().use_count());
     }
     
     void copy_from(const value_t &other)
     {
         type = other.type;
-        if (type & data_t)
-            ::new (st()) data_ptr{other.val<data_ptr>()};
-        else
+        if (type & data_t) {
+            printf("[Copied data value] address: %p, count: %ld\n", other.data().get(), other.data().use_count());
+            ::new (st()) data_ptr{other.data()};
+        } else
             _s = other._s;
     }
 
@@ -118,8 +120,10 @@ struct value_t
 
     ~value_t()
     {
-        if (type & data_t)
-            val<data_ptr>().~shared_ptr<shared_data_t>();
+        if (type & data_t) {
+            printf("[Destructing data value] address: %p, count: %ld\n", data().get(), data().use_count());
+            data().~shared_ptr<shared_data_t>();
+        }
     }
 
     value_t &operator=(const value_t &other)
@@ -132,9 +136,9 @@ struct value_t
     value_t &operator=(value_t &&) = default;
 
     template <typename T>
-    T &&val() const
+    T val() const
     {
-        return std::move(*static_cast<T *>(const_cast<void *>(st())));
+        return *static_cast<T *>(const_cast<void *>(st()));
     }
 
     long long integer() const { return val<long long>(); }
