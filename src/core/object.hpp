@@ -51,10 +51,11 @@ struct value_t
         double floating;
         bool boolean;
         symbol_node symbol;
-        std::shared_ptr<shared_data_t> *shared_data;
     };
+    
+    std::shared_ptr<shared_data_t> shared_data;
 
-    shared_data_t *data() const { return shared_data->get(); }
+    shared_data_t *data() const { return shared_data.get(); }
 };
 
 class object;
@@ -77,7 +78,6 @@ public:
     object(const object &other);
     object(object &&other);
     object &operator=(const object &other);
-    ~object();
 
     bool operator==(const object &other) const;
     inline bool operator!=(const object &other) const { return !(other == *this); }

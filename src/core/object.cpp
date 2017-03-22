@@ -55,7 +55,7 @@ object object::create_data_object(
     value_t::type_t extra_type)
 {
     object ret = create_object(static_cast<value_t::type_t>(value_t::data_t | extra_type), send_msg);
-    ret.__value.shared_data = new shared_ptr<shared_data_t>(data);
+    ret.__value.shared_data.reset(data);
 
     return ret;
 }
@@ -83,21 +83,10 @@ object& object::operator=(const object& other)
 {
     this->~object();
 
-    if (other.__value.type & value_t::data_t) {
-        __value.shared_data = new shared_ptr<shared_data_t>(*other.__value.shared_data);
-        __value.type = other.__value.type;
-    } else
-        __value = other.__value;
-
+    __value = other.__value;
     __send_msg = other.__send_msg;
 
     return *this;
-}
-
-object::~object()
-{
-    if (__value.type & value_t::data_t)
-        delete __value.shared_data;
 }
 
 bool object::operator==(const object& other) const
