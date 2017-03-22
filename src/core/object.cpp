@@ -38,32 +38,25 @@ static object typename##_send_msg(object *thisptr, object &msg)
 using namespace rbb;
 
 // Helper create_object functions
-object object::create_object(
-    value_t::type_t type,
-    send_msg_function send_msg)
-{
-    object ret;
-    ret.__value.type = type;
-    ret.__send_msg = send_msg;
-
-    return ret;
-}
-
 object object::create_data_object(
     shared_data_t *data,
     send_msg_function send_msg,
     value_t::type_t extra_type)
 {
-    object ret;
-    ret.__value = value_t{data};
-    ret.__value.type = static_cast<value_t::type_t>(value_t::data_t | extra_type);
-    ret.__send_msg = send_msg;
-
-    return ret;
+    return object{value_t{data, extra_type}, send_msg};
 }
 
 // object: The base for everything
+object::object(value_t &&v, send_msg_function send_msg) :
+    __value{v},
+    __send_msg{send_msg}
+{}
+
 SEND_MSG(empty);
+
+object::object() :
+    __send_msg{empty_send_msg}
+{}
 
 bool object::operator==(const object& other) const
 {
@@ -141,7 +134,7 @@ static object num_operation(const object &thisobj, const object &msg,
                             object (*int_operation)(long long, long long),
                             object (*float_operation)(double, double))
 {
-    object obj = static_cast<object_data *>(thisobj.__value.data())->obj;
+    object obj = static_pointer_cast<object_data>(thisobj.__value.data())->obj;
 
     if (!is_numeric(obj))
         return empty();
@@ -232,22 +225,17 @@ SELECT_RESPONSE_FOR(number)
 
 object rbb::number(double val)
 {
-    object num;
-    num.__send_msg = number_send_msg;
-
-    if (val - trunc(val) != 0) {
-        num.__value = value_t{static_cast<long long>(val), value_t::integer_v};
-    } else {
-        num.__value = value_t{val, value_t::floating_v};
-    }
-
-    return num;
+    return object{
+        val - trunc(val) != 0?
+            value_t{static_cast<long long>(val), value_t::integer_v} :
+            value_t{val, value_t::floating_v},
+        number_send_msg};
 }
 
 // symbol: Symbol object
 static object symbol_comp_send_msg(object *thisptr, const object &msg, bool eq)
 {
-    return static_cast<object_data *>(thisptr->__value.data())->obj == msg?
+    return static_pointer_cast<object_data>(thisptr->__value.data())->obj == msg?
         boolean(eq) : boolean(!eq);
 }
 
@@ -268,11 +256,9 @@ SELECT_RESPONSE_FOR(symbol)
 
 object rbb::symbol(const std::string &val)
 {
-    object symb;
-    symb.__send_msg = symbol_send_msg;
-    symb.__value = value_t{retrieve_symbol(val)};
-
-    return symb;
+    return object{
+        value_t{retrieve_symbol(val)},
+        symbol_send_msg};
 }
 
 bool has_iface(object &obj, object &iface)
@@ -287,7 +273,7 @@ SEND_MSG(boolean_comp)
         return boolean(false);
 
     auto thisval =
-        static_cast<object_data *>(thisptr->__value.data())->obj.__value.boolean();
+        static_pointer_cast<object_data>(thisptr->__value.data())->obj.__value.boolean();
 
     if (msg.__value.boolean() != thisval)
         return boolean(false);
@@ -317,7 +303,7 @@ static constexpr const char block_name[] = "Block";
 
 SEND_MSG(boolean_get_iffalse_block)
 {
-    boolean_decision_data *d = static_cast<boolean_decision_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<boolean_decision_data>(thisptr->__value.data());
     if (!d)
         return empty();
 
@@ -332,7 +318,7 @@ SEND_MSG(boolean_get_iffalse_block)
 
 SEND_MSG(boolean_get_iftrue_block)
 {
-    boolean_decision_data *d = static_cast<boolean_decision_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<boolean_decision_data>(thisptr->__value.data());
     if (!d)
         return empty();
 
@@ -350,7 +336,7 @@ SEND_MSG(boolean_get_iftrue_block)
 
 SEND_MSG(boolean_get_context)
 {
-    object_data *d = static_cast<object_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<object_data>(thisptr->__value.data());
     if (!d)
         return empty();
 
@@ -365,7 +351,7 @@ SEND_MSG(boolean_do_##op)\
     if (!has_iface(msg, SY_I_BOOL))\
         return empty();\
 \
-    object_data *d = static_cast<object_data *>(thisptr->__value.data());\
+    auto d = static_pointer_cast<object_data>(thisptr->__value.data());\
     if (!d)\
         return empty();\
 \
@@ -377,7 +363,7 @@ BOOLEAN_DO(OR, ||)
 
 SEND_MSG(boolean_raise)
 {
-    auto boolean_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
+    auto boolean_obj = static_pointer_cast<object_data>(thisptr->__value.data())->obj;
 
     if (boolean_obj == boolean(true))
         throw rbb::runtime_error{msg};
@@ -403,17 +389,15 @@ SELECT_RESPONSE_FOR(boolean)
 
 object rbb::boolean(bool val)
 {
-    object b;
-    b.__send_msg = boolean_send_msg;
-    b.__value = value_t{val, value_t::boolean_v};
-
-    return b;
+    return object{
+        value_t{val, value_t::boolean_v},
+        boolean_send_msg};
 }
 
 // Comparison for any other objects
 static object data_comparison_send_msg(object *thisptr, const object &msg, bool eq)
 {
-    object_data *d = static_cast<object_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<object_data>(thisptr->__value.data());
 
     if (!d)
         return empty();
@@ -430,21 +414,21 @@ SEND_MSG(array);
 
 static constexpr const char array_name[] = "Array";
 
-static array_data *arr_d(object *thisptr)
+static auto arr_d(object *thisptr)
 {
-    return dynamic_cast<array_data *>(thisptr->__value.data());
+    return dynamic_pointer_cast<array_data>(thisptr->__value.data());
 }
 
 SEND_MSG(array_concatenation)
 {
-    object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
-    array_data *d = arr_d(&d_obj);
+    object d_obj = static_pointer_cast<object_data>(thisptr->__value.data())->obj;
+    auto d = arr_d(&d_obj);
 
     if (!has_iface(msg, SY_I_ARR))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
-    array_data *msg_d = static_cast<array_data *>(msg.__value.data());
-    array_data *new_d = new array_data(d->size + msg_d->size);
+    auto msg_d = static_pointer_cast<array_data>(msg.__value.data());
+    auto new_d = new array_data(d->size + msg_d->size);
 
     for (int i = 0; i < d->size; ++i)
         new_d->arr[i] = d->arr[i];
@@ -459,13 +443,13 @@ static constexpr const char number_name[] = "Number";
 
 SEND_MSG(array_slicing)
 {
-    object d_obj = static_cast<object_data *>(thisptr->__value.data())->obj;
-    array_data *d = arr_d(&d_obj);
+    object d_obj = static_pointer_cast<object_data>(thisptr->__value.data())->obj;
+    auto d = arr_d(&d_obj);
 
     if (!has_iface(msg, SY_I_ARR))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
-    array_data *msg_d = static_cast<array_data *>(msg.__value.data());
+    auto msg_d = static_pointer_cast<array_data>(msg.__value.data());
 
     if (msg_d->size < 2)
         throw semantic_error{"Wrong number of arguments for array slicing", *thisptr, msg};
@@ -541,7 +525,7 @@ SEND_MSG(table_merge)
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     object table = rbb::table();
-    table << static_cast<object_data *>(thisptr->__value.data())->obj;
+    table << static_pointer_cast<object_data>(thisptr->__value.data())->obj;
     table << msg;
 
     return table;
@@ -555,8 +539,8 @@ SEND_MSG(del_element)
         throw wrong_type_error<symbol_name>{*thisptr, msg};
 
     auto &objtree =
-        static_cast<table_data *>(
-            static_cast<object_data *>(
+        static_pointer_cast<table_data>(
+            static_pointer_cast<object_data>(
                 thisptr->__value.data())
             ->obj.__value.data())
         ->objtree;
@@ -601,7 +585,7 @@ object rbb::table(
 // Block: A sequence of instructions ready to be executed
 SEND_MSG(block_instance_get_metainfo)
 {
-    auto d = static_cast<object_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<object_data>(thisptr->__value.data());
 
     object ans;
     try {
@@ -615,7 +599,7 @@ SEND_MSG(block_instance_get_metainfo)
 
 SEND_MSG(block_instance)
 {
-    block_data *d = static_cast<block_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<block_data>(thisptr->__value.data());
     d->block_l->set_message(msg);
 
     auto &&ans = d->block_l->run();

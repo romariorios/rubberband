@@ -135,7 +135,7 @@ public:
 
 object master_load_send_msg(object *thisptr, object &msg)
 {
-    auto d = static_cast<master_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<master_data>(thisptr->__value.data());
 
     if (msg.__value.type != value_t::symbol_t)
         throw semantic_error{"Symbol expected", *thisptr, msg};
@@ -145,12 +145,12 @@ object master_load_send_msg(object *thisptr, object &msg)
 
 object master_declare_literal_send_msg(object *thisptr, object &msg)
 {
-    auto d = static_cast<master_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<master_data>(thisptr->__value.data());
 
     if (msg.__value.type != value_t::data_t)
         throw semantic_error{"Table expected", *thisptr, msg};
 
-    if (!dynamic_cast<table_data *>(msg.__value.data()))
+    if (!dynamic_pointer_cast<table_data>(msg.__value.data()))
         throw semantic_error{"Table expected", *thisptr, msg};
 
     auto trigger_obj = msg << SY_GT;
@@ -186,14 +186,14 @@ public:
 
 object master_custom_operation_send_msg(object *thisptr, object &msg)
 {
-    auto d = static_cast<custom_operation_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<custom_operation_data>(thisptr->__value.data());
 
     return d->master.custom_operation(d->symbol.to_string(), msg);
 }
 
 object master_send_msg(object *thisptr, object &msg)
 {
-    auto d = static_cast<master_data*>(thisptr->__value.data());
+    auto d = static_pointer_cast<master_data>(thisptr->__value.data());
 
     // load
     if (msg == SY_CIRC)

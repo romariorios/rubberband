@@ -148,7 +148,7 @@ public:
 
 object post_eval_ctx_fun(object *thisptr, object &msg)
 {
-    auto d = static_cast<post_eval_ctx_data *>(thisptr->__value.data());
+    auto d = static_pointer_cast<post_eval_ctx_data>(thisptr->__value.data());
 
     if (msg == SY_EQ)
         return d->obj;
@@ -156,7 +156,7 @@ object post_eval_ctx_fun(object *thisptr, object &msg)
     if (msg == SY_BR_EXCL) {
         // FIXME HACK to extract the return expression from a block object
         auto &cur_expr_block = d->parsed_exprs[d->current_index++];
-        auto block_d = dynamic_cast<block_data *>(cur_expr_block.__value.data());
+        auto block_d = dynamic_pointer_cast<block_data>(cur_expr_block.__value.data());
         auto &ret_stm = block_d->block_l->return_statement();
 
         return ret_stm.eval(d->parent);

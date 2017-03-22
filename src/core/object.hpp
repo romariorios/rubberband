@@ -47,9 +47,18 @@ struct value_t
         data_t     = 0x40
     } type = value_t::empty_t;
     
-    std::aligned_union<
-        0, long long, double, bool, symbol_node, std::shared_ptr<shared_data_t>>::type _s;
-    void *s = static_cast<void *>(&_s);
+    using data_ptr = std::shared_ptr<shared_data_t>;
+    std::aligned_union<0, long long, double, bool, symbol_node, data_ptr>::type _s;
+        
+    const void *st() const
+    {
+        return static_cast<const void *>(&_s);
+    }
+    
+    void *st()
+    {
+        return static_cast<void *>(&_s);
+    }
 
     static struct __integer{} integer_v;
     static struct __floating{} floating_v;
@@ -66,60 +75,73 @@ struct value_t
     value_t(long long val, __integer) :
         type{integer_t}
     {
-        ::new (s) long long{val};
+        ::new (st()) long long{val};
     }
 
     value_t(double val, __floating) :
         type{floating_t}
     {
-        ::new (s) double{val};
+        ::new (st()) double{val};
     }
 
     value_t(bool val, __boolean) :
         type{boolean_t}
     {
-        ::new (s) bool{val};
+        ::new (st()) bool{val};
     }
 
     value_t(symbol_node sym) :
         type{symbol_t}
     {
-        ::new (s) symbol_node{sym};
+        ::new (st()) symbol_node{sym};
     }
 
-    value_t(shared_data_t *data) :
-        type{data_t}
+    value_t(shared_data_t *data, type_t extra_type = no_type_t) :
+        type{static_cast<type_t>(data_t | extra_type)}
     {
-        ::new (s) std::shared_ptr<shared_data_t>{data};
+        ::new (st()) data_ptr{data};
+    }
+    
+    void copy_from(const value_t &other)
+    {
+        type = other.type;
+        if (type & data_t)
+            ::new (st()) data_ptr{other.val<data_ptr>()};
+        else
+            _s = other._s;
     }
 
     value_t(const value_t &other)
     {
-        if (type & data_t)
-            ::new (s) std::shared_ptr<shared_data_t>{*static_cast<std::shared_ptr<shared_data_t> *>(other.s)};
-    }
-    
-    value_t(value_t &&other) = default;
-    
-    value_t &operator=(value_t &&other) = default;
-    value_t &operator=(const value_t &other)
-    {
-        this->~value_t();
-        if (type & data_t)
-            static_cast<std::shared_ptr<shared_data_t> *>(s)->~shared_ptr<shared_data_t>();
+        copy_from(other);
     }
 
     ~value_t()
     {
         if (type & data_t)
-            static_cast<std::shared_ptr<shared_data_t> *>(s)->~shared_ptr<shared_data_t>();
+            val<data_ptr>().~shared_ptr<shared_data_t>();
     }
 
-    long long integer() const { return *static_cast<long long *>(s); }
-    double floating() const { return *static_cast<double *>(s); }
-    bool boolean() const { return *static_cast<bool *>(s); }
-    symbol_node symbol() const { return *static_cast<symbol_node *>(s); }
-    shared_data_t *data() const { return static_cast<std::shared_ptr<shared_data_t> *>(s)->get(); }
+    value_t &operator=(const value_t &other)
+    {
+        this->~value_t();
+        copy_from(other);
+    }
+    
+    value_t(value_t &&) = default;
+    value_t &operator=(value_t &&) = default;
+
+    template <typename T>
+    T &&val() const
+    {
+        return std::move(*static_cast<T *>(const_cast<void *>(st())));
+    }
+
+    long long integer() const { return val<long long>(); }
+    double floating() const { return val<double>(); }
+    bool boolean() const { return val<bool>(); }
+    symbol_node symbol() const { return val<symbol_node>(); }
+    data_ptr data() const { return val<data_ptr>(); }
 };
 
 class object;
@@ -129,14 +151,13 @@ typedef object (*send_msg_function)(object *, object &);
 class object
 {
 public:
-    static object create_object(
-        value_t::type_t type,
-        send_msg_function send_msg = 0);
-
     static object create_data_object(
         shared_data_t *data,
         send_msg_function send_msg = nullptr,
         value_t::type_t extra_type = value_t::no_type_t);
+    
+    explicit object(value_t &&v, send_msg_function send_msg);
+    object();
 
     bool operator==(const object &other) const;
     inline bool operator!=(const object &other) const { return !(other == *this); }

@@ -130,7 +130,7 @@ public:
 
 object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
 {
-    auto d = dynamic_cast<tokenizer_data *>(thisptr->__value.data());
+    auto d = dynamic_pointer_cast<tokenizer_data>(thisptr->__value.data());
 
     // TODO check if the message actually is a character
     const auto ch = static_cast<unsigned char>(msg.__value.integer());
@@ -144,7 +144,7 @@ object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
 
 object tokenizer_send_msg(object *thisptr, object &msg)
 {
-    auto d = dynamic_cast<tokenizer_data*>(thisptr->__value.data());
+    auto d = dynamic_pointer_cast<tokenizer_data>(thisptr->__value.data());
     if (msg == SY_ASTER)
         return number(static_cast<unsigned char>(d->_increment_by(0)));
 

@@ -97,14 +97,14 @@ literal(l)          ::= SYMBOL(tok). { l = new literal::symbol{std::string{*tok-
 literal(l)          ::= NUMBER(tok).
 {
     if (tok->type == token::t::number) {
-        l = new literal::number{tok->lexem.integer()};
+        l = new literal::number{tok->lexem.integer};
     } else if (tok->type == token::t::number_f) {
         l = new literal::number{tok->lexem.floating};
     } else {
         l = new literal::empty;
     }
 }
-literal(l)          ::= BOOLEAN(tok). { l = new literal::boolean{tok->lexem.boolean()}; }
+literal(l)          ::= BOOLEAN(tok). { l = new literal::boolean{tok->lexem.boolean}; }
 literal(l)          ::= array(arr). { l = arr; }
 literal(l)          ::= table(t). { l = t; }
 literal(l)          ::= block(bl). { l = bl; }

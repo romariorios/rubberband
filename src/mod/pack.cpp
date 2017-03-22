@@ -25,6 +25,7 @@
 #include <shared_data_t.hpp>
 
 using namespace rbb;
+using namespace std;
 
 class pack_data : public shared_data_t
 {
@@ -102,12 +103,12 @@ public:
     const size_t size;
 };
 
-static pack_data *to_data(object &obj)
+static shared_ptr<pack_data> to_data(object &obj)
 {
     if (obj.__value.type != value_t::data_t)
         return nullptr;
 
-    return dynamic_cast<pack_data *>(obj.__value.data());
+    return dynamic_pointer_cast<pack_data>(obj.__value.data());
 }
 
 static object inner_obj(object &obj)
@@ -115,7 +116,7 @@ static object inner_obj(object &obj)
     if (obj.__value.type != value_t::data_t)
         return {};
 
-    auto d = dynamic_cast<object_data *>(obj.__value.data());
+    auto d = dynamic_pointer_cast<object_data>(obj.__value.data());
     if (!d)
         return {};
 
@@ -246,5 +247,5 @@ object pack(object *, object &msg)
 
 extern "C" object rbb_loadobj()
 {
-    return object::create_object(value_t::no_data_t, pack);
+    return object{value_t{}, pack};
 }
