@@ -286,7 +286,7 @@ bool iface::mapped::responds_to(object *thisptr, object &msg) const
     if (msg_copy << SY_DLTQM << SY_I_ARR == boolean(true)) {
         int size = number_to_double(msg_copy << SY_ASTER);
         for (int i = 0; i < size; ++i)
-            if (!((msg_copy << number(i)).__value.type & value_t::symbol_t))
+            if (!((msg_copy << number(i)).__value.type == value_t::symbol_t))
                 return false;
 
         return true;

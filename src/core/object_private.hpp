@@ -22,6 +22,7 @@
 #include <memory>
 #include <unordered_set>
 
+#include "common_syms.hpp"
 #include "shared_data_t.hpp"
 
 namespace rbb
@@ -80,18 +81,16 @@ public:
 
 static bool is_numeric(const object &val)
 {
-    printf("type & integer: %d\n", val.__value.type & value_t::integer_t);
-    printf("type & floating: %d\n", val.__value.type & value_t::floating_t);
-    return val.__value.type & value_t::integer_t || val.__value.type & value_t::floating_t;
+    return val.__value.type == value_t::integer_t || val.__value.type == value_t::floating_t;
 }
 
 static bool in_bounds(object obj, object index)
 {
-    auto size = obj << "*";
+    auto size = obj << SY_ASTER;
     if (!is_numeric(size))
         return false;
     
-    return index << ">=" << 0 << "/\\" << (index << "<" << size) == boolean(true);
+    return index << SY_GE << 0 << SY_L_AND << (index << SY_LT << size) == boolean(true);
 }
 
 static int get_index_from_obj(const object &obj)
@@ -100,7 +99,7 @@ static int get_index_from_obj(const object &obj)
     if (!is_numeric(obj_copy))
         return -1;
 
-    if (obj.__value.type & value_t::floating_t)
+    if (obj.__value.type == value_t::floating_t)
         return obj.__value.floating();
 
     return obj.__value.integer();
@@ -110,7 +109,7 @@ template <typename Data>
 static bool table_contains_symbol(Data d, const object &msg)
 {
     return
-        msg.__value.type & value_t::symbol_t &&
+        msg.__value.type == value_t::symbol_t &&
         d->objtree.find(msg.__value.symbol()) != d->objtree.end();
 }
 

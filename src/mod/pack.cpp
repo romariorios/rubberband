@@ -247,5 +247,5 @@ object pack(object *, object &msg)
 
 extern "C" object rbb_loadobj()
 {
-    return object{value_t{}, pack};
+    return object{value_t{value_t::no_data_t}, pack};
 }

@@ -37,14 +37,14 @@ struct value_t
 {
     enum type_t
     {
-        no_type_t  = 0x0,
-        no_data_t  = 0x1,
-        empty_t    = 0x2,
-        integer_t  = 0x4,
-        floating_t = 0x8,
-        boolean_t  = 0x10,
-        symbol_t   = 0x20,
-        data_t     = 0x40
+        no_type_t,
+        no_data_t,
+        empty_t,
+        integer_t,
+        floating_t,
+        boolean_t,
+        symbol_t,
+        data_t
     } type = value_t::empty_t;
     
     using data_ptr = std::shared_ptr<shared_data_t>;
@@ -63,10 +63,6 @@ struct value_t
     static struct __integer{} integer_v;
     static struct __floating{} floating_v;
     static struct __boolean{} boolean_v;
-    
-    value_t() :
-        type{no_type_t}
-    {}
     
     value_t(type_t t) :
         type{t}
@@ -96,20 +92,18 @@ struct value_t
         ::new (st()) symbol_node{sym};
     }
 
-    value_t(shared_data_t *data, type_t extra_type = no_type_t) :
-        type{static_cast<type_t>(data_t | extra_type)}
+    value_t(shared_data_t *data) :
+        type{data_t}
     {
         ::new (st()) data_ptr{data};
-        printf("[Constructed data value] address: %p, count: %ld\n", this->data().get(), this->data().use_count());
     }
-    
+
     void copy_from(const value_t &other)
     {
         type = other.type;
-        if (type & data_t) {
-            printf("[Copied data value] address: %p, count: %ld\n", other.data().get(), other.data().use_count());
+        if (type == data_t)
             ::new (st()) data_ptr{other.data()};
-        } else
+        else
             _s = other._s;
     }
 
@@ -120,16 +114,16 @@ struct value_t
 
     ~value_t()
     {
-        if (type & data_t) {
-            printf("[Destructing data value] address: %p, count: %ld\n", data().get(), data().use_count());
+        if (type == data_t)
             data().~shared_ptr<shared_data_t>();
-        }
     }
 
     value_t &operator=(const value_t &other)
     {
         this->~value_t();
         copy_from(other);
+        
+        return *this;
     }
     
     value_t(value_t &&) = default;
@@ -157,8 +151,7 @@ class object
 public:
     static object create_data_object(
         shared_data_t *data,
-        send_msg_function send_msg = nullptr,
-        value_t::type_t extra_type = value_t::no_type_t);
+        send_msg_function send_msg = nullptr);
     
     explicit object(value_t &&v, send_msg_function send_msg);
     object();

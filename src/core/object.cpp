@@ -38,12 +38,11 @@ static object typename##_send_msg(object *thisptr, object &msg)
 using namespace rbb;
 
 // Helper create_object functions
-object object::create_data_object(
-    shared_data_t *data,
-    send_msg_function send_msg,
-    value_t::type_t extra_type)
+rbb::object rbb::object::create_data_object(
+    rbb::shared_data_t* data,
+    rbb::send_msg_function send_msg)
 {
-    return object{value_t{data, extra_type}, send_msg};
+    return object{value_t{data}, send_msg};
 }
 
 // object: The base for everything
@@ -55,6 +54,7 @@ object::object(value_t &&v, send_msg_function send_msg) :
 SEND_MSG(empty);
 
 object::object() :
+    __value{value_t::empty_t},
     __send_msg{empty_send_msg}
 {}
 
@@ -75,7 +75,7 @@ bool object::operator==(const object& other) const
     case value_t::symbol_t:
         return __value.symbol() == other.__value.symbol();
     default:
-        return false;
+        return __value.data() == other.__value.data();
     }
 
     return false;
@@ -126,7 +126,7 @@ double rbb::number_to_double(const object &num)
     if (!is_numeric(num_copy))
         return NAN;
 
-    return num.__value.type & value_t::floating_t?
+    return num.__value.type == value_t::floating_t?
         num.__value.floating() : (double) num.__value.integer();
 }
 
@@ -139,8 +139,8 @@ static object num_operation(const object &thisobj, const object &msg,
     if (!is_numeric(obj))
         return empty();
 
-    if (obj.__value.type & value_t::integer_t &&
-        msg.__value.type & value_t::integer_t
+    if (obj.__value.type == value_t::integer_t &&
+        msg.__value.type == value_t::integer_t
     ) {
         return int_operation(obj.__value.integer(), msg.__value.integer());
     }
