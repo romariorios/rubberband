@@ -226,7 +226,7 @@ SELECT_RESPONSE_FOR(number)
 object rbb::number(double val)
 {
     return object{
-        val - trunc(val) != 0?
+        val - trunc(val) == 0?
             value_t{static_cast<long long>(val), value_t::integer_v} :
             value_t{val, value_t::floating_v},
         number_send_msg};
