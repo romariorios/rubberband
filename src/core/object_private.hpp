@@ -51,7 +51,8 @@ public:
         delete[] arr;
     }
     
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
 
     object *arr;
     int size;
@@ -60,7 +61,8 @@ public:
 class table_data : public shared_data_t
 {
 public:
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> visited = nullptr) const;
     
     std::map<symbol_node, object> objtree;
 };
@@ -74,7 +76,8 @@ public:
         delete block_l;
     }
     
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> = nullptr) const;
 
     literal::block *block_l;
 };
@@ -89,7 +92,7 @@ static bool in_bounds(object obj, object index)
     auto size = obj << SY_ASTER;
     if (!is_numeric(size))
         return false;
-    
+
     return index << SY_GE << 0 << SY_L_AND << (index << SY_LT << size) == boolean(true);
 }
 

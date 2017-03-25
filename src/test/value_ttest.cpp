@@ -77,11 +77,11 @@ TESTS_INIT()
         d1_copy->c == 1000000000;
     TEST_CONDITION(d1_copy_ok, puts("Not able to read copied data value"))
     
-    value_t vdata2_copy_to;
+    value_t vdata2_copy_to{value_t::no_data_t};
     {
-        value_t vdata2_copy_l1;
+        value_t vdata2_copy_l1{value_t::no_data_t};
         {
-            value_t vdata2_copy_l2;
+            value_t vdata2_copy_l2{value_t::no_data_t};
             {
                 auto d2 = new test_data;
                 d2->a = 10;
@@ -137,23 +137,32 @@ TESTS_INIT()
     d1->a = 500;
     TEST_CONDITION(
         d1_copy->a == 500,
-        puts("Changes in copied data values are not being reflectd in the original ones"))
+        puts("Changes in copied data values are not being reflected in the original ones"))
     
-    auto arr1 = objarr("a", "b", "c", 10, 20, 30);
-    auto els_ok =
-        arr1 << 0 == symbol("a") &&
-        arr1 << 1 == symbol("b") &&
-        arr1 << 2 == symbol("c") &&
-        arr1 << 3 == number(10) &&
-        arr1 << 4 == number(20) &&
-        arr1 << 5 == number(30);
-    TEST_CONDITION(els_ok, puts("Could not properly access array"))
+    auto create_data_val = []()
+    {
+        auto d = new test_data;
+        d->a = 100;
+        d->b = 100;
+        d->c = 100;
+        
+        return value_t{d};
+    };
     
-    arr1 << objarr(0, "hello");
-    TEST_CONDITION(arr1 << 0 == symbol("hello"), puts("Could not replace array element"))
-    
-    TEST_CONDITION(
-        arr1 << 0 << "==" << (arr1 << 0) == boolean(true),
-        puts("Could not compare array elements"))
+    value_t from_func{value_t::empty_t};
+    {
+        value_t assigned_later{value_t::empty_t};
+        
+        assigned_later = create_data_val();
+        
+        from_func = assigned_later;
+    }
+
+    auto from_func_d = static_pointer_cast<test_data>(from_func.data());
+    auto from_func_ok =
+        from_func_d->a == 100 &&
+        from_func_d->b == 100 &&
+        from_func_d->c == 100;
+    TEST_CONDITION(from_func_ok, puts("Values aren't being passed around from functions properly"))
 TESTS_END()
 

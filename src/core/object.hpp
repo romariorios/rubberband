@@ -64,7 +64,7 @@ struct value_t
     static struct __floating{} floating_v;
     static struct __boolean{} boolean_v;
     
-    value_t(type_t t) :
+    explicit value_t(type_t t) :
         type{t}
     {}
 
@@ -86,13 +86,13 @@ struct value_t
         ::new (st()) bool{val};
     }
 
-    value_t(symbol_node sym) :
+    explicit value_t(symbol_node sym) :
         type{symbol_t}
     {
         ::new (st()) symbol_node{sym};
     }
 
-    value_t(shared_data_t *data) :
+    explicit value_t(shared_data_t *data) :
         type{data_t}
     {
         ::new (st()) data_ptr{data};
@@ -125,9 +125,6 @@ struct value_t
         
         return *this;
     }
-    
-    value_t(value_t &&) = default;
-    value_t &operator=(value_t &&) = default;
 
     template <typename T>
     T val() const
@@ -166,7 +163,8 @@ public:
     object operator<<(double num);
     object operator<<(std::string &&sym);
 
-    std::string to_string() const;
+    std::string to_string(
+        std::shared_ptr<std::unordered_set<const object *>> = nullptr) const;
 
     value_t __value;
     send_msg_function __send_msg;
