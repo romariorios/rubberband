@@ -56,21 +56,87 @@ struct value_t
     static struct __floating{} floating_v;
     static struct __boolean{} boolean_v;
 
-    explicit value_t(type_t t);
-    value_t(long long val, __integer);
-    value_t(double val, __floating);
-    value_t(bool val, __boolean);
-    explicit value_t(symbol_node sym);
-    explicit value_t(shared_data_t *data);
-    ~value_t();
+    explicit value_t(type_t t) :
+        type{t}
+    {}
 
-    void copy_from(const value_t &other);
-    value_t(const value_t &other);
-    value_t &operator=(const value_t &other);
+    value_t(long long val, __integer) :
+        type{integer_t}
+    {
+        ::new (st()) long long{val};
+    }
 
-    void move_from(value_t &other);
-    value_t(value_t &&other);
-    value_t &operator=(value_t &&other);
+    value_t(double val, __floating) :
+        type{floating_t}
+    {
+        ::new (st()) double{val};
+    }
+
+    value_t(bool val, __boolean) :
+        type{boolean_t}
+    {
+        ::new (st()) bool{val};
+    }
+
+    explicit value_t(symbol_node sym) :
+        type{symbol_t}
+    {
+        ::new (st()) symbol_node{sym};
+    }
+
+    explicit value_t(shared_data_t *data) :
+        type{data_t}
+    {
+        ::new (st()) data_ptr{data};
+    }
+
+    ~value_t()
+    {
+        if (type == data_t)
+            data().~shared_ptr<shared_data_t>();
+    }
+
+    void copy_from(const value_t &other)
+    {
+        type = other.type;
+        if (type == data_t)
+            ::new (st()) data_ptr{other.data()};
+        else
+            _s = other._s;
+    }
+
+    value_t(const value_t &other)
+    {
+        copy_from(other);
+    }
+
+    value_t &operator=(const value_t &other)
+    {
+        this->~value_t();
+        copy_from(other);
+
+        return *this;
+    }
+
+    void move_from(value_t &other)
+    {
+        type = other.type;
+        other.type = no_data_t;
+        _s = other._s;
+    }
+
+    value_t(value_t &&other)
+    {
+        move_from(other);
+    }
+
+    value_t &operator=(value_t &&other)
+    {
+        this->~value_t();
+        move_from(other);
+
+        return *this;
+    }
 
     template <typename T>
     T &val() const

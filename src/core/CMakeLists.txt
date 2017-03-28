@@ -68,7 +68,6 @@ set(rubberbandcore_sources
     symbol.cpp
     to_string.cpp
     tokenizer.cpp
-    value.cpp
 
     lemon_parser.cpp)
 
