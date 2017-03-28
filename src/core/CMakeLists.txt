@@ -68,6 +68,7 @@ set(rubberbandcore_sources
     symbol.cpp
     to_string.cpp
     tokenizer.cpp
+    value.cpp
 
     lemon_parser.cpp)
 
@@ -79,6 +80,7 @@ set(rubberbandcore_headers
     parse.hpp
     shared_data_t.hpp
     symbol.hpp
+    value.hpp
     tokenizer.hpp)
 
 add_library(rubberbandcore SHARED ${rubberbandcore_sources})
