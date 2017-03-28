@@ -122,7 +122,27 @@ struct value_t
     {
         this->~value_t();
         copy_from(other);
-        
+
+        return *this;
+    }
+
+    void move_from(value_t &other)
+    {
+        type = other.type;
+        other.type = no_data_t;
+        _s = other._s;
+    }
+
+    value_t(value_t &&other)
+    {
+        move_from(other);
+    }
+
+    value_t &operator=(value_t &&other)
+    {
+        this->~value_t();
+        move_from(other);
+
         return *this;
     }
 
