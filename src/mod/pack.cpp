@@ -108,7 +108,7 @@ static shared_ptr<pack_data> to_data(object &obj)
     if (obj.__value.type != value_t::data_t)
         return nullptr;
 
-    return dynamic_pointer_cast<pack_data>(obj.__value.data());
+    return obj.__value.try_data_as<pack_data>();
 }
 
 static object inner_obj(object &obj)
@@ -116,7 +116,7 @@ static object inner_obj(object &obj)
     if (obj.__value.type != value_t::data_t)
         return {};
 
-    auto d = dynamic_pointer_cast<object_data>(obj.__value.data());
+    auto d = obj.__value.try_data_as<object_data>();
     if (!d)
         return {};
 

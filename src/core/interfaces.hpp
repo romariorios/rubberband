@@ -71,7 +71,7 @@ public:
 template <typename... Interfaces>
 object iface_collection_follows_interface(object *thisptr, object &msg)
 {
-    auto data = std::static_pointer_cast<metainfo_data<Interfaces...>>(thisptr->__value.data());
+    auto data = thisptr->__value.data_as<metainfo_data<Interfaces...>>();
 
     return boolean(data->interfaces.follows_interface(msg));
 }
@@ -79,7 +79,7 @@ object iface_collection_follows_interface(object *thisptr, object &msg)
 template <typename... Interfaces>
 object iface_collection_responds_to(object *thisptr, object &msg)
 {
-    auto data = std::static_pointer_cast<metainfo_data<Interfaces...>>(thisptr->__value.data());
+    auto data = thisptr->__value.data_as<metainfo_data<Interfaces...>>();
 
     return boolean(data->interfaces.responds_to(&data->obj, msg));
 }

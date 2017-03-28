@@ -134,7 +134,7 @@ static object num_operation(const object &thisobj, const object &msg,
                             object (*int_operation)(long long, long long),
                             object (*float_operation)(double, double))
 {
-    object obj = static_pointer_cast<object_data>(thisobj.__value.data())->obj;
+    object obj = thisobj.__value.data_as<object_data>()->obj;
 
     if (!is_numeric(obj))
         return empty();
@@ -235,7 +235,7 @@ object rbb::number(double val)
 // symbol: Symbol object
 static object symbol_comp_send_msg(object *thisptr, const object &msg, bool eq)
 {
-    return static_pointer_cast<object_data>(thisptr->__value.data())->obj == msg?
+    return thisptr->__value.data_as<object_data>()->obj == msg?
         boolean(eq) : boolean(!eq);
 }
 
@@ -272,8 +272,7 @@ SEND_MSG(boolean_comp)
     if (!has_iface(msg, SY_I_BOOL))
         return boolean(false);
 
-    auto thisval =
-        static_pointer_cast<object_data>(thisptr->__value.data())->obj.__value.boolean();
+    auto thisval = thisptr->__value.data_as<object_data>()->obj.__value.boolean();
 
     if (msg.__value.boolean() != thisval)
         return boolean(false);
@@ -303,7 +302,7 @@ static constexpr const char block_name[] = "Block";
 
 SEND_MSG(boolean_get_iffalse_block)
 {
-    auto d = static_pointer_cast<boolean_decision_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<boolean_decision_data>();
     if (!d)
         return empty();
 
@@ -318,7 +317,7 @@ SEND_MSG(boolean_get_iffalse_block)
 
 SEND_MSG(boolean_get_iftrue_block)
 {
-    auto d = static_pointer_cast<boolean_decision_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<boolean_decision_data>();
     if (!d)
         return empty();
 
@@ -336,7 +335,7 @@ SEND_MSG(boolean_get_iftrue_block)
 
 SEND_MSG(boolean_get_context)
 {
-    auto d = static_pointer_cast<object_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<object_data>();
     if (!d)
         return empty();
 
@@ -351,7 +350,7 @@ SEND_MSG(boolean_do_##op)\
     if (!has_iface(msg, SY_I_BOOL))\
         return empty();\
 \
-    auto d = static_pointer_cast<object_data>(thisptr->__value.data());\
+    auto d = thisptr->__value.data_as<object_data>();\
     if (!d)\
         return empty();\
 \
@@ -363,7 +362,7 @@ BOOLEAN_DO(OR, ||)
 
 SEND_MSG(boolean_raise)
 {
-    auto boolean_obj = static_pointer_cast<object_data>(thisptr->__value.data())->obj;
+    auto boolean_obj = thisptr->__value.data_as<object_data>()->obj;
 
     if (boolean_obj == boolean(true))
         throw rbb::runtime_error{msg};
@@ -397,7 +396,7 @@ object rbb::boolean(bool val)
 // Comparison for any other objects
 static object data_comparison_send_msg(object *thisptr, const object &msg, bool eq)
 {
-    auto d = static_pointer_cast<object_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<object_data>();
 
     if (!d)
         return empty();
@@ -416,18 +415,18 @@ static constexpr const char array_name[] = "Array";
 
 static auto arr_d(object *thisptr)
 {
-    return dynamic_pointer_cast<array_data>(thisptr->__value.data());
+    return thisptr->__value.try_data_as<array_data>();
 }
 
 SEND_MSG(array_concatenation)
 {
-    object d_obj = static_pointer_cast<object_data>(thisptr->__value.data())->obj;
+    object d_obj = thisptr->__value.data_as<object_data>()->obj;
     auto d = arr_d(&d_obj);
 
     if (!has_iface(msg, SY_I_ARR))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
-    auto msg_d = static_pointer_cast<array_data>(msg.__value.data());
+    auto msg_d = msg.__value.data_as<array_data>();
     auto new_d = new array_data(d->size + msg_d->size);
 
     for (int i = 0; i < d->size; ++i)
@@ -443,13 +442,13 @@ static constexpr const char number_name[] = "Number";
 
 SEND_MSG(array_slicing)
 {
-    object d_obj = static_pointer_cast<object_data>(thisptr->__value.data())->obj;
+    object d_obj = thisptr->__value.data_as<object_data>()->obj;
     auto d = arr_d(&d_obj);
 
     if (!has_iface(msg, SY_I_ARR))
         throw wrong_type_error<array_name>{*thisptr, msg};
 
-    auto msg_d = static_pointer_cast<array_data>(msg.__value.data());
+    auto msg_d = msg.__value.data_as<array_data>();
 
     if (msg_d->size < 2)
         throw semantic_error{"Wrong number of arguments for array slicing", *thisptr, msg};
@@ -525,7 +524,7 @@ SEND_MSG(table_merge)
         throw wrong_type_error<block_name>{*thisptr, msg};
 
     object table = rbb::table();
-    table << static_pointer_cast<object_data>(thisptr->__value.data())->obj;
+    table << thisptr->__value.data_as<object_data>()->obj;
     table << msg;
 
     return table;
@@ -585,7 +584,7 @@ object rbb::table(
 // Block: A sequence of instructions ready to be executed
 SEND_MSG(block_instance_get_metainfo)
 {
-    auto d = static_pointer_cast<object_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<object_data>();
 
     object ans;
     try {
@@ -599,7 +598,7 @@ SEND_MSG(block_instance_get_metainfo)
 
 SEND_MSG(block_instance)
 {
-    auto d = static_pointer_cast<block_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<block_data>();
     d->block_l->set_message(msg);
 
     auto &&ans = d->block_l->run();

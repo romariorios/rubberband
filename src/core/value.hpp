@@ -149,6 +149,12 @@ struct value_t
     inline bool &boolean() const { return val<bool>(); }
     inline symbol_node &symbol() const { return val<symbol_node>(); }
     inline data_ptr &data() const { return val<data_ptr>(); }
+
+    template <typename T>
+    inline auto data_as() const { return std::static_pointer_cast<T>(data()); }
+
+    template <typename T>
+    inline auto try_data_as() const { return std::dynamic_pointer_cast<T>(data()); }
 };
 
 }

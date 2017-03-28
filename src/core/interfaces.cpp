@@ -277,7 +277,7 @@ bool iface::mapped::responds_to(object *thisptr, object &msg) const
         msg == SY_ASTER)
         return true;
 
-    auto d = std::static_pointer_cast<table_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<table_data>();
 
     auto msg_copy = msg;
     if (msg_copy << SY_DLTQM << SY_I_TABLE == boolean(true))
@@ -306,7 +306,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
     if (f)
         return create_response(thisptr, f);
 
-    auto d = static_pointer_cast<table_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<table_data>();
 
     if (msg == SY_ASTER) {
         vector<object> l_el;
@@ -338,7 +338,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
     if (msg_copy << SY_DLTQM << SY_I_ARR == boolean(true)) {
         int size = number_to_double(msg_copy << SY_ASTER);
         auto new_table = table();
-        auto new_table_d = static_pointer_cast<table_data>(new_table.__value.data());
+        auto new_table_d = new_table.__value.data_as<table_data>();
 
         for (int i = 0; i < size; ++i) {
             auto obj = msg_copy << number(i);
@@ -369,7 +369,7 @@ bool iface::executable::responds_to(object *, object &) const
 
 object iface::executable::select_response(object *thisptr, object &msg) const
 {
-    auto d = static_pointer_cast<block_data>(thisptr->__value.data());
+    auto d = thisptr->__value.data_as<block_data>();
     auto block_l = new literal::block(*d->block_l);
     block_l->set_context(msg);
 
