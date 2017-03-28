@@ -147,16 +147,16 @@ struct value_t
     }
 
     template <typename T>
-    T val() const
+    T &val() const
     {
         return *static_cast<T *>(const_cast<void *>(st()));
     }
 
-    long long integer() const { return val<long long>(); }
-    double floating() const { return val<double>(); }
-    bool boolean() const { return val<bool>(); }
-    symbol_node symbol() const { return val<symbol_node>(); }
-    data_ptr data() const { return val<data_ptr>(); }
+    inline long long &integer() const { return val<long long>(); }
+    inline double &floating() const { return val<double>(); }
+    inline bool &boolean() const { return val<bool>(); }
+    inline symbol_node &symbol() const { return val<symbol_node>(); }
+    inline data_ptr &data() const { return val<data_ptr>(); }
 };
 
 class object;
