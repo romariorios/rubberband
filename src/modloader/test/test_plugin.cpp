@@ -10,5 +10,5 @@ object thing(object *, object &)
 
 extern "C" object rbb_loadobj()
 {
-    return object::create_object(value_t::no_data_t, thing);
+    return object{value_t{value_t::no_data_t}, thing};
 }

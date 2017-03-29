@@ -176,9 +176,9 @@ object literal::user_defined::eval(literal::block *parent)
         return _obj;
 
     auto post_eval_ctx =
-        object::create_data_object(
-            new post_eval_ctx_data{_obj, _exprs, parent},
-            post_eval_ctx_fun);
+        object{value_t{
+            new post_eval_ctx_data{_obj, _exprs, parent}},
+            post_eval_ctx_fun};
     auto evaluator = _post_evaluator << post_eval_ctx;
 
     return evaluator << rbb::empty();

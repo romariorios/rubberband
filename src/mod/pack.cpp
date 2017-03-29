@@ -151,8 +151,8 @@ static object pack_concat_send_msg(object *thisptr, object &msg)
     if (!msg_d)
         throw message_not_recognized_error{*thisptr, msg, "Expected pack"};
 
-    return object::create_data_object(
-        new pack_data{d->concat(*msg_d)}, pack_data_send_msg);
+    return object{value_t{
+        new pack_data{d->concat(*msg_d)}}, pack_data_send_msg};
 }
 
 static object pack_slice_send_msg(object *thisptr, object &msg)
@@ -165,12 +165,12 @@ static object pack_slice_send_msg(object *thisptr, object &msg)
 
     auto obj = inner_obj(*thisptr);
     auto d = to_data(obj);
-    return object::create_data_object(
+    return object{value_t{
         new pack_data{
             d->slice(
                 number_to_double(msg << 0),
-                number_to_double(msg << 1))},
-        pack_data_send_msg);
+                number_to_double(msg << 1))}},
+        pack_data_send_msg};
 }
 
 static int pack_get_size(object *thisptr)
@@ -242,7 +242,7 @@ object pack(object *, object &msg)
         pack->pack_array[i] = num;
     }
 
-    return object::create_data_object(pack, pack_data_send_msg);
+    return object{value_t{pack}, pack_data_send_msg};
 }
 
 extern "C" object rbb_loadobj()

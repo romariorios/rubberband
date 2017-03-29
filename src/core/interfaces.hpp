@@ -129,9 +129,9 @@ public:
     object select_response(object *thisptr, object &msg) const
     {
         if (msg == SY_DLT || msg == SY_DLTQM)
-            return object::create_data_object(
-                new metainfo_data<Interfaces...>{*this, *thisptr},
-                select_function(thisptr, msg));
+            return object{value_t{
+                new metainfo_data<Interfaces...>{*this, *thisptr}},
+                select_function(thisptr, msg)};
 
         object f;
 

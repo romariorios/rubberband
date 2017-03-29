@@ -37,14 +37,6 @@ static object typename##_send_msg(object *thisptr, object &msg)
 
 using namespace rbb;
 
-// Helper create_object functions
-rbb::object rbb::object::create_data_object(
-    rbb::shared_data_t* data,
-    rbb::send_msg_function send_msg)
-{
-    return object{value_t{data}, send_msg};
-}
-
 // object: The base for everything
 object::object(value_t &&v, send_msg_function send_msg) :
     __value{v},
@@ -194,7 +186,7 @@ SEND_MSG(array);
 
 static object create_array_object(array_data *d)
 {
-    return object::create_data_object(d, array_send_msg);
+    return object{value_t{d}, array_send_msg};
 }
 
 IFACES(number)
@@ -330,7 +322,7 @@ SEND_MSG(boolean_get_iftrue_block)
     if (d->boolean_obj.__value.boolean())
         d_ret->true_result = block << d->context << empty();
 
-    return object::create_data_object(d_ret, boolean_get_iffalse_block_send_msg);
+    return object{value_t{d_ret}, boolean_get_iffalse_block_send_msg};
 }
 
 SEND_MSG(boolean_get_context)
@@ -339,9 +331,9 @@ SEND_MSG(boolean_get_context)
     if (!d)
         return empty();
 
-    return object::create_data_object(
-        new boolean_decision_data(msg, d->obj),
-        boolean_get_iftrue_block_send_msg);
+    return object{value_t{
+        new boolean_decision_data(msg, d->obj)},
+        boolean_get_iftrue_block_send_msg};
 }
 
 #define BOOLEAN_DO(op, sym)\
@@ -578,7 +570,7 @@ object rbb::table(
         d->objtree[sym] = objects[i];
     }
 
-    return object::create_data_object(d, table_send_msg);
+    return object{value_t{d}, table_send_msg};
 }
 
 // Block: A sequence of instructions ready to be executed
@@ -603,9 +595,9 @@ SEND_MSG(block_instance)
 
     auto &&ans = d->block_l->run();
     if (msg == SY_DLT || msg == SY_DLTQM)
-        return object::create_data_object(
-            new object_data{ans},
-            block_instance_get_metainfo_send_msg);
+        return object{value_t{
+            new object_data{ans}},
+            block_instance_get_metainfo_send_msg};
 
     return ans;
 }
@@ -626,5 +618,5 @@ SELECT_RESPONSE_FOR(block)
 object rbb::literal::block::eval(literal::block *parent)
 {
     auto block_l = new block{*this};
-    return object::create_data_object(new block_data(block_l), block_send_msg);
+    return object{value_t{new block_data(block_l)}, block_send_msg};
 }

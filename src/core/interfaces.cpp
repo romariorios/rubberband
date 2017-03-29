@@ -26,7 +26,7 @@ using namespace std;
 
 inline object create_response(object *thisptr, send_msg_function f)
 {
-    return object::create_data_object(new object_data{*thisptr}, f);
+    return object{value_t{new object_data{*thisptr}}, f};
 }
 
 #define DEFAULT_SELECT_FUNCTION(__class) \
@@ -148,7 +148,7 @@ object iface::numeric::select_response(object *thisptr, object &msg) const
     for (auto i = 0; i < min(msg_size, new_d->size); ++i)
         new_d->arr[i] = msg_copy << number(i);
 
-    return object::create_data_object(new_d, _array_send_msg);
+    return object{value_t{new_d}, _array_send_msg};
 }
 
 bool iface::numeric::responds_to(object *, object &msg) const
@@ -373,5 +373,5 @@ object iface::executable::select_response(object *thisptr, object &msg) const
     auto block_l = new literal::block(*d->block_l);
     block_l->set_context(msg);
 
-    return object::create_data_object(new block_data(block_l), _execute);
+    return object{value_t{new block_data(block_l)}, _execute};
 }

@@ -36,10 +36,6 @@ typedef object (*send_msg_function)(object *, object &);
 class object
 {
 public:
-    static object create_data_object(
-        shared_data_t *data,
-        send_msg_function send_msg = nullptr);
-    
     explicit object(value_t &&v, send_msg_function send_msg);
     object();
 

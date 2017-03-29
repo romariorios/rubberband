@@ -153,9 +153,9 @@ object tokenizer_send_msg(object *thisptr, object &msg)
     else if (msg == SY_LT)
         d->_increment_by(-1);
     else if (msg == SY_DLT)
-        return object::create_data_object(
-            new tokenizer_data{*d},
-            tokenizer_append_expr_send_msg);
+        return object{value_t{
+            new tokenizer_data{*d}},
+            tokenizer_append_expr_send_msg};
     // TODO make tokenizer throw on error
 
     return {};
@@ -188,7 +188,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 if (cur_literal != _literals.end()) {
                     auto data = new token::custom_literal_data;
                     
-                    auto context = object::create_data_object(
+                    auto context = object{value_t{
                         new tokenizer_data{
                             [this, &args](int increment)
                             {
@@ -199,8 +199,8 @@ token tokenizer::_look_token(_look_token_args &args) const
                             [this, &args](char ch) { return _get_substr_until(args, ch); },
                             _remaining,
                             data->parsed_exprs,
-                            _master},
-                        tokenizer_send_msg);
+                            _master}},
+                        tokenizer_send_msg};
 
                     auto evaluators = cur_literal->second;
                     auto evaluator = evaluators.first;
