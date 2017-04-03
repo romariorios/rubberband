@@ -16,9 +16,9 @@ TESTS_INIT()
     {
         auto define_literal = dummy_master.parse(R"(
         {
-            %+:
-                > -> 39,     # ASCII for '
-                = -> { !12 }
+            %lit:
+                trigger -> 39,
+                eval -> { !12 }
         }
         )");
         define_literal << empty() << empty();
@@ -37,9 +37,9 @@ TESTS_INIT()
     {
         auto define_char_literal = dummy_master.parse(R"(
         {
-            %+:
-                > -> 39,           # ASCII for '
-                = -> { ~> !~* }  # ~>: go to next char; ~*: current char
+            %lit:
+                trigger -> 39,
+                eval -> { ~skip !~char_val }  # ~skip: go to next char; ~char_val: current char
         }
         )");
         define_char_literal << empty() << empty();
@@ -49,13 +49,12 @@ TESTS_INIT()
         try {
             auto define_string_literal = dummy_master.parse(R"(
             {
-                %+:
-                    # Create string literal tiggered by "
-                    > -> '",
-                    = -> {
+                %lit:
+                    trigger -> '",
+                    eval -> {
                         !{
-                            ~chars>
-                            ~:self -> @, cur -> ~chars*
+                            ~chars skip
+                            ~:self -> @, cur -> ~chars char_val
 
                             # First, create a linked list until a second " is found
                             !~cur /= '"?~ {
@@ -118,30 +117,30 @@ TESTS_INIT()
                }).to_string().c_str()))
 
         // Define user-literals containing language expressions
-        // field >
+        // field trigger
         //   Trigger
-        // field =
+        // field eval
         //   Evaluate static parts of the literal and determine dynamic ones
-        //   current char: ~*
-        //   skip char: ~>
-        //   append expression until some char: ~<< (some char)
-        // field [$]
+        //   current char: ~char_val
+        //   skip char: ~skip
+        //   go back: ~back
+        //   append expression until some char: ~parse_until (some char)
+        // field run_eval
         //   Evaluate dynamic parts of the literal
         //   (if empty, will just return the result of the static evaluator)
-        //   result of field =: ~=
-        //   eval current expression: ~[!]
-        //   skip object: ~>>
+        //   result of field eval: ~eval_res
+        //   eval current expression: ~expr_val
+        //   skip object: ~expr_skip
         auto define_object_wrapper_literal = dummy_master.parse(R"({
-            %+:
-                > -> 'o,
-                = -> {
-                    # skip o, read expression until u, skip u
-                    ~>; ~<< 'u; ~>
+            %lit:
+                trigger -> 'o,
+                eval -> {
+                    ~skip; ~parse_until 'u; ~skip
                     # returns nothing because there's no static part in this literal
                 },
-                [$] -> {
+                run_eval -> {
                     # returns value of first expression
-                    !~[!]
+                    !~expr_val
                 }
         })");
         define_object_wrapper_literal << empty() << empty();

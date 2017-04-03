@@ -150,10 +150,10 @@ object post_eval_ctx_fun(object *thisptr, object &msg)
 {
     auto d = thisptr->__value.data_as<post_eval_ctx_data>();
 
-    if (msg == SY_EQ)
+    if (msg == SY_LDF_ERES)
         return d->obj;
 
-    if (msg == SY_BR_EXCL) {
+    if (msg == SY_LDF_EXPVAL) {
         // FIXME HACK to extract the return expression from a block object
         auto &cur_expr_block = d->parsed_exprs[d->current_index++];
         auto block_d = cur_expr_block.__value.try_data_as<block_data>();
@@ -162,7 +162,7 @@ object post_eval_ctx_fun(object *thisptr, object &msg)
         return ret_stm.eval(d->parent);
     }
 
-    if (msg == SY_GT) {
+    if (msg == SY_LDF_EXPSKIP) {
         ++d->current_index;
         return {};
     }

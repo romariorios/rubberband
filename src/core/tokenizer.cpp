@@ -145,14 +145,14 @@ object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
 object tokenizer_send_msg(object *thisptr, object &msg)
 {
     auto d = thisptr->__value.try_data_as<tokenizer_data>();
-    if (msg == SY_ASTER)
+    if (msg == SY_LDF_CHVAL)
         return number(static_cast<unsigned char>(d->_increment_by(0)));
 
-    if (msg == SY_GT)
+    if (msg == SY_LDF_SKIP)
         d->_increment_by(1);
-    else if (msg == SY_LT)
+    else if (msg == SY_LDF_BACK)
         d->_increment_by(-1);
-    else if (msg == SY_DLT)
+    else if (msg == SY_LDF_PUNTIL)
         return object{value_t{
             new tokenizer_data{*d}},
             tokenizer_append_expr_send_msg};
