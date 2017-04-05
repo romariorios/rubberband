@@ -28,36 +28,36 @@ TESTS_INIT()
     TEST_OPERATOR_EQ(rbb::empty(), false_obj)
 
     TEST_CONDITION(
-        true_obj << rbb::symbol("/\\") << true_obj == true_obj,
+        true_obj << rbb::symbol("and") << true_obj == true_obj,
         puts("AND  | T| T|  error"))
     TEST_CONDITION(
-        true_obj << rbb::symbol("/\\") << false_obj == false_obj,
+        true_obj << rbb::symbol("and") << false_obj == false_obj,
         puts("AND  | T| F|  error"))
     TEST_CONDITION(
-        false_obj << rbb::symbol("/\\") << true_obj == false_obj,
+        false_obj << rbb::symbol("and") << true_obj == false_obj,
         puts("AND  | F| T|  error"))
     TEST_CONDITION(
-        false_obj << rbb::symbol("/\\") << false_obj == false_obj,
+        false_obj << rbb::symbol("and") << false_obj == false_obj,
         puts("AND  | F| F|  error"))
 
     TEST_CONDITION(
-        true_obj << rbb::symbol("\\/") << true_obj == true_obj,
+        true_obj << rbb::symbol("or") << true_obj == true_obj,
         puts("OR   | T| T|  error"))
     TEST_CONDITION(
-        true_obj << rbb::symbol("\\/") << false_obj == true_obj,
+        true_obj << rbb::symbol("or") << false_obj == true_obj,
         puts("OR   | T| F|  error"))
     TEST_CONDITION(
-        false_obj << rbb::symbol("\\/") << true_obj == true_obj,
+        false_obj << rbb::symbol("or") << true_obj == true_obj,
         puts("OR   | F| T|  error"))
     TEST_CONDITION(
-        false_obj << rbb::symbol("\\/") << false_obj == false_obj,
+        false_obj << rbb::symbol("or") << false_obj == false_obj,
         puts("OR   | F| F|  error"))
 
     TEST_CONDITION(
-        true_obj << rbb::symbol("><") == false_obj,
+        true_obj << rbb::symbol("neg") == false_obj,
         puts("NOT     | T| error"))
     TEST_CONDITION(
-        false_obj << rbb::symbol("><") == true_obj,
+        false_obj << rbb::symbol("neg") == true_obj,
         puts("NOT     | F| error"))
 
     rbb::literal::block bl_true;

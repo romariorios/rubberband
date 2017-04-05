@@ -183,7 +183,7 @@ send_msg_function iface::booleanoid::select_function(object *, object &msg) cons
 
 bool iface::booleanoid::responds_to(object *thisptr, object &msg) const
 {
-    return select_function(thisptr, msg) || msg == SY_L_NOT;
+    return select_function(thisptr, msg) || msg == SY_L_NEG;
 }
 
 object iface::booleanoid::select_response(object *thisptr, object &msg) const

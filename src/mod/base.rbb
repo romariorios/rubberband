@@ -1,11 +1,11 @@
 # ~assert_condition|<condition>, <error>, <from>, <arg_name>, <extra_args>
 ~:assert_cond -> {
   ~:extra -> $4
-  ~extra <<? [:] ><?~ {
+  ~extra <<? [:] neg?~ {
     ~:extra -> (:)
   }
 
-  $0 >< ^($4:
+  $0 neg ^($4:
     error -> $1,
     from -> $2,
     arg_name -> $3)
@@ -85,7 +85,7 @@
 # ~c      # ()
 ~:fn_ctx -> {
   !{
-    ~assert|$ <<? [a] \/ ($ <<? [:]), expecting_symbol_or_table, access_obj, :got -> $
+    ~assert|$ <<? [a] or ($ <<? [:]), expecting_symbol_or_table, access_obj, :got -> $
 
     !$ == ____clear_locals?(~:_a -> $) {
       ~:local -> (:)
