@@ -6,6 +6,7 @@
 
 DEFSYM(ASTER, "*")
 DEFSYM(CIRC, "^")
+DEFSYM(CONCAT, "concat")
 DEFSYM(DASH, "-")
 DEFSYM(DEQ, "==")
 DEFSYM(DLT, "<<")
@@ -21,6 +22,7 @@ DEFSYM(I_TABLE, "[:]")
 DEFSYM(L_AND, "/\\")
 DEFSYM(L_NOT, "><")
 DEFSYM(L_OR, "\\/")
+DEFSYM(LEN, "len")
 DEFSYM(LDF_BACK, "back")
 DEFSYM(LDF_CHVAL, "char_val")
 DEFSYM(LDF_EVAL, "eval")
@@ -38,5 +40,6 @@ DEFSYM(LT, "<")
 DEFSYM(PLUS, "+")
 DEFSYM(QM, "?")
 DEFSYM(SLASH, "/")
+DEFSYM(SLICE, "slice")
 
 #undef DEFSYM

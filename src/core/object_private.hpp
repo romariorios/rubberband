@@ -89,7 +89,7 @@ static bool is_numeric(const object &val)
 
 static bool in_bounds(object obj, object index)
 {
-    auto size = obj << SY_ASTER;
+    auto size = obj << SY_LEN;
     if (!is_numeric(size))
         return false;
 

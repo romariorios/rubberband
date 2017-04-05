@@ -160,7 +160,7 @@ static object pack_slice_send_msg(object *thisptr, object &msg)
     if (msg << "<<?" << "[|]" != boolean(true))
         throw message_not_recognized_error{*thisptr, msg, "Expected array"};
 
-    if (msg << "*" << ">=" << 2 != boolean(true))
+    if (msg << "len" << ">=" << 2 != boolean(true))
         throw message_not_recognized_error{*thisptr, msg, "Too few arguments"};
 
     auto obj = inner_obj(*thisptr);
@@ -227,7 +227,7 @@ object pack(object *, object &msg)
     if (msg << symbol("<<?") << SY_I_ARR == boolean(false))  // If msg isn't an array
         throw_msg_error("array expected");
 
-    const auto size = number_to_double(msg << symbol("*"));
+    const auto size = number_to_double(msg << symbol("len"));
     auto pack = new pack_data{static_cast<size_t>(size)};
     for (auto i = 0; i < size; ++i) {
         auto el = msg << number(i);

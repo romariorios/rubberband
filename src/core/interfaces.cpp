@@ -142,7 +142,7 @@ object iface::numeric::select_response(object *thisptr, object &msg) const
         return {};
 
     auto msg_copy = msg;
-    int msg_size = number_to_double(msg_copy << SY_ASTER);
+    int msg_size = number_to_double(msg_copy << SY_LEN);
     auto new_d = new array_data{get_index_from_obj(*thisptr)};
 
     for (auto i = 0; i < min(msg_size, new_d->size); ++i)
@@ -211,9 +211,9 @@ iface::listable::listable(
 
 send_msg_function iface::listable::select_function(object *, object &msg) const
 {
-    if (msg == SY_PLUS)
+    if (msg == SY_CONCAT)
         return _concat_send_msg;
-    if (msg == SY_SLASH)
+    if (msg == SY_SLICE)
         return _slice_send_msg;
 
     return nullptr;
@@ -222,12 +222,12 @@ send_msg_function iface::listable::select_function(object *, object &msg) const
 bool iface::listable::responds_to(object *thisptr, object &msg) const
 {
     if (select_function(thisptr, msg) ||
-        msg == SY_ASTER)
+        msg == SY_LEN)
         return true;
 
     if (msg << SY_DLTQM << SY_I_ARR == boolean(true))
         return
-            msg << SY_ASTER == number(2) &&
+            msg << SY_LEN == number(2) &&
             in_bounds(*thisptr, msg << number(0));
 
     return in_bounds(*thisptr, msg);
@@ -238,7 +238,7 @@ object iface::listable::select_response(object *thisptr, object &msg) const
     if (!responds_to(thisptr, msg))
         return {};
 
-    if (msg == SY_ASTER)
+    if (msg == SY_LEN)
         return number(_get_size(thisptr));
 
     if (is_numeric(msg))
@@ -284,7 +284,7 @@ bool iface::mapped::responds_to(object *thisptr, object &msg) const
         return true;
 
     if (msg_copy << SY_DLTQM << SY_I_ARR == boolean(true)) {
-        int size = number_to_double(msg_copy << SY_ASTER);
+        int size = number_to_double(msg_copy << SY_LEN);
         for (int i = 0; i < size; ++i)
             if (!((msg_copy << number(i)).__value.type == value_t::symbol_t))
                 return false;
@@ -324,7 +324,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
     auto msg_copy = msg;
     if (msg_copy << SY_DLTQM << SY_I_TABLE == boolean(true)) {
         auto sym_array = msg_copy << SY_ASTER;
-        int sym_array_len = number_to_double(sym_array << SY_ASTER);
+        int sym_array_len = number_to_double(sym_array << SY_LEN);
 
         for (int i = 0; i < sym_array_len; ++i) {
             auto cur_sym = sym_array << number(i);
@@ -336,7 +336,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
     }
 
     if (msg_copy << SY_DLTQM << SY_I_ARR == boolean(true)) {
-        int size = number_to_double(msg_copy << SY_ASTER);
+        int size = number_to_double(msg_copy << SY_LEN);
         auto new_table = table();
         auto new_table_d = new_table.__value.data_as<table_data>();
 

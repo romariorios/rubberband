@@ -24,44 +24,44 @@ $ /= array? ~ {
   ~val >= 256?~ {
     ~ba|0, ~val mod 256
 
-    ~ba* == 1?~ {
-      ~:ba -> ~ba + |0
+    ~ba len == 1?~ {
+      ~:ba -> ~ba concat |0
     }
 
     ~ba|1, ~ba 1 + (~val / 256)
   }
   
-  !~ba* <= 1?~ {
+  !~ba len <= 1?~ {
     !~ba
   } {
-    !(|~ba 0) + (~adjust ((|~ba 1) + (~ba / |2, ~ba* - 2)))
+    !(|~ba 0) concat (~adjust ((|~ba 1) concat (~ba slice|2, ~ba len - 2)))
   }
 }~
 
 ~:mult_n -> {
   ~:ba -> $0, n -> $1
 
-  !~ba* <= 1?~ {
+  !~ba len <= 1?~ {
     !(|~ba 0 * (~n))
   } {
-    !(|~ba 0 * (~n)) + (~mult_n|(~ba / |1, ~ba* - 1), ~n)
+    !(|~ba 0 * (~n)) concat (~mult_n|(~ba slice|1, ~ba len - 1), ~n)
   }
 }~
 
 ~:plus -> {
   ~:nums -> $
   
-  !~nums 0* == 0?~ {
+  !~nums 0 len == 0?~ {
     !~nums 1
   } {
-    !~nums 1* == 0?~ {
+    !~nums 1 len == 0?~ {
       !~nums 0
     } {
       !(
-        (|~nums 0 0 + (~nums 1 0)) +
+        (|~nums 0 0 + (~nums 1 0)) concat
         (~plus|
-          (~nums 0 / |1, ~nums 0* - 1),
-          (~nums 1 / |1, ~nums 1* - 1))
+          (~nums 0 slice|1, ~nums 0 len - 1),
+          (~nums 1 slice|1, ~nums 1 len - 1))
       )
     }
   }
@@ -70,15 +70,15 @@ $ /= array? ~ {
 ~:mult -> {
   ~:nums -> $
   
-  !~nums 1* == 0?~ {
+  !~nums 1 len == 0?~ {
     !(|)
   } {
     !~plus|
       (~mult_n|~nums 0, ~nums 1 0),
-      (|0) + (
+      (|0) concat (
         ~mult|
           ~nums 0,
-          ~nums 1 / (|1, ~nums 1* - 1))
+          ~nums 1 slice (|1, ~nums 1 len - 1))
   }
 }~
 

@@ -6,8 +6,8 @@ bool cmp_array(rbb::object &l1, rbb::object &l2)
         l2.__value.type != rbb::value_t::data_t)
         return false;
 
-    int l1_len = (l1 << rbb::symbol("*")).__value.integer();
-    int l2_len = (l2 << rbb::symbol("*")).__value.integer();
+    int l1_len = (l1 << rbb::symbol("len")).__value.integer();
+    int l2_len = (l2 << rbb::symbol("len")).__value.integer();
 
     if (l1_len != l2_len)
         return false;
@@ -25,7 +25,7 @@ bool cmp_array(rbb::object &l1, rbb::object &l2)
 }
 
 #define TEST_SIZE(__size)\
-auto size = arr << rbb::symbol("*");\
+auto size = arr << rbb::symbol("len");\
 TEST_CONDITION(\
     size == rbb::number(__size),\
     printf(\
@@ -81,7 +81,7 @@ TESTS_INIT()
     )
 
     TEST_CONDITION(
-        l << rbb::symbol("*") == rbb::number(3),
+        l << rbb::symbol("len") == rbb::number(3),
         puts("The array doesn't correctly report its size"))
     TEST_CONDITION(
         l << rbb::number(0) == rbb::number(1),
@@ -101,12 +101,12 @@ TESTS_INIT()
         l << rbb::number(0) == rbb::symbol("number_array"),
         puts("Assigning an object to a position has no effect"))
 
-    auto l3 = l << "+" << objarr(2, 3, 5);
+    auto l3 = l << "concat" << objarr(2, 3, 5);
     auto l4 = objarr("number_array", 4, 9, 2, 3, 5);
 
     TEST_CONDITION(cmp_array(l3, l4), puts("Concatenation doesn't work"));
 
-    auto l5 = l3 << "/" << objarr(1, 3);
+    auto l5 = l3 << "slice" << objarr(1, 3);
     auto el = objarr(4, 9, 2);
 
     TEST_CONDITION(cmp_array(l5, el), puts("Slicing doesn't work"))
