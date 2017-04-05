@@ -7,7 +7,7 @@ using namespace rbb;
 
 bool array_contains(rbb::object l, rbb::object obj)
 {
-    int size = (l << rbb::symbol("*")).__value.integer();
+    int size = (l << rbb::symbol("len")).__value.integer();
 
     for (int i = 0; i < size; ++i) {
         if (l << rbb::number(i) == obj)
@@ -19,8 +19,8 @@ bool array_contains(rbb::object l, rbb::object obj)
 
 bool arrays_have_same_elements(rbb::object l1, rbb::object l2)
 {
-    int size1 = (l1 << rbb::symbol("*")).__value.integer();
-    int size2 = (l2 << rbb::symbol("*")).__value.integer();
+    int size1 = (l1 << rbb::symbol("len")).__value.integer();
+    int size2 = (l2 << rbb::symbol("len")).__value.integer();
 
     if (size1 != size2)
         return false;
@@ -142,7 +142,7 @@ TESTS_INIT()
     tabl4 << symbol("-") << symbol("c");
 
     TEST_CONDITION(
-        tabl4 << symbol("*") << symbol("*") == number(2),
+        tabl4 << symbol("*") << symbol("len") == number(2),
         printf(
             "Object at index c wasn't deleted (table is now %s)\n",
             tabl4.to_string().c_str()))
@@ -155,7 +155,7 @@ TESTS_INIT()
 
         auto result = atable << rbb::array({symbol("a"), symbol("b")});
         TEST_CONDITION(
-            result << symbol("*") << symbol("*") == number(2) &&
+            result << symbol("*") << symbol("len") == number(2) &&
             result << symbol("a") == number(10) &&
             result << symbol("b") == number(20),
             puts("Can't get table slice"))
