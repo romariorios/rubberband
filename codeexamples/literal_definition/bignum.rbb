@@ -112,27 +112,27 @@ $ /= array? ~ {
     !~adjust (~plus|~d, $)
   })
 
-%+:
-  > -> 'N,
-  = -> {
+%lit:
+  trigger -> 'N,
+  eval -> {
     ~:parser -> $
 
     !{
-      ~parser>
+      ~parser skip
       ~:val -> |0
       ~:loop -> {
-        ~:cur_char -> ~parser*
+        ~:cur_char -> ~parser char_val
 
         !~isdigit (~cur_char)?~ {
           ~:val -> ~mult_n|~val, 10
           ~val|0, ~val 0 + (~cur_char) - '0
           ~:val -> ~adjust (~val)
 
-          ~parser>
+          ~parser skip
 
           !~loop~()
         } {
-          ~parser<
+          ~parser back
 
           !~make_bignum (~pack (~val))
         }
