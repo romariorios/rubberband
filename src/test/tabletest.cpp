@@ -39,7 +39,7 @@ bool merging_works(rbb::object go1, rbb::object go2, const std::vector<rbb::obje
 
     rbb::object result_array = rbb::array(result);
 
-    return arrays_have_same_elements(go1 << rbb::symbol("*"), result_array);
+    return arrays_have_same_elements(go1 << rbb::symbol("keys"), result_array);
 }
 
 TESTS_INIT()
@@ -76,7 +76,7 @@ TESTS_INIT()
     auto fields = rbb::array({rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c")});
 
     TEST_CONDITION(
-        arrays_have_same_elements(tab << rbb::symbol("*"), fields),
+        arrays_have_same_elements(tab << rbb::symbol("keys"), fields),
         puts("The object doesn't inform its fields"))
 
     auto table2 = rbb::table(
@@ -110,7 +110,7 @@ TESTS_INIT()
     auto table4 = rbb::table(
         {rbb::symbol("g"), rbb::symbol("h")},
         {rbb::boolean(true), rbb::boolean(false)});
-    auto table5 = tab << rbb::symbol("+") << table4;
+    auto table5 = tab << rbb::symbol("merge") << table4;
 
     auto result2 = rbb::array({
         rbb::symbol("a"), rbb::symbol("b"), rbb::symbol("c"),
@@ -119,7 +119,7 @@ TESTS_INIT()
     });
 
     TEST_CONDITION(
-        arrays_have_same_elements(result2, table5 << rbb::symbol("*")),
+        arrays_have_same_elements(result2, table5 << rbb::symbol("keys")),
         puts("Merging doesn't work"))
 
     auto tabl1 = rbb::table(
@@ -139,10 +139,10 @@ TESTS_INIT()
     auto tabl4 = table(
         {symbol("a"), symbol("b"), symbol("c")},
         {number(10), number(20), number(30)});
-    tabl4 << symbol("-") << symbol("c");
+    tabl4 << symbol("del") << symbol("c");
 
     TEST_CONDITION(
-        tabl4 << symbol("*") << symbol("len") == number(2),
+        tabl4 << symbol("keys") << symbol("len") == number(2),
         printf(
             "Object at index c wasn't deleted (table is now %s)\n",
             tabl4.to_string().c_str()))
@@ -155,7 +155,7 @@ TESTS_INIT()
 
         auto result = atable << rbb::array({symbol("a"), symbol("b")});
         TEST_CONDITION(
-            result << symbol("*") << symbol("len") == number(2) &&
+            result << symbol("keys") << symbol("len") == number(2) &&
             result << symbol("a") == number(10) &&
             result << symbol("b") == number(20),
             puts("Can't get table slice"))

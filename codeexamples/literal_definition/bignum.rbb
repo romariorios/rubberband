@@ -103,8 +103,8 @@ $ /= array if_true~ {
     ~ << res neg if_true_raise:error -> unknown_method, got -> ~arg
     
     !~res
-  }(~ + :d -> $)
-}((~|adjust, mult, pack, plus) + :
+  }(~merge:d -> $)
+}((~|adjust, mult, pack, plus) merge:
   _mult -> {
     !~adjust (~mult|~d, $)
   },

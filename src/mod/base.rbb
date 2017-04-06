@@ -50,11 +50,11 @@
             }
           }
 
-          !~loop(~ + :i -> 1, block_args -> (:(~args 0) -> ~first_arg))
+          !~loop(~merge:i -> 1, block_args -> (:(~args 0) -> ~first_arg))
         }
       }~
     }~
-  }(~ + :context -> $)
+  }(~ merge :context -> $)
 }(~:assert -> ~assert_for_blk curry)
 
 # while will loop until the condition becomes false. Ex.:
@@ -71,7 +71,7 @@
       ~loop~()
     }
   }
-  ~loop(~ + :)()
+  ~loop(~ merge :)()
 }
 
 # fn_ctx grabs the external context while not allowing
@@ -101,7 +101,7 @@
 
 # ~:fac -> ~fn~ (|n) { !~n <= 1 if_true~ { !1 } { !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
-~:fn -> ~curry(~ + :assert -> ~assert_for_blk fn) (|ctx, arg_names, blk) {
+~:fn -> ~curry(~ merge :assert -> ~assert_for_blk fn) (|ctx, arg_names, blk) {
   ~assert|$arg_names <<? [|], expecting_array, arg_names, :got -> $arg_names
   ~assert|$blk <<? [{}], expecting_block, blk, :got -> $blk
 

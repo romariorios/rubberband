@@ -263,9 +263,9 @@ iface::mapped::mapped(
 
 send_msg_function iface::mapped::select_function(object *, object &msg) const
 {
-    if (msg == SY_PLUS)
+    if (msg == SY_MERGE)
         return _merge_send_msg;
-    if (msg == SY_DASH)
+    if (msg == SY_DEL)
         return _del_send_msg;
 
     return nullptr;
@@ -274,7 +274,7 @@ send_msg_function iface::mapped::select_function(object *, object &msg) const
 bool iface::mapped::responds_to(object *thisptr, object &msg) const
 {
     if (select_function(thisptr, msg) ||
-        msg == SY_ASTER)
+        msg == SY_KEYS)
         return true;
 
     auto d = thisptr->__value.data_as<table_data>();
@@ -308,7 +308,7 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
 
     auto d = thisptr->__value.data_as<table_data>();
 
-    if (msg == SY_ASTER) {
+    if (msg == SY_KEYS) {
         vector<object> l_el;
 
         for (auto pair : d->objtree) {
@@ -321,27 +321,26 @@ object iface::mapped::select_response(object *thisptr, object &msg) const
         return rbb::array(l_el);
     }
 
-    auto msg_copy = msg;
-    if (msg_copy << SY_DLTQM << SY_I_TABLE == boolean(true)) {
-        auto sym_array = msg_copy << SY_ASTER;
+    if (msg << SY_DLTQM << SY_I_TABLE == boolean(true)) {
+        auto sym_array = msg << SY_KEYS;
         int sym_array_len = number_to_double(sym_array << SY_LEN);
 
         for (int i = 0; i < sym_array_len; ++i) {
             auto cur_sym = sym_array << number(i);
             auto cur_sym_ptr = cur_sym.__value.symbol();
-            d->objtree[cur_sym_ptr] = msg_copy << cur_sym;
+            d->objtree[cur_sym_ptr] = msg << cur_sym;
         }
 
         return *thisptr;
     }
 
-    if (msg_copy << SY_DLTQM << SY_I_ARR == boolean(true)) {
-        int size = number_to_double(msg_copy << SY_LEN);
+    if (msg << SY_DLTQM << SY_I_ARR == boolean(true)) {
+        int size = number_to_double(msg << SY_LEN);
         auto new_table = table();
         auto new_table_d = new_table.__value.data_as<table_data>();
 
         for (int i = 0; i < size; ++i) {
-            auto obj = msg_copy << number(i);
+            auto obj = msg << number(i);
             auto sym = obj.__value.symbol();
 
             if (d->objtree.find(sym) == d->objtree.end())
