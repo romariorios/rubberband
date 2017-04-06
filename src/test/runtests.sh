@@ -63,6 +63,21 @@ RUBBERBAND_PATH="$PWD"/inst &&
 
 for t in $tests
 do
+    is_disabled=0
+    for dis in $(cat disabled)
+    do
+        if [ $t = $dis ]
+        then
+            is_disabled=1
+            break
+        fi
+    done
+
+    if [ $is_disabled -eq 1 ]
+    then
+        continue
+    fi
+
     test_name=${t}"test"-$CXX
     echo "--- $test_name ---"
     $CXX\
