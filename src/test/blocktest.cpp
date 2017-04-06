@@ -54,14 +54,14 @@ TESTS_INIT()
 
     TEST_CONDITION(result3 == rbb::number(6), puts("Identity function doesn't work"))
 
-    // { ! $ > 5? $ { ! ~ * 2 } { ! ~ * ~ } }
+    // { ! $ > 5 if_true $ { ! ~ * 2 } { ! ~ * ~ } }
     rbb::literal::block bl4;
 
     auto &ret_stm4 = bl4.return_statement();
     ret_stm4.add_expr<rbb::literal::message>();
     ret_stm4.add_expr<rbb::literal::symbol>(">");
     ret_stm4.add_expr<rbb::literal::number>(5);
-    ret_stm4.add_expr<rbb::literal::symbol>("?");
+    ret_stm4.add_expr<rbb::literal::symbol>("if_true");
     ret_stm4.add_expr<rbb::literal::message>();
 
     auto &true_bl = ret_stm4.add_expr<rbb::literal::block>();
@@ -81,7 +81,7 @@ TESTS_INIT()
 
     TEST_CONDITION(
         rbb::number(9) == block4 << rbb::number(3),
-        puts("{! $ > 5? $ { ! ~ * 2 }, { ! ~ * ~ } } doesn't run."));
+        puts("{! $ > 5 if_true $ { ! ~ * 2 }, { ! ~ * ~ } } doesn't run."));
 
     rbb::literal::block bl5;
     bl5.return_statement().add_expr<rbb::literal::number>(10);
@@ -145,7 +145,7 @@ TESTS_INIT()
         printf("{ ~:x => $ + (~x) !~x }:[ x => 27 ] 7 == %lld (should be 34)\n",
             result6_3.__value.integer()))
 
-    // { ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:i => 10
+    // { ~:self => @; ~i < 1000 if_true~ { ~:i => ~i + 1; ~self~() } !~i }:i => 10
     rbb::literal::block bll7;
 
     auto &stm_self_is_self_ref = bll7.add_statement();
@@ -160,7 +160,7 @@ TESTS_INIT()
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("i");
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("<");
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::number>(1000);
-    stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("?");
+    stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("if_true");
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::context>();
 
     auto &bll_increment = stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::block>();
@@ -196,7 +196,7 @@ TESTS_INIT()
 
     TEST_CONDITION(
         result7 == rbb::number(1000),
-        printf("{ ~:self => @; ~i < 1000?~ { ~:i => ~i + 1; ~self~[] } !~i }:[i => 10][] == %lld (should be 1000)\n", result7.__value.integer()))
+        printf("{ ~:self => @; ~i < 1000 if_true~ { ~:i => ~i + 1; ~self~[] } !~i }:[i => 10][] == %lld (should be 1000)\n", result7.__value.integer()))
 
     // { !%a } # (being % :a -> 100)
     {

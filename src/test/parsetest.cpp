@@ -62,7 +62,7 @@ TESTS_INIT()
         ~:fibnums -> (|0, 1, 1)
         ~:n -> $
 
-        !~n <= 2?~ {
+        !~n <= 2 if_true~ {
             !~fibnums(~i)
         } {
             ~:i -> 2
@@ -73,7 +73,7 @@ TESTS_INIT()
                 ~fibnums|2, ~fibnums 0 + (~fibnums 1)
 
                 ~:i -> ~i + 1
-                ~i < (~n)?~ {
+                ~i < (~n) if_true~ {
                     ~loop()
                 }
             }~
@@ -88,7 +88,7 @@ TESTS_INIT()
             ~:ctx -> $0, cond_bl -> $1, exec_bl -> $2
 
             ~:loop -> {
-                ~cond_bl(~ctx)()?~ {
+                ~cond_bl(~ctx)() if_true~ {
                     ~exec_bl(~ctx)()
 
                     ~loop()

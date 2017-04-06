@@ -71,7 +71,7 @@ TESTS_INIT()
     // 1? (:) {!3} {!5}
     TEST_CONDITION(
         rbb::boolean(true)
-             << rbb::symbol("?")
+             << rbb::symbol("if_true")
              << rbb::table()
              << block_true
              << block_false == rbb::number(3),
@@ -80,7 +80,7 @@ TESTS_INIT()
     // 0? (:) {!3} {!5}
     TEST_CONDITION(
         rbb::boolean(false)
-             << rbb::symbol("?")
+             << rbb::symbol("if_true")
              << rbb::table()
              << block_true
              << block_false == rbb::number(5),
@@ -89,7 +89,7 @@ TESTS_INIT()
     // 1? () {!3} {!5}
     TEST_CONDITION_WITH_EXCEPTION(
         boolean(true)
-            << symbol("?")
+            << symbol("if_true")
             << empty()
             << block_true
             << block_false == number(3),
@@ -98,7 +98,7 @@ TESTS_INIT()
     // 0? () {!3} {!5}
     TEST_CONDITION_WITH_EXCEPTION(
         boolean(false)
-            << symbol("?")
+            << symbol("if_true")
             << empty()
             << block_true
             << block_false == number(5),
@@ -110,7 +110,7 @@ TESTS_INIT()
         object error_obj;
 
         try {
-            boolean(true) << symbol("^") << symbol("error");
+            boolean(true) << symbol("if_true_raise") << symbol("error");
         } catch (rbb::runtime_error e) {
             error_raised = true;
             error_obj = e.error_obj;

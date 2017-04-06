@@ -103,7 +103,7 @@ TESTS_INIT()
     
     {
         auto &&obj = boolean(false);
-        TEST_RESPONDS_TO(symbol("?"), true)
+        TEST_RESPONDS_TO(symbol("if_true"), true)
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(symbol("neg"), true)

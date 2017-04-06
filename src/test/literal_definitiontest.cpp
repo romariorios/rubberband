@@ -57,7 +57,7 @@ TESTS_INIT()
                             ~:self -> @, cur -> ~chars char_val
 
                             # First, create a linked list until a second " is found
-                            !~cur /= '"?~ {
+                            !~cur /= '" if_true~ {
                                 ~list:
                                     size -> ~list size + 1,
                                     cell -> (:el -> ~cur, prev -> ~list cell)
@@ -68,7 +68,7 @@ TESTS_INIT()
                                 !{
                                     ~:self -> @
 
-                                    !~cell /= ()?~ {
+                                    !~cell /= () if_true~ {
                                         ~str|~i, ~cell el
                                         ~:cell -> ~cell prev, i -> ~i - 1
 

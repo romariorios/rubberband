@@ -173,9 +173,9 @@ send_msg_function iface::booleanoid::select_function(object *, object &msg) cons
         return _and_send_msg;
     if (msg == SY_L_OR)
         return _or_send_msg;
-    if (msg == SY_QM)
+    if (msg == SY_IF_T)
         return _get_context_send_msg;
-    if (msg == SY_CIRC)
+    if (msg == SY_IF_T_R)
         return _raise_send_msg;
 
     return nullptr;

@@ -1,4 +1,4 @@
-$ /= array? ~ {
+$ /= array if_true~ {
   ~:pack -> %^rbbpack
 } {
   ~:pack -> { !$ }()
@@ -21,17 +21,17 @@ $ /= array? ~ {
   ~:val -> $0
   ~:ba -> $
 
-  ~val >= 256?~ {
+  ~val >= 256 if_true~ {
     ~ba|0, ~val mod 256
 
-    ~ba len == 1?~ {
+    ~ba len == 1 if_true~ {
       ~:ba -> ~ba concat |0
     }
 
     ~ba|1, ~ba 1 + (~val / 256)
   }
   
-  !~ba len <= 1?~ {
+  !~ba len <= 1 if_true~ {
     !~ba
   } {
     !(|~ba 0) concat (~adjust ((|~ba 1) concat (~ba slice|2, ~ba len - 2)))
@@ -41,7 +41,7 @@ $ /= array? ~ {
 ~:mult_n -> {
   ~:ba -> $0, n -> $1
 
-  !~ba len <= 1?~ {
+  !~ba len <= 1 if_true~ {
     !(|~ba 0 * (~n))
   } {
     !(|~ba 0 * (~n)) concat (~mult_n|(~ba slice|1, ~ba len - 1), ~n)
@@ -51,10 +51,10 @@ $ /= array? ~ {
 ~:plus -> {
   ~:nums -> $
   
-  !~nums 0 len == 0?~ {
+  !~nums 0 len == 0 if_true~ {
     !~nums 1
   } {
-    !~nums 1 len == 0?~ {
+    !~nums 1 len == 0 if_true~ {
       !~nums 0
     } {
       !(
@@ -70,7 +70,7 @@ $ /= array? ~ {
 ~:mult -> {
   ~:nums -> $
   
-  !~nums 1 len == 0?~ {
+  !~nums 1 len == 0 if_true~ {
     !(|)
   } {
     !~plus|
@@ -89,7 +89,7 @@ $ /= array? ~ {
     ~:arg -> $
     ~:sel -> {
       ~:val -> $1
-      ~arg == ($0)?~ {
+      ~arg == ($0) if_true~ {
         ~:res -> ~val
       }
     }~
@@ -100,7 +100,7 @@ $ /= array? ~ {
     ~sel|/=, {!~d /= ($data)}~
     ~sel|data, ~d
 
-    ~ << res neg ^:error -> unknown_method, got -> ~arg
+    ~ << res neg if_true_raise:error -> unknown_method, got -> ~arg
     
     !~res
   }(~ + :d -> $)
@@ -123,7 +123,7 @@ $ /= array? ~ {
       ~:loop -> {
         ~:cur_char -> ~parser char_val
 
-        !~isdigit (~cur_char)?~ {
+        !~isdigit (~cur_char) if_true~ {
           ~:val -> ~mult_n|~val, 10
           ~val|0, ~val 0 + (~cur_char) - '0
           ~:val -> ~adjust (~val)
