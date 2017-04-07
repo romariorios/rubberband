@@ -196,7 +196,7 @@ object master_send_msg(object *thisptr, object &msg)
     auto d = thisptr->__value.data_as<master_data>();
 
     // load
-    if (msg == SY_CIRC)
+    if (msg == SY_LOAD)
         return object{value_t{
             new master_data{d->master}},
             master_load_send_msg};

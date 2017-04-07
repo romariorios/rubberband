@@ -137,10 +137,10 @@ TESTS_INIT()
 
         !~v 2
     })", table({}, {}), empty(), number(30))
-    
+
     TEST_PARSER(test_master, R"(
     {
-        %^__parsetestmodule~()
+        %load __parsetestmodule~()
         !~a
     })", table({}, {}), empty(), number(10))
 

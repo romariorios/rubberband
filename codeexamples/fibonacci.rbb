@@ -1,5 +1,5 @@
 ~:fib -> { !{
-    $ <<? [0] neg if_true_raise:error -> not_a_number, arg -> $
+    $ <<? numeric neg if_true_raise:error -> not_a_number, arg -> $
     $ < 0 if_true_raise:error -> fib_undefined_for_negative_numbers, arg -> $
 
     ~|3, $

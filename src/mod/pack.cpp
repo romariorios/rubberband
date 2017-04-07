@@ -157,7 +157,7 @@ static object pack_concat_send_msg(object *thisptr, object &msg)
 
 static object pack_slice_send_msg(object *thisptr, object &msg)
 {
-    if (msg << "<<?" << "[|]" != boolean(true))
+    if (msg << "<<?" << "listable" != boolean(true))
         throw message_not_recognized_error{*thisptr, msg, "Expected array"};
 
     if (msg << "len" << ">=" << 2 != boolean(true))
@@ -185,7 +185,7 @@ static object pack_get_element(object *thisptr, int index)
 
 static void pack_set_element(object *thisptr, int index, object el)
 {
-    if (el << "<<?" << "[0]" != boolean(true))
+    if (el << "<<?" << "numeric" != boolean(true))
         throw message_not_recognized_error{*thisptr, el, "Number expected"};
 
     auto d = to_data(*thisptr);
@@ -231,7 +231,7 @@ object pack(object *, object &msg)
     auto pack = new pack_data{static_cast<size_t>(size)};
     for (auto i = 0; i < size; ++i) {
         auto el = msg << number(i);
-        if (el << symbol("<<?") << symbol("[0]") == boolean(false))  // If element isn't a number
+        if (el << symbol("<<?") << symbol("numeric") == boolean(false))  // If element isn't a number
             throw_msg_error("all elements should be numbers");
         if (
             el << symbol(">=") << number(0) == boolean(false) ||

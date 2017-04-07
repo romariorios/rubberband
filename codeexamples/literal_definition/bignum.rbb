@@ -1,5 +1,5 @@
 $ /= array if_true~ {
-  ~:pack -> %^rbbpack
+  ~:pack -> %load rbbpack
 } {
   ~:pack -> { !$ }()
 }

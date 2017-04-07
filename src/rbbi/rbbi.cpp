@@ -65,7 +65,7 @@ public:
     object custom_operation(const string &op, object &obj) override
     {
         if (op == "add_mod_search_path") {
-            if (obj << symbol("<<?") << symbol("[|]") == boolean(false))
+            if (obj << symbol("<<?") << symbol("listable") == boolean(false))
                 throw rbb::runtime_error{parse(":error -> invalid_path")};
 
             string path;
