@@ -175,13 +175,12 @@ object literal::user_defined::eval(literal::block *parent)
     if (_post_evaluator == rbb::empty())
         return _obj;
 
-    auto post_eval_ctx =
+    auto post_eval_msg =
         object{value_t{
             new post_eval_ctx_data{_obj, _exprs, parent}},
             post_eval_ctx_fun};
-    auto evaluator = _post_evaluator << post_eval_ctx;
 
-    return evaluator << rbb::empty();
+    return _post_evaluator << post_eval_msg;
 }
 
 literal::block::block() :

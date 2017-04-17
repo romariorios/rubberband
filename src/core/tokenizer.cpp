@@ -188,7 +188,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 if (cur_literal != _literals.end()) {
                     auto data = new token::custom_literal_data;
                     
-                    auto context = object{value_t{
+                    auto msg = object{value_t{
                         new tokenizer_data{
                             [this, &args](int increment)
                             {
@@ -204,7 +204,7 @@ token tokenizer::_look_token(_look_token_args &args) const
 
                     auto evaluators = cur_literal->second;
                     auto evaluator = evaluators.first;
-                    data->obj = evaluator << context << empty();
+                    data->obj = evaluator << msg;
                     data->post_evaluator = evaluators.second;
                     return token::custom_literal(data);
                 }

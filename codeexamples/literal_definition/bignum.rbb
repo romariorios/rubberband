@@ -117,28 +117,26 @@ $ /= array if_true~ {
   eval -> {
     ~:parser -> $
 
-    !{
-      ~parser skip
-      ~:val -> |0
-      ~:loop -> {
-        ~:cur_char -> ~parser char_val
+    ~parser skip
+    ~:val -> |0
+    ~:loop -> {
+      ~:cur_char -> ~parser char_val
 
-        !~isdigit (~cur_char) if_true~ {
-          ~:val -> ~mult_n|~val, 10
-          ~val|0, ~val 0 + (~cur_char) - '0
-          ~:val -> ~adjust (~val)
+      !~isdigit (~cur_char) if_true~ {
+        ~:val -> ~mult_n|~val, 10
+        ~val|0, ~val 0 + (~cur_char) - '0
+        ~:val -> ~adjust (~val)
 
-          ~parser skip
+        ~parser skip
 
-          !~loop~()
-        } {
-          ~parser back
+        !~loop~()
+      } {
+        ~parser back
 
-          !~make_bignum (~pack (~val))
-        }
+        !~make_bignum (~pack (~val))
       }
+    }
 
-      !~loop~()
-    }~
+    !~loop~()
   }(~|adjust, isdigit, make_bignum, mult_n, pack)
 

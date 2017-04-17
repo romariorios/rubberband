@@ -18,7 +18,7 @@ TESTS_INIT()
         {
             %lit:
                 trigger -> 39,
-                eval -> { !12 }
+                eval -> { !12 }()
         }
         )");
         define_literal << empty() << empty();
@@ -39,7 +39,7 @@ TESTS_INIT()
         {
             %lit:
                 trigger -> 39,
-                eval -> { ~skip !~char_val }  # ~skip: go to next char; ~char_val: current char
+                eval -> { $skip !$char_val }()  # ~skip: go to next char; ~char_val: current char
         }
         )");
         define_char_literal << empty() << empty();
@@ -52,35 +52,33 @@ TESTS_INIT()
                 %lit:
                     trigger -> '",
                     eval -> {
-                        !{
-                            ~chars skip
-                            ~:self -> @, cur -> ~chars char_val
-
-                            # First, create a linked list until a second " is found
-                            !~cur /= '" if_true~ {
-                                ~list:
-                                    size -> ~list size + 1,
-                                    cell -> (:el -> ~cur, prev -> ~list cell)
-                                !~self~()
-                            } {
-                                # Then, create an array with the size of the list
-                                # and insert all chars from the list into it
-                                !{
-                                    ~:self -> @
-
-                                    !~cell /= () if_true~ {
-                                        ~str|~i, ~cell el
-                                        ~:cell -> ~cell prev, i -> ~i - 1
-
-                                        !~self~()
-                                    } {
-                                        # Finally, return the array
-                                        !~str
-                                    }
-                                }(:str -> ~list size(|), i -> ~list size - 1, cell -> ~list cell)()
-                            }
-                        }(:chars -> ~, list -> (:size -> 0, cell -> ()))()
-                    }
+                        ~:self -> @, input -> $
+                        ~input skip
+                        ~:cur -> ~input char_val
+                        
+                        # First, create a linked list until a second " is found
+                        !~cur /= '" if_true~ {
+                            ~list:
+                                size -> ~list size + 1,
+                                cell -> (:el -> ~cur, prev -> ~list cell)
+                            !~self~(~input)
+                        } {
+                            # Then, create an array with the size of the list
+                            # and insert all chars from the list into it
+                            !{
+                                ~:self -> @
+                                
+                                !~cell /= () if_true~ {
+                                    ~str|~i, ~cell el
+                                    ~:cell -> ~cell prev, i -> ~i - 1
+                                    
+                                    !~self~()
+                                } {
+                                    !~str
+                                }
+                            }(:str -> ~list size(|), i -> ~list size - 1, cell -> ~list cell)()
+                        }
+                    }(:list -> (:size -> 0, cell -> ()))
             }
             )");
             define_string_literal << empty() << empty();
@@ -135,13 +133,13 @@ TESTS_INIT()
             %lit:
                 trigger -> 'o,
                 eval -> {
-                    ~skip; ~parse_until 'u; ~skip
+                    $skip; $parse_until 'u; $skip
                     # returns nothing because there's no static part in this literal
-                },
+                }(),
                 run_eval -> {
                     # returns value of first expression
-                    !~expr_val
-                }
+                    !$expr_val
+                }()
         })");
         define_object_wrapper_literal << empty() << empty();
 
