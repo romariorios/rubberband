@@ -582,4 +582,29 @@ TESTS_INIT()
 
         TEST_TOKENIZATION
     }
+
+    {
+        auto eval_obj = dummy_master.parse(R"({
+            # Skip trigger and "bli"
+            $skip; $skip; $skip; $skip
+
+            $parse_until 109  # ASCII for 'm'
+            $skip             # skip 'm'
+        })") << empty();
+        const auto code = "lbli10 + 20mtoken";
+
+        map<unsigned char, pair<object, object>> lits;
+        lits['l'] = make_pair(eval_obj, empty());
+
+        tokenizer tok{code, lits};
+        tok.set_master(&dummy_master);
+
+        vector<token> expected{
+            token::t::custom_literal,
+            token::symbol("token")
+        };
+        auto &&tok_all = tok.look_all();
+
+        TEST_TOKENIZATION
+    }
 TESTS_END()

@@ -127,8 +127,7 @@ TESTS_INIT()
         //   Evaluate dynamic parts of the literal
         //   (if empty, will just return the result of the static evaluator)
         //   result of field eval: ~eval_res
-        //   eval current expression: ~expr_val
-        //   skip object: ~expr_skip
+        //   eval expression n: ~eval_expr <n>
         auto define_object_wrapper_literal = dummy_master.parse(R"({
             %lit:
                 trigger -> 'o,
@@ -138,7 +137,7 @@ TESTS_INIT()
                 }(),
                 run_eval -> {
                     # returns value of first expression
-                    !$expr_val
+                    !$eval_expr 0
                 }()
         })");
         define_object_wrapper_literal << empty() << empty();
@@ -149,5 +148,25 @@ TESTS_INIT()
             printf(
                 "Could not parse custom literal (expecting table, got %s)\n",
                 o_table.to_string().c_str()))
+
+        auto define_multiple_expressions = dummy_master.parse(R"({
+            %lit:
+                trigger -> '[,
+                eval -> {
+                    $skip; $parse_until ',; $skip; $parse_until ']; $skip
+                }(),
+                run_eval -> {
+                    # Return array with two elements
+                    !|$eval_expr 0, $eval_expr 1
+                }()
+        })");
+        define_multiple_expressions << empty() << empty();
+
+        auto obj_pair = dummy_master.parse(R"([10 + 20, 30 * 40])");
+        TEST_CONDITION_WITH_EXCEPTION(
+            obj_pair << "<<?" << "listable" == boolean(true),
+            printf(
+                "Could not parse custom literal (expecting listable, got %s)\n",
+                obj_pair.to_string().c_str()))
     }
 TESTS_END()

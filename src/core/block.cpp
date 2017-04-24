@@ -124,9 +124,8 @@ object literal::message::eval(literal::block* parent_block)
 }
 
 // The post-eval context should have the following:
-// - result of "=":     =
-// - eval current expr: [!]
-// - skip expression:   >>
+// - result of "eval":  res_eval
+// - eval expression n: eval_expr <n>
 class post_eval_ctx_data : public shared_data_t
 {
 public:
@@ -143,8 +142,26 @@ public:
     object obj;
     std::vector<object> &parsed_exprs;
     literal::block *parent;
-    size_t current_index = 0;
 };
+
+object post_eval_eval_expr(object *thisptr, object &msg)
+{
+    if (msg << SY_DLTQM << SY_I_NUM == boolean(false))
+        throw message_not_recognized_error{SY_LDF_EVAL_E, msg, "Number expected"};
+
+    auto d = thisptr->__value.data_as<post_eval_ctx_data>();
+    const auto index = number_to_double(msg);
+
+    if (index < 0 || index >= d->parsed_exprs.size())
+        throw semantic_error{"Out of range index", SY_LDF_EVAL_E, msg};
+
+    // FIXME HACK to extract the return expression from a block object
+    auto &cur_expr_block = d->parsed_exprs[index];
+    auto block_d = cur_expr_block.__value.try_data_as<block_data>();
+    auto &ret_stm = block_d->block_l->return_statement();
+
+    return ret_stm.eval(d->parent);
+}
 
 object post_eval_ctx_fun(object *thisptr, object &msg)
 {
@@ -153,19 +170,10 @@ object post_eval_ctx_fun(object *thisptr, object &msg)
     if (msg == SY_LDF_ERES)
         return d->obj;
 
-    if (msg == SY_LDF_EXPVAL) {
-        // FIXME HACK to extract the return expression from a block object
-        auto &cur_expr_block = d->parsed_exprs[d->current_index++];
-        auto block_d = cur_expr_block.__value.try_data_as<block_data>();
-        auto &ret_stm = block_d->block_l->return_statement();
-
-        return ret_stm.eval(d->parent);
-    }
-
-    if (msg == SY_LDF_EXPSKIP) {
-        ++d->current_index;
-        return {};
-    }
+    if (msg == SY_LDF_EVAL_E)
+        return object{
+            value_t{new post_eval_ctx_data{*d}},
+            post_eval_eval_expr};
 
     throw message_not_recognized_error{*thisptr, msg};
 }

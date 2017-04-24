@@ -135,7 +135,7 @@ object tokenizer_append_expr_send_msg(object *thisptr, object &msg)
     // TODO check if the message actually is a character
     const auto ch = static_cast<unsigned char>(msg.__value.integer());
     const auto expr = d->_substr_until(ch);
-    
+
     // FIXME HACK this only works if the expression does not contain a self-reference (@)
     d->_parsed_exprs.emplace_back(d->_master->parse("{!" + expr + "}"));
 
