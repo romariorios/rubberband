@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <rbb/tokenizer.hpp>
+#include <map>
 
 using namespace rbb;
 using namespace std;
@@ -35,8 +36,10 @@ TEST_CONDITION(\
 #include <vector>
 
 TESTS_INIT()
+    map<unsigned char, pair<object, object>> dummy_lits;
+
     {
-        tokenizer tok {"{ !10 }"};
+        tokenizer tok {"{ !10 }", dummy_lits};
         std::vector<token> expected {
             token::t::curly_open,
             token::t::exclamation,
@@ -77,7 +80,7 @@ TESTS_INIT()
     }
 
     {
-        tokenizer t{"!10"};
+        tokenizer t{"!10", dummy_lits};
         std::vector<token> expected {
             token::t::exclamation,
             token::number(10)
@@ -95,7 +98,8 @@ TESTS_INIT()
                 ~while~ {! ~i < 20 } {
                     ~v|~i, ~i * (~i)
                 }
-            )"
+            )",
+            dummy_lits
         };
         std::vector<token> expected {
             token::t::tilde,
@@ -148,7 +152,7 @@ TESTS_INIT()
         tokenizer tok{R"(
             # This is a comment
             { ~:x -> $; ~:y -> ~x + $ ! ~x * (~x) } # This is also a comment
-        )"};
+        )", dummy_lits};
         std::vector<token> expected {
             token::t::curly_open,
             token::t::tilde,
@@ -181,7 +185,7 @@ TESTS_INIT()
     }
 
     {
-        tokenizer tok{"!(|1, 2, a) 2"};
+        tokenizer tok{"!(|1, 2, a) 2", dummy_lits};
         std::vector<token> expected {
             token::t::exclamation,
             token::t::parenthesis_open,
@@ -200,7 +204,7 @@ TESTS_INIT()
     }
 
     {
-        tokenizer tok{"!(:a -> 10, b -> 20) b"};
+        tokenizer tok{"!(:a -> 10, b -> 20) b", dummy_lits};
         std::vector<token> expected {
             token::t::exclamation,
             token::t::parenthesis_open,
@@ -221,7 +225,7 @@ TESTS_INIT()
     }
 
     {
-        tokenizer tok{"{}(:); :a -> 10"};
+        tokenizer tok{"{}(:); :a -> 10", dummy_lits};
         std::vector<token> expected {
             token::t::curly_open,
             token::t::curly_close,
@@ -247,7 +251,7 @@ TESTS_INIT()
                 argc -> ~argc,
                 context -> ~context,
                 fun -> $
-        )"};
+        )", dummy_lits};
         std::vector<token> expected {
             token::t::tilde,
             token::symbol("uncurry"),
@@ -291,7 +295,7 @@ TESTS_INIT()
                 stuff -> 10,
                 more_stuff -> 20
             )()
-        )"};
+        )", dummy_lits};
         std::vector<token> expected{
             token::t::tilde,
             token::symbol("fun"),
@@ -318,7 +322,7 @@ TESTS_INIT()
             %^~math
             ~:good_stuff -> (:)
             %^(~good_stuff)external
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::t::percent,
             token::symbol("^"),
@@ -352,7 +356,7 @@ TESTS_INIT()
             ~a << +
             ~a << -
             ~a << *
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::t::tilde,
             token::t::colon,
@@ -387,7 +391,7 @@ TESTS_INIT()
             [:] [()] [{}]
             ~:b -> [()] <<? [<]
             [++++] [@$~]
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::t::tilde,
             token::t::colon,
@@ -427,7 +431,7 @@ TESTS_INIT()
             <-| <-0 <-a <-{}
             --| -- --#
             [|] [#]
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::symbol("<"),
             token::symbol("-"),
@@ -461,7 +465,7 @@ TESTS_INIT()
     {
         tokenizer tok{R"(
             ~:sqr -> ().{ !$ * $ }
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::t::tilde,
             token::t::colon,
@@ -485,7 +489,7 @@ TESTS_INIT()
     {
         tokenizer tok{R"(
             !2.(|0, 10, this_one, 20)
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::t::exclamation,
             token::number(2),
@@ -510,7 +514,7 @@ TESTS_INIT()
         tokenizer tok{R"(
             (~
             a)
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::t::parenthesis_open,
             token::t::tilde,
@@ -530,7 +534,7 @@ TESTS_INIT()
             (~
             e)
             }
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::symbol("b"),
             token::t::curly_open,
@@ -562,7 +566,7 @@ TESTS_INIT()
             ~:
             true_literal -> ?1,
             false_literal -> ?0
-        )"};
+        )", dummy_lits};
         vector<token> expected{
             token::t::tilde,
             token::t::colon,
