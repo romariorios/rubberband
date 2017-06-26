@@ -35,7 +35,7 @@ CXX_FLAGS="-std=c++14 $CXX_FLAGS"
 
 if [ -z $RUBBERBAND_SRC ]
 then
-    RUBBERBAND_SRC=$PWD/../core
+    RUBBERBAND_SRC=$PWD/../
 fi
 
 if [ -d build ]
@@ -83,9 +83,11 @@ do
     $CXX\
         ${t}test.cpp\
         -lrubberbandcore\
+        -lmodloader\
         -o $test_name\
         $CXX_FLAGS\
         -I"$RUBBERBAND_PATH/include"\
+        -I"$RUBBERBAND_PATH/include/rbb"\
         -L"$RUBBERBAND_PATH/lib"\
         -std=c++14 &&
     LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$RUBBERBAND_PATH/lib" ./$test_name &&

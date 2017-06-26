@@ -22,6 +22,7 @@
 #include "sourcefile.hpp"
 
 #include <fstream>
+#include <object_private.hpp>
 
 using namespace rbb;
 using namespace rbb::modloader;
@@ -51,6 +52,62 @@ object sourcefile::load_module(const string &modname) const
     return program_from_file(file_with_path);
 }
 
+class sourcefile_module_data : public shared_data_t
+{
+public:
+    sourcefile_module_data(
+        base_master &master,
+        const object &first_chunk,
+        const vector<string> &following_chunks) :
+
+        _master{master},
+        first_chunk{first_chunk},
+        following_chunks(following_chunks)
+    {}
+
+    base_master &_master;
+    object context;
+    object first_chunk;
+    vector<string> following_chunks;
+};
+
+object sourcefile_module_exec_send_msg(object *thisptr, object &msg)
+{
+    auto d = thisptr->__value.data_as<sourcefile_module_data>();
+
+    object ret = d->first_chunk << d->context << msg;
+
+    for (const auto &c : d->following_chunks)
+        ret = d->_master.parse("{" + c + "}") << d->context << msg;
+
+    return ret;
+}
+
+object sourcefile_module_send_msg(object *thisptr, object &msg)
+{
+    auto d = thisptr->__value.data_as<sourcefile_module_data>();
+
+    d->context = msg;
+    return object{
+        value_t{new sourcefile_module_data{*d}},
+        sourcefile_module_exec_send_msg};
+}
+
+static vector<string> split(const string &str, const string &delim)
+{
+    const auto delim_pos = str.find(delim);
+
+    if (delim_pos == string::npos)
+        return {str};
+
+    vector<string> ret{str.substr(0, delim_pos)};
+    const auto tail = split(str.substr(delim_pos + delim.size(), string::npos), delim);
+
+    ret.insert(ret.end(), tail.begin(), tail.end());
+
+    return ret;
+}
+
 object sourcefile::program_from_file(const string &filename) const
 {
     ifstream file{filename};
@@ -58,7 +115,7 @@ object sourcefile::program_from_file(const string &filename) const
         throw could_not_open_file{filename};
     }
 
-    string program = "{";
+    string program;
 
     while (!file.eof()) {
         string tmp;
@@ -67,10 +124,16 @@ object sourcefile::program_from_file(const string &filename) const
         program += "\n";
     }
 
-    program += "}";
-
     try {
-        return _master.parse(program);
+        const auto chunks = split(program, ";;");
+        auto first_chunk = _master.parse("{" + chunks[0] + "}");
+
+        return object{
+            value_t{
+                new sourcefile_module_data{
+                    _master, first_chunk,
+                    vector<string>(chunks.cbegin() + 1, chunks.cend())}},
+            sourcefile_module_send_msg};
     } catch (const syntax_error &e) {
         throw sourcefile_syntax_error{e, filename};
     }

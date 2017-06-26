@@ -1,3 +1,5 @@
+%load char~();;
+
 $ /= array if_true~ {
   ~:pack -> %load rbbpack
 } {

@@ -9,7 +9,7 @@ set(modloader_srcs
     native_linux.cpp
     sourcefile.cpp
     base.cpp)
-set(modloader_header
+set(modloader_headers
     multi.hpp
     native_linux.hpp
     sourcefile.hpp
