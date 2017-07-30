@@ -58,8 +58,6 @@ inline int token_to_tokcode(token t)
         return CURLY_CLOSE;
     case token::t::parenthesis_close:
         return PARENTHESIS_CLOSE;
-    case token::t::arrow:
-        return -1;
     case token::t::dot:
         return DOT;
     case token::t::comma:

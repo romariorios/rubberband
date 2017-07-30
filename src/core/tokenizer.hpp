@@ -47,7 +47,6 @@ struct token
         parenthesis_close,
 
         // Separators
-        arrow,
         dot,
         comma,
         equals,

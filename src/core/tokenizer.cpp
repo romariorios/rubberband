@@ -225,8 +225,8 @@ token tokenizer::_look_token(_look_token_args &args) const
                 switch (_previous_token.type) {
                 case token::t::start_of_input:
                 case token::t::curly_open:
-                case token::t::arrow:
                 case token::t::comma:
+                case token::t::equals:
                 case token::t::exclamation:
                 case token::t::stm_sep:
                 case token::t::bar:
@@ -366,16 +366,9 @@ token tokenizer::_look_token(_look_token_args &args) const
                 return token::symbol("?");
             }
         case _state::dash:
-            if (ch == '>')
-                return token::t::arrow;
             if (ch >= '0' && ch <= '9') {
                 cur_state = _state::number_integer_part;
                 continue;
-            }
-            if (ch == '-') {
-                _rewind(args, ch, prevcol);
-
-                return token::symbol("-");
             }
 
             _rewind(args, ch, prevcol);

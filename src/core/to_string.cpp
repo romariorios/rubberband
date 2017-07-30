@@ -211,7 +211,6 @@ string token::to_string() const
     CASE_TOKEN(end_of_input)
     CASE_TOKEN(curly_close)
     CASE_TOKEN(parenthesis_close)
-    CASE_TOKEN(arrow)
     CASE_TOKEN(comma)
     CASE_TOKEN(dot)
     CASE_TOKEN(exclamation)
