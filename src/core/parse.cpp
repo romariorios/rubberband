@@ -59,11 +59,13 @@ inline int token_to_tokcode(token t)
     case token::t::parenthesis_close:
         return PARENTHESIS_CLOSE;
     case token::t::arrow:
-        return ARROW;
+        return -1;
     case token::t::dot:
         return DOT;
     case token::t::comma:
         return COMMA;
+    case token::t::equals:
+        return EQUALS;
     case token::t::exclamation:
         return EXCLAMATION;
     case token::t::stm_sep:

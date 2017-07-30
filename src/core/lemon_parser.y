@@ -149,7 +149,7 @@ table_entries(t)    ::= table_entry(entry).
 }
 maybe_empty_t(t)    ::= . { t = new literal::table; }
 maybe_empty_t(t)    ::= table_entries(t_a). { t = t_a; }
-table_entry(entry)  ::= stm(i) ARROW stm(s).
+table_entry(entry)  ::= stm(i) EQUALS stm(s).
 {
     entry.index = i;
     entry.object = s;

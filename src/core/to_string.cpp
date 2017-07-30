@@ -52,7 +52,7 @@ std::string table_data::to_string(
     std::string result{"(:"};
 
     for (auto &entry : objtree) {
-        result += *entry.first + " -> " + entry.second.to_string(visited);
+        result += *entry.first + " = " + entry.second.to_string(visited);
         result += ", ";
     }
 
@@ -117,7 +117,7 @@ std::string table::to_string() const
         sym != _symbols.cend() && obj != _objects.cend();
         ++sym, ++obj
     ) {
-        result += (*sym)->to_string() + " -> " + (*obj)->to_string();
+        result += (*sym)->to_string() + " = " + (*obj)->to_string();
 
         auto next_sym = sym;
         ++next_sym;

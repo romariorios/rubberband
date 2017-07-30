@@ -50,6 +50,7 @@ struct token
         arrow,
         dot,
         comma,
+        equals,
         exclamation,
         stm_sep,
 

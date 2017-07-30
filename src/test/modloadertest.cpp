@@ -22,8 +22,8 @@ TESTS_INIT()
         ofstream file{"double-semicolon.rbb", ios_base::trunc};
         file <<
             "%lit:\n"
-            "  trigger -> 39,\n"
-            "  eval -> {\n"
+            "  trigger = 39,\n"
+            "  eval = {\n"
             "    $skip\n"
             "    !$char_val\n"
             "  }();;\n\n"
@@ -45,10 +45,10 @@ TESTS_INIT()
         ofstream mod_file{"module_test.rbb", ios_base::trunc};
         mod_file <<
 R"(
-~:a -> 10
-~:b -> 20
-~:c -> |10, 20, 30
-~:d -> {!$0 + ($1) + ($2)}()
+~:a = 10
+~:b = 20
+~:c = |10, 20, 30
+~:d = {!$0 + ($1) + ($2)}()
 )";
         mod_file.close();
 

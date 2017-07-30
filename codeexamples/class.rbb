@@ -1,32 +1,32 @@
-~:class -> ~fn(:^ -> ~, l -> (:)) (|ctx, class_name, class_methods) {
-  ~l:class_methods -> ~class_methods
-  ~l:init -> ~l class_methods init
+~:class = ~fn(:^ = ~, l = (:)) (|ctx, class_name, class_methods) {
+  ~l:class_methods = ~class_methods
+  ~l:init = ~l class_methods init
   ~l class_methods del init
 
-  ~^:~class_name -> {
-    ~l:class_ctx -> :this -> (:), ^ -> ~ctx
-    ~^map~ (~l class_methods keys) { ~l class_ctx:$ -> ~l class_methods$(~l class_ctx) }
+  ~^:~class_name = {
+    ~l:class_ctx = :this = (:), ^ = ~ctx
+    ~^map~ (~l class_methods keys) { ~l class_ctx:$ = ~l class_methods$(~l class_ctx) }
     ~l init(~l class_ctx)$
 
-    !{ !$ == this if_true (:c -> ~, a -> $) {} { !~c(~a) } }(~l class_ctx)
-  }:^ -> ~^, l -> ~l merge (:), ctx -> ~ctx
+    !{ !$ == this if_true (:c = ~, a = $) {} { !~c(~a) } }(~l class_ctx)
+  }:^ = ~^, l = ~l merge (:), ctx = ~ctx
 }
 
 ~class~ point:
-  init -> { ~this:x -> $0, y -> $1 },
-  operation -> { !~^point|~this x ($0) ($1 x()), ~this y ($0) ($1 y()) },
-  plus -> { !~operation|+, $ },
-  minus -> { !~operation|-, $ },
-  x -> { !~this x },
-  y -> { !~this y },
-  print -> { %inspect_object(~this|x, y) }
+  init = { ~this:x = $0, y = $1 },
+  operation = { !~^point|~this x ($0) ($1 x()), ~this y ($0) ($1 y()) },
+  plus = { !~operation|+, $ },
+  minus = { !~operation|-, $ },
+  x = { !~this x },
+  y = { !~this y },
+  print = { %inspect_object(~this|x, y) }
 
-~:p1 -> ~point|100, 200
+~:p1 = ~point|100, 200
 ~p1 print()
 
-~:p2 -> ~point|300, 400
+~:p2 = ~point|300, 400
 ~p2 print()
 
-~:p3 -> ~p1 plus (~p2)
+~:p3 = ~p1 plus (~p2)
 ~p3 print()
 

@@ -153,7 +153,7 @@ TESTS_INIT()
             %lit:
                 trigger -> '[,
                 eval -> {
-                    $skip; $parse_until ',; $skip; $parse_until ']; $skip
+                    $skip; $parse_until ',; $skip; $parse_until ']
                 }(),
                 run_eval -> {
                     # Return array with two elements

@@ -1,6 +1,6 @@
-~:fib -> { !{
-    $ <<? numeric neg if_true_raise:error -> not_a_number, arg -> $
-    $ < 0 if_true_raise:error -> fib_undefined_for_negative_numbers, arg -> $
+~:fib = { !{
+    $ <<? numeric neg if_true_raise:error = not_a_number, arg = $
+    $ < 0 if_true_raise:error = fib_undefined_for_negative_numbers, arg = $
 
     ~|3, $
 
@@ -23,5 +23,5 @@
 }(|0, 1, 1, msg, loop)$ }()
 
 # After 88, the result overflows
-~map~ (~range:from -> 0, to -> 88) { %inspect_object (~fib $) }
+~map~ (~range:from = 0, to = 88) { %inspect_object (~fib $) }
 ~fib one

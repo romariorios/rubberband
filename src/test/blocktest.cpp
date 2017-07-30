@@ -250,7 +250,7 @@ TESTS_INIT()
         auto &ret = bl.return_statement();
         auto &user_literal = ret.add_expr<literal::user_defined>(
             table({symbol("a")}, {number(10)}),
-            dummy_master.parse("{!$eval_res merge:b -> $expr_val}") << empty(),
+            dummy_master.parse("{!$eval_res merge:b = $eval_expr 0}") << empty(),
             vector<object>{dummy_master.parse("{!~a}")});
 
         auto block = bl.eval();

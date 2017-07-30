@@ -1,14 +1,14 @@
 %inspect_object(~map~ (|1, 2, 3, 4, 5, 6) { !$ * $ })
 
-~:list -> |(|1), (|2), (|3), (|4), (|5)
+~:list = |(|1), (|2), (|3), (|4), (|5)
 ~map~ (~list) { $|0, $0 + 1 }
 %inspect_object(~map~ (~list) { !$0 })
 
-%inspect_object(~accum~ (|1, 2, 3, 4, 5, 6):init -> 1, step -> { !$e * ($val) })
-%inspect_object(~range:from -> 1, to -> 10, step -> 2)
+%inspect_object(~accum~ (|1, 2, 3, 4, 5, 6):init = 1, step = { !$e * ($val) })
+%inspect_object(~range:from = 1, to = 10, step = 2)
 
-~:fac -> ~fn~ (|n) {
-  !~accum~ (~range:from -> 1, to -> ~n):init -> 1, step -> { !$e * ($val) }
+~:fac = ~fn~ (|n) {
+  !~accum~ (~range:from = 1, to = ~n):init = 1, step = { !$e * ($val) }
 }
 
 %inspect_object(~fac 10)

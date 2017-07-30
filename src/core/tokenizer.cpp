@@ -448,7 +448,7 @@ token tokenizer::_look_token(_look_token_args &args) const
                 return token::symbol("==");
 
             _rewind(args, ch, prevcol);
-            return token::symbol("=");
+            return token::t::equals;
         case _state::slash_char:
             switch (ch) {
             case '=':

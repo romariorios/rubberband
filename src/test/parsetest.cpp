@@ -17,7 +17,7 @@ public:
         if (str != "__parsetestmodule")
             return {};
         
-        return parse(R"({ ~:a -> 10 })");
+        return parse(R"({ ~:a = 10 })");
     }
 
     object custom_operation(const string &, object &) override
@@ -50,29 +50,29 @@ TESTS_INIT()
     TEST_PROGRAM("{ !(|1, 2, a) 1 }", empty(), empty(), number(2))
     TEST_PROGRAM("{ !(|1, 2, a) 2 }", empty(), empty(), symbol("a"))
     TEST_PROGRAM("{ !(|1, 2, a) << 3 }", empty(), empty(), boolean(false))
-    TEST_PROGRAM("{ !(:a -> 10, b -> 20) a }", empty(), empty(), number(10))
-    TEST_PROGRAM("{ !(:a -> 10, b -> 20) b }", empty(), empty(), number(20))
-    TEST_PROGRAM("{ !(:a -> 10, b -> 20) << lol }", empty(), empty(), boolean(false))
+    TEST_PROGRAM("{ !(:a = 10, b = 20) a }", empty(), empty(), number(10))
+    TEST_PROGRAM("{ !(:a = 10, b = 20) b }", empty(), empty(), number(20))
+    TEST_PROGRAM("{ !(:a = 10, b = 20) << lol }", empty(), empty(), boolean(false))
     TEST_PROGRAM("{ !$ }", empty(), number(10), number(10));
     TEST_PROGRAM("{ !~ }", number(10), empty(), number(10));
-    TEST_PROGRAM("{ ~:x -> $ !~x * $ }", table({}, {}), number(10), number(100))
-    TEST_PROGRAM("{ ~:x -> $ !~x * (~x) }", table({}, {}), number(10), number(100))
+    TEST_PROGRAM("{ ~:x = $ !~x * $ }", table({}, {}), number(10), number(100))
+    TEST_PROGRAM("{ ~:x = $ !~x * (~x) }", table({}, {}), number(10), number(100))
     TEST_PROGRAM(R"(
     {
-        ~:fibnums -> (|0, 1, 1)
-        ~:n -> $
+        ~:fibnums = (|0, 1, 1)
+        ~:n = $
 
         !~n <= 2 if_true~ {
             !~fibnums(~i)
         } {
-            ~:i -> 2
+            ~:i = 2
 
-            ~:loop -> {
+            ~:loop = {
                 ~fibnums|0, ~fibnums 1
                 ~fibnums|1, ~fibnums 2
                 ~fibnums|2, ~fibnums 0 + (~fibnums 1)
 
-                ~:i -> ~i + 1
+                ~:i = ~i + 1
                 ~i < (~n) if_true~ {
                     ~loop()
                 }
@@ -84,10 +84,10 @@ TESTS_INIT()
     })", table({}, {}), number(43), number(433494437))
     TEST_PROGRAM(R"(
     {
-        ~:while -> {
-            ~:ctx -> $0, cond_bl -> $1, exec_bl -> $2
+        ~:while = {
+            ~:ctx = $0, cond_bl = $1, exec_bl = $2
 
-            ~:loop -> {
+            ~:loop = {
                 ~cond_bl(~ctx)() if_true~ {
                     ~exec_bl(~ctx)()
 
@@ -97,22 +97,22 @@ TESTS_INIT()
             ~loop()
         }(:)
 
-        ~:fibnums -> |0, 1, 1
-        ~:n -> $
+        ~:fibnums = |0, 1, 1
+        ~:n = $
 
         ~while|~, { !~n > 2 }, {
             ~fibnums|0, ~fibnums 1
             ~fibnums|1, ~fibnums 2
             ~fibnums|2, ~fibnums 0 + (~fibnums 1)
 
-            ~:n -> ~n - 1
+            ~:n = ~n - 1
         }
 
         !~fibnums 2
     })", table({}, {}), number(43), number(433494437))
     TEST_PROGRAM(R"(
     {
-        ~:v -> 3(|)
+        ~:v = 3(|)
         ~v|0, 10
         ~v|1, 20
         ~v|2, 30
@@ -121,7 +121,7 @@ TESTS_INIT()
     })", table({}, {}), empty(), number(10))
     TEST_PROGRAM(R"(
     {
-        ~:v -> 3(|)
+        ~:v = 3(|)
         ~v|0, 10
         ~v|1, 20
         ~v|2, 30
@@ -130,7 +130,7 @@ TESTS_INIT()
     })", table({}, {}), empty(), number(20))
     TEST_PROGRAM(R"(
     {
-        ~:v -> |.3
+        ~:v = |.3
         ~v|0, 10
         ~v|1, 20
         ~v|2, 30
@@ -147,9 +147,9 @@ TESTS_INIT()
     TEST_PARSING("()", "()")
     TEST_PARSING("12", "12")
     TEST_PARSING("|a, b, c, 1, 2, 3", "(|a, b, c, 1, 2, 3)")
-    TEST_PARSING(":a -> 10, b -> 20, c -> 30", "(:a -> 10, b -> 20, c -> 30)")
+    TEST_PARSING(":a = 10, b = 20, c = 30", "(:a = 10, b = 20, c = 30)")
     TEST_PARSING("?0", "?0")
-    TEST_PARSING("{ :.{}; :a -> 10 }", "{ ({  } (:)); (:a -> 10) }")
+    TEST_PARSING("{ :.{}; :a = 10 }", "{ ({  } (:)); (:a = 10) }")
 
     TEST_PROGRAM(R"(
     {
@@ -159,7 +159,7 @@ TESTS_INIT()
     TEST_PROGRAM(R"(
     {
         (~
-        :a -> 10)
+        :a = 10)
         !(~
         a)
     })", table({}, {}), empty(), number(10))

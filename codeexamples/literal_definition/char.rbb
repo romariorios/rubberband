@@ -1,6 +1,6 @@
 %lit:
-  trigger -> 39,
-  eval -> {
+  trigger = 39,
+  eval = {
     $skip
 
     !$char_val
