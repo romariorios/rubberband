@@ -564,8 +564,8 @@ TESTS_INIT()
     {
         tokenizer tok{R"(
             ~:
-            true_literal = ?1,
-            false_literal = ?0
+            true_literal = ?t,
+            false_literal = ?f
         )", dummy_lits};
         vector<token> expected{
             token::t::tilde,
