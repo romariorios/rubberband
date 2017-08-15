@@ -62,9 +62,9 @@ TESTS_INIT()
         ~:fibnums = (|0, 1, 1)
         ~:n = $
 
-        !~n <= 2 if_true~ {
+        !~n <= 2 if_true ~.{
             !~fibnums(~i)
-        } {
+        } ~.{
             ~:i = 2
 
             ~:loop = {
@@ -73,7 +73,7 @@ TESTS_INIT()
                 ~fibnums|2, ~fibnums 0 + (~fibnums 1)
 
                 ~:i = ~i + 1
-                ~i < (~n) if_true~ {
+                ~i < (~n) if_true ~.{
                     ~loop()
                 }
             }~
@@ -88,7 +88,7 @@ TESTS_INIT()
             ~:ctx = $0, cond_bl = $1, exec_bl = $2
 
             ~:loop = {
-                ~cond_bl(~ctx)() if_true~ {
+                ~cond_bl(~ctx)() if_true ~.{
                     ~exec_bl(~ctx)()
 
                     ~loop()
@@ -148,7 +148,7 @@ TESTS_INIT()
     TEST_PARSING("12", "12")
     TEST_PARSING("|a, b, c, 1, 2, 3", "(|a, b, c, 1, 2, 3)")
     TEST_PARSING(":a = 10, b = 20, c = 30", "(:a = 10, b = 20, c = 30)")
-    TEST_PARSING("?0", "?0")
+    TEST_PARSING("?f", "?f")
     TEST_PARSING("{ :.{}; :a = 10 }", "{ ({  } (:)); (:a = 10) }")
 
     TEST_PROGRAM(R"(
@@ -165,10 +165,10 @@ TESTS_INIT()
     })", table({}, {}), empty(), number(10))
 
     TEST_PROGRAM(R"(
-        { !?0 }
+        { !?f }
     )", empty(), empty(), boolean(false))
 
     TEST_PROGRAM(R"(
-        { !?1 }
+        { !?t }
     )", empty(), empty(), boolean(true))
 TESTS_END()

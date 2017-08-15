@@ -54,7 +54,7 @@ TESTS_INIT()
 
     TEST_CONDITION(result3 == rbb::number(6), puts("Identity function doesn't work"))
 
-    // { ! $ > 5 if_true $ { ! ~ * 2 } { ! ~ * ~ } }
+    // { ! $ > 5 if_true $.{ ! ~ * 2 } $.{ ! ~ * ~ } }
     rbb::literal::block bl4;
 
     auto &ret_stm4 = bl4.return_statement();
@@ -62,19 +62,22 @@ TESTS_INIT()
     ret_stm4.add_expr<rbb::literal::symbol>(">");
     ret_stm4.add_expr<rbb::literal::number>(5);
     ret_stm4.add_expr<rbb::literal::symbol>("if_true");
-    ret_stm4.add_expr<rbb::literal::message>();
 
-    auto &true_bl = ret_stm4.add_expr<rbb::literal::block>();
+    auto &true_stm = ret_stm4.add_expr<rbb::block_statement>();
+    auto &true_bl = true_stm.add_expr<rbb::literal::block>();
     auto &true_ret = true_bl.return_statement();
     true_ret.add_expr<rbb::literal::context>();
     true_ret.add_expr<rbb::literal::symbol>("*");
     true_ret.add_expr<rbb::literal::number>(2);
+    true_stm.add_expr<rbb::literal::message>();
 
-    auto &false_bl = ret_stm4.add_expr<rbb::literal::block>();
+    auto &false_stm = ret_stm4.add_expr<rbb::block_statement>();
+    auto &false_bl = false_stm.add_expr<rbb::literal::block>();
     auto &false_ret = false_bl.return_statement();
     false_ret.add_expr<rbb::literal::context>();
     false_ret.add_expr<rbb::literal::symbol>("*");
     false_ret.add_expr<rbb::literal::context>();
+    false_stm.add_expr<rbb::literal::message>();
 
     rbb::object block4 = bl4.eval();
     block4 = block4 << rbb::table();
@@ -145,7 +148,7 @@ TESTS_INIT()
         printf("{ ~:x => $ + (~x) !~x }:[ x => 27 ] 7 == %lld (should be 34)\n",
             result6_3.__value.integer()))
 
-    // { ~:self => @; ~i < 1000 if_true~ { ~:i => ~i + 1; ~self~() } !~i }:i => 10
+    // { ~:self = @; ~i < 1000 if_true ~.{ ~:i = ~i + 1; ~self~() } !~i }:i = 10
     rbb::literal::block bll7;
 
     auto &stm_self_is_self_ref = bll7.add_statement();
@@ -161,9 +164,9 @@ TESTS_INIT()
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("<");
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::number>(1000);
     stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::symbol>("if_true");
-    stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::context>();
 
-    auto &bll_increment = stm_if_i_lt_1000_then_increment.add_expr<rbb::literal::block>();
+    auto &bll_increment_stm = stm_if_i_lt_1000_then_increment.add_expr<rbb::block_statement>();
+    auto &bll_increment = bll_increment_stm.add_expr<rbb::literal::block>();
     auto &stm_increment = bll_increment.add_statement();
     stm_increment.add_expr<rbb::literal::context>();
 
@@ -180,6 +183,8 @@ TESTS_INIT()
     stm_self_call.add_expr<rbb::literal::symbol>("self");
     stm_self_call.add_expr<rbb::literal::context>();
     stm_self_call.add_expr<rbb::literal::empty>();
+
+    bll_increment_stm.add_expr<rbb::literal::context>();
 
     auto &expr_bll7_ans = bll7.return_statement();
     expr_bll7_ans.add_expr<rbb::literal::context>();

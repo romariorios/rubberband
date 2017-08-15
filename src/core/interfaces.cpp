@@ -163,7 +163,7 @@ iface::booleanoid::booleanoid(
     send_msg_function raise_send_msg) :
     _and_send_msg{and_send_msg},
     _or_send_msg{or_send_msg},
-    _get_context_send_msg{get_context_send_msg},
+    _if_true_send_msg{get_context_send_msg},
     _raise_send_msg{raise_send_msg}
 {}
 
@@ -174,7 +174,7 @@ send_msg_function iface::booleanoid::select_function(object *, object &msg) cons
     if (msg == SY_L_OR)
         return _or_send_msg;
     if (msg == SY_IF_T)
-        return _get_context_send_msg;
+        return _if_true_send_msg;
     if (msg == SY_IF_T_R)
         return _raise_send_msg;
 

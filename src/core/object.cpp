@@ -280,60 +280,37 @@ SEND_MSG(boolean_comp_ne)
 class boolean_decision_data : public shared_data_t
 {
 public:
-    boolean_decision_data(const object &symt, const object &bool_obj) :
-        context(symt),
-        boolean_obj(bool_obj)
+    boolean_decision_data(bool bool_val, const object &true_result) :
+        boolean_val{bool_val},
+        true_result{true_result}
     {}
 
-    object context;
-    object boolean_obj;
+    bool boolean_val;
     object true_result;
 };
 
 static constexpr const char block_name[] = "Block";
 
-SEND_MSG(boolean_get_iffalse_block)
+SEND_MSG(boolean_get_iffalse_fun)
 {
     auto d = thisptr->__value.data_as<boolean_decision_data>();
-    if (!d)
-        return empty();
 
-    object block = msg;
-    if (!has_iface(msg, SY_I_BL))
-        throw wrong_type_error<block_name>{*thisptr, msg};
-
-    return d->boolean_obj.__value.boolean()?
+    return d->boolean_val?
         d->true_result :
-        block << d->context << empty();
+        msg << empty();
 }
 
-SEND_MSG(boolean_get_iftrue_block)
-{
-    auto d = thisptr->__value.data_as<boolean_decision_data>();
-    if (!d)
-        return empty();
-
-    boolean_decision_data *d_ret = new boolean_decision_data(d->context, d->boolean_obj);
-
-    object block = msg;
-    if (!has_iface(msg, SY_I_BL))
-        throw wrong_type_error<block_name>{*thisptr, msg};
-
-    if (d->boolean_obj.__value.boolean())
-        d_ret->true_result = block << d->context << empty();
-
-    return object{value_t{d_ret}, boolean_get_iffalse_block_send_msg};
-}
-
-SEND_MSG(boolean_get_context)
+SEND_MSG(boolean_get_iftrue_fun)
 {
     auto d = thisptr->__value.data_as<object_data>();
-    if (!d)
-        return empty();
+    auto bool_val = d->obj.__value.boolean();
 
-    return object{value_t{
-        new boolean_decision_data(msg, d->obj)},
-        boolean_get_iftrue_block_send_msg};
+    return object{
+        value_t{new boolean_decision_data{
+            bool_val,
+            bool_val? msg << empty() : empty()
+        }},
+        boolean_get_iffalse_fun_send_msg};
 }
 
 #define BOOLEAN_DO(op, sym)\
@@ -371,7 +348,7 @@ IFACES(boolean)
     iface::booleanoid{
         boolean_do_AND_send_msg,
         boolean_do_OR_send_msg,
-        boolean_get_context_send_msg,
+        boolean_get_iftrue_fun_send_msg,
         boolean_raise_send_msg
     }
 );

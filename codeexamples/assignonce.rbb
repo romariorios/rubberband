@@ -4,7 +4,7 @@
     !(:ctx = $).{
         ~:msg = $
 
-        ~msg <<? table if_true~ {
+        ~msg <<? table if_true ~.{
             ~:i = 0
             ~:ks = ~msg keys
 
@@ -14,10 +14,8 @@
                     error = already_assigned_variable,
                     varname = ~ks (~i)
 
-                ~i < (~ks len) if_true ~.{
-                    ~:i = ~i + 1
-                    ~loop()
-                }
+                ~:i = ~i + 1
+                ~i < (~ks len) if_true (~loop)
             }
 
             ~loop()

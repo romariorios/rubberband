@@ -1,7 +1,7 @@
 # ~assert_condition|<condition>, <error>, <from>, <arg_name>, <extra_args>
 ~:assert_cond = {
   ~:extra = $4
-  ~extra <<? table neg if_true~ {
+  ~extra <<? table neg if_true ~.{
     ~:extra = (:)
   }
 
@@ -35,16 +35,16 @@
       !{
         ~:first_arg = $
 
-        !~args len <= 1 if_true~ {
+        !~args len <= 1 if_true ~.{
           !~block(~context):(~args 0) = ~first_arg
-        } {
+        } ~.{
           ~:loop = {
             ~block_args:(~args(~i)) = $
 
-            !~i < (~args len - 1) if_true~ {
+            !~i < (~args len - 1) if_true ~.{
               ~:i = ~i + 1
               !~loop~
-            } {
+            } ~.{
               !~block(~context)(~block_args)
             }
           }
@@ -65,7 +65,7 @@
 
   ~$
   ~:loop = {
-    ~condition(~context)() if_true~ {
+    ~condition(~context)() if_true ~.{
       ~block(~context)()
       ~loop~()
     }
@@ -86,19 +86,19 @@
   !{
     ~assert|$ <<? symbol or ($ <<? table), expecting_symbol_or_table, access_obj, :got = $
 
-    !$ == ____clear_locals if_true(~:_a = $) {
+    !$ == ____clear_locals if_true ~.{
       ~:local = (:)
-    } {
-      !~local << (~_a) if_true~ {
+    } (~:_a = $).{
+      !~local << (~_a) if_true ~.{
         !~local(~_a)
-      } {
+      } ~.{
         !~external(~_a)
       }
     }
   }:local = (:), external = $, assert = ~assert_for_blk fn_ctx_instance
 }~
 
-# ~:fac = ~fn~ (|n) { !~n <= 1 if_true~ { !1 } { !~n * (~fac(~n - 1)) } }
+# ~:fac = ~fn~ (|n) { !~n <= 1 if_true ().{ !1 } ~.{ !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
 ~:fn = ~curry(~ merge :assert = ~assert_for_blk fn) (|ctx, arg_names, blk) {
   ~assert|$arg_names <<? listable, expecting_array, arg_names, :got = $arg_names
@@ -150,15 +150,15 @@
   ~use_assert~range
   ~assert|~to <<? numeric, expecting_number, to, :got = ~to
 
-  ~ << from if_true~ {
+  ~ << from if_true ~.{
     ~assert|~from <<? numeric, expecting_number, from, :got = ~from
-  } {
+  } ~.{
     ~:from = 0
   }
 
-  ~ << step if_true~ {
+  ~ << step if_true ~.{
     ~assert|~step <<? numeric, expecting_number, step, :got = ~step
-  } {
+  } ~.{
     ~:step = 1
   }
 

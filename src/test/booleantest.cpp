@@ -68,40 +68,36 @@ TESTS_INIT()
     bl_false.return_statement().add_expr<rbb::literal::number>(5);
     auto block_false = bl_false.eval();
 
-    // 1? (:) {!3} {!5}
+    // t? (:).{!3} (:).{!5}
     TEST_CONDITION(
         rbb::boolean(true)
              << rbb::symbol("if_true")
-             << rbb::table()
-             << block_true
-             << block_false == rbb::number(3),
+             << (block_true << rbb::table())
+             << (block_false << rbb::table()) == rbb::number(3),
         puts("Flow control isn't working."))
 
-    // 0? (:) {!3} {!5}
+    // f? (:).{!3} (:).{!5}
     TEST_CONDITION(
         rbb::boolean(false)
              << rbb::symbol("if_true")
-             << rbb::table()
-             << block_true
-             << block_false == rbb::number(5),
+             << (block_true << rbb::table())
+             << (block_false << rbb::table()) == rbb::number(5),
         puts("Flow control isn't working."))
 
-    // 1? () {!3} {!5}
+    // t? ().{!3} ().{!5}
     TEST_CONDITION_WITH_EXCEPTION(
         boolean(true)
             << symbol("if_true")
-            << empty()
-            << block_true
-            << block_false == number(3),
+            << (block_true << rbb::empty())
+            << (block_false << rbb::empty()) == number(3),
         puts("Flow control with empty context isn't working"))
 
-    // 0? () {!3} {!5}
+    // f? ().{!3} ().{!5}
     TEST_CONDITION_WITH_EXCEPTION(
         boolean(false)
             << symbol("if_true")
-            << empty()
-            << block_true
-            << block_false == number(5),
+            << (block_true << rbb::empty())
+            << (block_false << rbb::empty()) == number(5),
             puts("Flow control with empty context isn't working"))
 
     {

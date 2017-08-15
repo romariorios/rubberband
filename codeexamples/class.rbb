@@ -8,7 +8,7 @@
     ~^map~ (~l class_methods keys) { ~l class_ctx:$ = ~l class_methods$(~l class_ctx) }
     ~l init(~l class_ctx)$
 
-    !{ !$ == this if_true (:c = ~, a = $) {} { !~c(~a) } }(~l class_ctx)
+    !{ !$ == this if_true ().{} (:c = ~, a = $).{ !~c(~a) } }(~l class_ctx)
   }:^ = ~^, l = ~l merge (:), ctx = ~ctx
 }
 

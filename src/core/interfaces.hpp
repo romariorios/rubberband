@@ -271,7 +271,7 @@ private:
     send_msg_function
         _and_send_msg,
         _or_send_msg,
-        _get_context_send_msg,
+        _if_true_send_msg,
         _raise_send_msg;
 };
 
