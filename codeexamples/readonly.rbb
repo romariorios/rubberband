@@ -1,0 +1,28 @@
+# Disable the assignment of new or existing variables in a portion of the code
+
+~:a = 10, b = 20
+~:c = |10, 20, 30
+
+~:readonly = {
+    $ <<? table if_true_raise:
+        error = cannot_update_vars,
+        vars = $
+
+    !~$
+}
+
+(~readonly~).{
+    %inspect_object (~a)
+    %inspect_object (~b)
+    %inspect_object (~c)
+
+    # Can still modify already assigned values
+    ~c|0, 30
+    %inspect_object (~c)
+
+    # Cannot create new variables
+    ~:d = 10 + 20
+
+    # Cannot modify existing variables
+    ~:a = 5
+}()

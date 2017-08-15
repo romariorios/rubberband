@@ -1,0 +1,46 @@
+# Only allow variables to be assigned once
+
+~:assignonce = {
+    !(:ctx = $).{
+        ~:msg = $
+
+        ~msg <<? table if_true~ {
+            ~:i = 0
+            ~:ks = ~msg keys
+
+            # Check if context already has any of the keys
+            ~:loop = ~.{
+                ~ctx << (~ks (~i)) if_true_raise:
+                    error = already_assigned_variable,
+                    varname = ~ks (~i)
+
+                ~i < (~ks len) if_true ~.{
+                    ~:i = ~i + 1
+                    ~loop()
+                }
+            }
+
+            ~loop()
+        }
+
+        !~ctx (~msg)
+    }
+}()
+
+(~assignonce~).{
+    ~:a = 10, b = 20
+
+    %inspect_object (~a)
+    %inspect_object (~b)
+
+    ~:c = |30, 40
+
+    %inspect_object (~c)
+
+    # Cannot assign to existing variable 'a',
+    # even though 'd' and 'e' are new variables
+    ~:d = 40, e = 50, a = 5
+
+    %inspect_object (~d)
+    %inspect_object (~e)
+}()
