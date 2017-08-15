@@ -14,8 +14,8 @@ TESTS_INIT()
     TEST_STRINGFICATION(rbb::number(10), "10")
     TEST_STRINGFICATION(rbb::number(1000.12), std::to_string(1000.12))
     TEST_STRINGFICATION(rbb::symbol("valhalla"), "valhalla")
-    TEST_STRINGFICATION(rbb::boolean(true), "?1")
-    TEST_STRINGFICATION(rbb::boolean(false), "?0")
+    TEST_STRINGFICATION(rbb::boolean(true), "?t")
+    TEST_STRINGFICATION(rbb::boolean(false), "?f")
     TEST_STRINGFICATION(
         rbb::array({
             rbb::number(10),

@@ -186,7 +186,7 @@ std::string object::to_string(
     case value_t::symbol_t:
         return *__value.symbol();
     case value_t::boolean_t:
-        return __value.boolean()? "?1" : "?0";
+        return __value.boolean()? "?t" : "?f";
     case value_t::data_t:
         return __value.data()->to_string(visited);
     default:

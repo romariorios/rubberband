@@ -357,9 +357,9 @@ token tokenizer::_look_token(_look_token_args &args) const
             continue;
         case _state::question_mark_or_boolean:
             switch (ch) {
-            case 't':
-                return token::boolean(false);
             case 'f':
+                return token::boolean(false);
+            case 't':
                 return token::boolean(true);
             default:
                 _rewind(args, ch, prevcol);
