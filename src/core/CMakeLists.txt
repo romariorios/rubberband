@@ -4,6 +4,10 @@ project(rubberbandcore)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
+if (NO_CHECK_RESPONDS_TO)
+    add_definitions(-DNO_CHECK_RESPONDS_TO)
+endif()
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 

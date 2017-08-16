@@ -50,11 +50,17 @@ then
     mkdir inst
 fi &&
 
+if [ ! -z $NO_CHECK_RESPONDS_TO ] && [ $NO_CHECK_RESPONDS_TO -eq 1 ]
+then
+    no_rt="-DNO_CHECK_RESPONDS_TO=ON"
+fi
+
 cd build &&
     cmake "$RUBBERBAND_SRC"\
         -DCMAKE_INSTALL_PREFIX=../inst\
         -DCMAKE_CXX_COMPILER="$CXX"\
         -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+        $no_rt \
         -G Ninja &&
     cmake --build . --target install &&
 cd .. &&

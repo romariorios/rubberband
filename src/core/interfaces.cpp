@@ -138,8 +138,10 @@ iface::numeric::numeric(send_msg_function array_send_msg) :
 
 object iface::numeric::select_response(object *thisptr, object &msg) const
 {
+#ifndef NO_CHECK_RESPONDS_TO
     if (!responds_to(thisptr, msg))
         return {};
+#endif
 
     auto msg_copy = msg;
     int msg_size = number_to_double(msg_copy << SY_LEN);
@@ -188,8 +190,10 @@ bool iface::booleanoid::responds_to(object *thisptr, object &msg) const
 
 object iface::booleanoid::select_response(object *thisptr, object &msg) const
 {
+#ifndef NO_CHECK_RESPONDS_TO
     if (!responds_to(thisptr, msg))
         return {};
+#endif
 
     auto f = select_function(thisptr, msg);
     return f? create_response(thisptr, f) : boolean(!thisptr->__value.boolean());
@@ -235,8 +239,10 @@ bool iface::listable::responds_to(object *thisptr, object &msg) const
 
 object iface::listable::select_response(object *thisptr, object &msg) const
 {
+#ifndef NO_CHECK_RESPONDS_TO
     if (!responds_to(thisptr, msg))
         return {};
+#endif
 
     if (msg == SY_LEN)
         return number(_get_size(thisptr));
@@ -299,8 +305,10 @@ bool iface::mapped::responds_to(object *thisptr, object &msg) const
 
 object iface::mapped::select_response(object *thisptr, object &msg) const
 {
+#ifndef NO_CHECK_RESPONDS_TO
     if (!responds_to(thisptr, msg))
         return {};
+#endif
 
     auto f = select_function(thisptr, msg);
     if (f)

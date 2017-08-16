@@ -28,6 +28,7 @@
 auto typename##_iface_collection =\
     mk_interface_collection
 
+#ifndef NO_CHECK_RESPONDS_TO
 #define SELECT_RESPONSE_FOR(typename)\
 object typename##_send_msg(object *thisptr, object &msg)\
 {\
@@ -36,6 +37,13 @@ object typename##_send_msg(object *thisptr, object &msg)\
 \
     return typename##_iface_collection.select_response(thisptr, msg);\
 }
+#else
+#define SELECT_RESPONSE_FOR(typename)\
+object typename##_send_msg(object *thisptr, object &msg)\
+{\
+    return typename##_iface_collection.select_response(thisptr, msg);\
+}
+#endif
 
 namespace rbb
 {
