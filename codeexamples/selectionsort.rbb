@@ -1,0 +1,23 @@
+~:selectionsort = ~fn~ (|array, comp) {
+    ~:i = 0
+
+    ~while~ {!~i < (~array len)} {
+        ~:m = ~i, j = ~i + 1
+
+        ~while~ {!~j < (~array len)} {
+            ~comp~(|~array (~j), ~array (~m)) if_true ~.{
+                ~:m = ~j
+            }
+            ~:j = ~j + 1
+        }
+
+        ~:arr_i = ~array (~i)
+        ~array|~i, ~array (~m)
+        ~array|~m, ~arr_i
+        ~:i = ~i + 1
+    }
+
+    !~array
+}
+
+%inspect_object (~selectionsort (|10, 2, 12, 3, 7, 4, 9) {!$0 < ($1)})
