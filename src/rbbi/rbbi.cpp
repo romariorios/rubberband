@@ -66,16 +66,16 @@ public:
     {
         if (op == "add_mod_search_path") {
             if (obj << symbol("<<?") << symbol("listable") == boolean(false))
-                throw rbb::runtime_error{parse(":error -> invalid_path")};
+                throw rbb::runtime_error{parse(":error = invalid_path")};
 
             string path;
-            auto size_obj = obj << symbol("*");
+            auto size_obj = obj << symbol("len");
             const auto size = size_obj.__value.integer();
 
             for (long long i = 0; i < size; ++i) {
                 auto path_symb = obj << number(i);
-                if (path_symb << symbol("<<?") << symbol("[a]") == boolean(false))
-                    throw rbb::runtime_error{parse(":error -> invalid_path")};
+                if (path_symb << symbol("<<?") << symbol("symbol") == boolean(false))
+                    throw rbb::runtime_error{parse(":error = invalid_path")};
 
                 if (path_symb == symbol("[..]"))
                     path += "..";
