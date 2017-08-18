@@ -1,8 +1,11 @@
-%inspect_object(~map~ (|1, 2, 3, 4, 5, 6) { !$ * $ })
+%inspect_object(
+  ~map~ (|1, 2, 3, 4, 5, 6) n {
+    !~n * (~n)
+  })
 
 ~:list = |(|1), (|2), (|3), (|4), (|5)
-~map~ (~list) { $|0, $0 + 1 }
-%inspect_object(~map~ (~list) { !$0 })
+~map~ (~list) el { ~el|0, ~el 0 + 1 }
+%inspect_object(~map~ (~list) el { !~el 0 })
 
 %inspect_object(~accum~ (|1, 2, 3, 4, 5, 6):init = 1, step = { !$e * ($val) })
 %inspect_object(~range:from = 1, to = 10, step = 2)

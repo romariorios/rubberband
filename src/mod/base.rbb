@@ -115,18 +115,32 @@
 
 ~:use_assert = { ~:assert = ~assert_for_blk$ }
 
-# ~:list = ~map~ (|1, 2, 3, 4, 5) { !$ * $ }
+# Iteration block context (to be used in map, accum)
+~:it_block_ctx = ().{
+    !(:ctx = $0, varname = $1, varval = $2).{
+        ~:msg = $
+
+        !~msg == (~varname) if_true ~.{
+            !~varval
+        } ~.{
+            !~ctx (~msg)
+        }
+    }
+}
+
+# ~:list = ~map~ (|1, 2, 3, 4, 5) n { !~n * (~n) }
 # # ~list will be (|1, 4, 9, 16, 25)
-~:map = ~fn~ (|ctx, array, blk) {
+~:map = ~fn~ (|ctx, array, varname, blk) {
   ~use_assert~map
   ~assert|~array <<? listable, expecting_array, array, :got = ~array
+  ~assert|~varname <<? symbol, expecting_symbol, varname, :got = ~varname
   ~assert|~blk <<? block, expecting_block, blk, :got = ~blk
 
-  ~:result = ~array len(|)
+  ~:result = (~array len|)
 
   ~:i = 0
   ~while~ { !~i < (~array len) } {
-    ~result|~i, ~blk(~ctx)(~array(~i))
+    ~result|~i, ~blk (~it_block_ctx|~ctx, ~varname, ~array (~i)) ()
     ~:i = ~i + 1
   }
 
@@ -141,7 +155,7 @@
   ~assert|~blks step <<? block, expecting_block, step, :got = ~blks step
 
   ~:res = ~blks init
-  ~map~ (~array) { ~:res = ~blks step(~ctx):e = $, val = ~res }
+  ~map~ (~array) e { ~:res = ~blks step(~ctx):e = ~e, val = ~res }
   !~res
 }
 
@@ -165,5 +179,5 @@
   ~:range_size = ~to - (~from) / (~step) + 1
 
   ~:val = ~from
-  !~map~ (~range_size(|)) { ~:ret = ~val; ~:val = ~val + (~step) !~ret }
+  !~map~ (~range_size(|)) _ { ~:ret = ~val; ~:val = ~val + (~step) !~ret }
 }
