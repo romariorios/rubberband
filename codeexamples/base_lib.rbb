@@ -7,11 +7,11 @@
 ~map~ (~list) el { ~el|0, ~el 0 + 1 }
 %inspect_object(~map~ (~list) el { !~el 0 })
 
-%inspect_object(~accum~ (|1, 2, 3, 4, 5, 6):init = 1, step = { !$e * ($val) })
+%inspect_object(~accum~ (|1, 2, 3, 4, 5, 6) n prod { !~n * (~prod) })
 %inspect_object(~range:from = 1, to = 10, step = 2)
 
 ~:fac = ~fn~ (|n) {
-  !~accum~ (~range:from = 1, to = ~n):init = 1, step = { !$e * ($val) }
+  !~accum~ (~range:from = 1, to = ~n) n prod { !~n * (~prod) }
 }
 
 %inspect_object(~fac 10)

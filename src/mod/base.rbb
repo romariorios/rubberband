@@ -117,11 +117,11 @@
 
 # Iteration block context (to be used in map, accum)
 ~:it_block_ctx = ().{
-    !(:ctx = $0, varname = $1, varval = $2).{
+    !(:ctx = $0, vars = $1).{
         ~:msg = $
 
-        !~msg == (~varname) if_true ~.{
-            !~varval
+        !~msg <<? symbol and (~vars << (~msg)) if_true ~.{
+            !~vars (~msg)
         } ~.{
             !~ctx (~msg)
         }
@@ -140,22 +140,32 @@
 
   ~:i = 0
   ~while~ { !~i < (~array len) } {
-    ~result|~i, ~blk (~it_block_ctx|~ctx, ~varname, ~array (~i)) ()
+    ~result|~i, ~blk (~it_block_ctx|~ctx, (:~varname = ~array (~i))) ()
     ~:i = ~i + 1
   }
 
   !~result
 }
 
-# ~:val = ~accum~ (|1, 2, 3, 4, 5, 6):init = { !1 }, step = { !$e * ($val) }
+# ~:val = ~accum~ (|1, 2, 3, 4, 5, 6) n prod { !~n * (~prod) }
 # # ~val will be 720
-~:accum = ~fn~ (|ctx, array, blks) {
+~:accum = ~fn~ (|ctx, array, item_name, accum_name, blk) {
   ~use_assert~accum
   ~assert|~array <<? listable, expecting_array, array, :got = ~array
-  ~assert|~blks step <<? block, expecting_block, step, :got = ~blks step
+  ~assert|~item_name <<? symbol, expecting_symbol, item_name, :got = ~item_name
+  ~assert|~accum_name <<? symbol, expecting_symbol, accum_name, :got = ~accum_name
+  ~assert|~blk <<? block, expecting_block, blk, :got = ~blk
 
-  ~:res = ~blks init
-  ~map~ (~array) e { ~:res = ~blks step(~ctx):e = ~e, val = ~res }
+  # Initialize with first element of array
+  # TODO allow optional parameter to set initial value
+  ~:res = ~array 0
+
+  ~map~ (~array) el {
+    ~:res = ~blk (~it_block_ctx|
+      ~ctx,
+      (:~item_name = ~el, ~accum_name = ~res)) ()
+  }
+
   !~res
 }
 

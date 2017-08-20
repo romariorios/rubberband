@@ -23,5 +23,8 @@
 }(|0, 1, 1, msg, loop)$ }()
 
 # After 88, the result overflows
-~map~ (~range:from = 0, to = 88) { %inspect_object (~fib $) }
+~map~ (~range:from = 0, to = 88) n {
+    %inspect_object (~fib (~n))
+}
+
 ~fib one
