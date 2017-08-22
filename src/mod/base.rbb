@@ -130,11 +130,14 @@
 
 # ~:fac = ~fn~ (|n) { !~n <= 1 if_true ().{ !1 } ~.{ !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
-~:fn = ~curry(~ merge :assert = ~assert_for_blk fn) (|ctx, arg_names, blk) {
-  ~assert|$arg_names <<? listable, expecting_array, arg_names, :got = $arg_names
-  ~assert|$blk <<? block, expecting_block, blk, :got = $blk
 
-  !~curry(:blk = $blk, ctx = ~fn_ctx($ctx))($arg_names){
+~:fn = ~curry_until ().{!$index == 2} (~merge:assert = ~assert_for_blk fn).{
+  ~:ctx = $0, arg_names = $1, blk = $2
+
+  ~assert|~arg_names <<? listable, expecting_array, arg_names, :got = ~arg_names
+  ~assert|~blk <<? block, expecting_block, blk, :got = ~blk
+
+  !~curry(:blk = ~blk, ctx = ~fn_ctx(~ctx))(~arg_names){
     ~ctx $
     ~:____ret = ~blk(~ctx)()
     ~ctx ____clear_locals
