@@ -56,21 +56,51 @@
   }(~ merge :context = $)
 }(~:assert = ~assert_for_blk curry)
 
+# ~curry_until <cond_fun> <function>
+# <cond_fun> will be given the following parameters:
+# - index: Index of current arg
+# - arg: The arg itself
+# Example:
+# ~curry_until ().{!$index == 1} ().{!$0 + ($1)}
+
+~:curry_until = ().{
+  !(:cond = $).{
+    !(~merge:arg_list = (|), function = $, index = 0).{
+      ~:uncurry = {
+        ~:arg = $
+        ~:arg_list = ~arg_list concat|~arg
+
+        !~cond (~|arg, index) if_true ~.{
+          !~function (~arg_list)
+        } ~.{
+          ~:index = ~index + 1
+          !~uncurry (~merge:)
+        }
+      }
+
+      !~uncurry (~merge:) $
+    }
+  }
+}
+
 # while will loop until the condition becomes false. Ex.:
 # ~:i = 0
 # ~while~ { !~i < 10 } { ~print (~i); ~:i = ~i + 10 }
-~:while = ~curry(:assert = ~assert_for_blk while) (|context, condition, block) {
-  ~assert|$condition <<? block, expecting_block, condition, :got = $condition
-  ~assert|$block <<? block, expecting_block, block, :got = $block
 
-  ~$
+~:while = ~curry_until ().{!$index == 2} (:assert = ~assert_for_blk while).{
+  ~:ctx = $0, cond = $1, blk = $2
+
+  ~assert|~cond <<? block, expecting_block, cond, :got = ~cond
+  ~assert|~blk <<? block, expecting_block, blk, :got = ~blk
+
   ~:loop = {
-    ~condition(~context)() if_true ~.{
-      ~block(~context)()
-      ~loop~()
+    ~cond (~ctx) () if_true ~.{
+      ~blk (~ctx) ()
+      ~loop (~merge:) ()
     }
   }
-  ~loop(~ merge :)()
+
+  ~loop (~merge:) ()
 }
 
 # fn_ctx grabs the external context while not allowing
