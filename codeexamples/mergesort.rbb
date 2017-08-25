@@ -1,0 +1,30 @@
+~:mergesort = ~fn~ (|array, comp) {
+    !~array len <= 1 if_true ~.{
+        !~array
+    } ~.{
+        ~:mid = ~array len / 2
+
+        ~:left = ~mergesort (~array slice|0, ~mid) (~comp)
+        ~:right = ~mergesort (~array slice|~mid, ~array len - (~mid)) (~comp)
+
+        ~:res = (|)
+        ~while~ {!~left len > 0 and (~right len > 0)} {
+            ~comp~ (|~left 0, ~right 0) if_true ~.{
+                ~:val = ~left 0
+                ~:left = ~left slice|1, ~left len - 1
+            } ~.{
+                ~:val = ~right 0
+                ~:right = ~right slice|1, ~right len - 1
+            }
+
+            ~:res = ~res concat|~val
+        }
+
+        ~:remaining = ~left len /= 0 if_true ~.{!~left} ~.{!~right}
+        ~:res = ~res concat (~remaining)
+
+        !~res
+    }
+}
+
+%inspect_object (~mergesort (|10, 203, 12, 23, 121, 65, 19) {!$0 < ($1)})
