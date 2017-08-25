@@ -18,44 +18,6 @@
   !{ !~ctx assert_cond|$0, $1, ~blk_name, $2, $3 }:ctx = ~, blk_name = $
 }~
 
-# curry will turn the arguments from a curried function
-# into a table inside the function. Ex.:
-# ~:f = ~curry~ (|a, b, c) { !:a = $a, b = $b, c = $c }
-# ~:g = ~f a b c   # returns :a = a, b = b, c = c
-~:curry = {
-  !{
-    ~assert|$ <<? listable, expecting_array, args, :got = $
-    ~assert|$len /= 0, empty_array, args, :got = $
-
-    ~:args = $
-    !{
-      ~assert|$ <<? block, expecting_block, block, :got = $
-
-      ~:block = $
-      !{
-        ~:first_arg = $
-
-        !~args len <= 1 if_true ~.{
-          !~block(~context):(~args 0) = ~first_arg
-        } ~.{
-          ~:loop = {
-            ~block_args:(~args(~i)) = $
-
-            !~i < (~args len - 1) if_true ~.{
-              ~:i = ~i + 1
-              !~loop~
-            } ~.{
-              !~block(~context)(~block_args)
-            }
-          }
-
-          !~loop(~merge:i = 1, block_args = (:(~args 0) = ~first_arg))
-        }
-      }~
-    }~
-  }(~ merge :context = $)
-}(~:assert = ~assert_for_blk curry)
-
 # ~curry_until <cond_fun> <function>
 # <cond_fun> will be given the following parameters:
 # - index: Index of current arg
@@ -128,6 +90,24 @@
   }:local = (:), external = $, assert = ~assert_for_blk fn_ctx_instance
 }~
 
+# ~construct_table <symbols> <values>
+# ~construct_table (|a, b, c) (|10, 20, 30)
+# # Returns (:a = 10, b = 20, c = 30)
+
+~:construct_table = ~curry_until ().{!$index == 1} (~merge:).{
+  ~:ks = $0, values = $1
+  ~:new_table = (:)
+
+  ~:i = 0
+  ~while~ {!~i < (~ks len)} {
+    ~new_table:~ks (~i) = ~values (~i)
+    ~:i = ~i + 1
+  }
+
+  !~new_table
+}
+
+
 # ~:fac = ~fn~ (|n) { !~n <= 1 if_true ().{ !1 } ~.{ !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
 
@@ -137,12 +117,14 @@
   ~assert|~arg_names <<? listable, expecting_array, arg_names, :got = ~arg_names
   ~assert|~blk <<? block, expecting_block, blk, :got = ~blk
 
-  !~curry(:blk = ~blk, ctx = ~fn_ctx(~ctx))(~arg_names){
-    ~ctx $
-    ~:____ret = ~blk(~ctx)()
-    ~ctx ____clear_locals
+  !~curry_until (~merge:).{!$index == (~arg_names len - 1)} (~merge:).{
+    ~:ctx = ~fn_ctx (~ctx)
+    ~ctx (~construct_table (~arg_names) $)
 
-    !~____ret
+    ~:ret = ~blk (~ctx) ()
+
+    ~ctx ____clear_locals
+    !~ret
   }
 }
 
