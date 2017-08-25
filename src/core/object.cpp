@@ -433,7 +433,7 @@ SEND_MSG(array_slicing)
     auto this_len = d->size;
 
     if (pos + size > this_len)
-        return empty();
+        return rbb::array();
 
     array_data *new_d = new array_data(size);
 
