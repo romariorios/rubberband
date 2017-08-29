@@ -1,7 +1,28 @@
 %lit:
   trigger = 39,
   eval = {
-    $skip
+    ~:stream = $
+    ~stream skip
 
-    !$char_val
-  }()
+    !~stream char_val == 92 if_true ~.{  # 92 is \
+      ~stream skip
+      !~escape_val (~stream char_val)
+    } ~.{
+      !~stream char_val
+    }
+  }:
+    escape_val = (:).{
+      ~:ch = $
+
+      !~ch == 110 if_true ~.{  # n
+        !10  # Newline
+      } ~.{
+        !~ch == 116 if_true ~.{  # t
+          !9  # Tab
+        } ~.{
+          ?t if_true_raise:
+            error = unknown_scape_sequence,
+            val = ~ch
+        }
+      }
+    }

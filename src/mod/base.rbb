@@ -145,6 +145,7 @@
 
 # ~:list = ~map~ (|1, 2, 3, 4, 5) n { !~n * (~n) }
 # # ~list will be (|1, 4, 9, 16, 25)
+
 ~:map = ~fn~ (|ctx, array, varname, blk) {
   ~use_assert~map
   ~assert|~array <<? listable, expecting_array, array, :got = ~array
@@ -160,6 +161,21 @@
   }
 
   !~result
+}
+
+# Similar to map, but returns nothing
+
+~:foreach = ~fn~ (|ctx, array, varname, blk) {
+  ~use_assert~foreach
+  ~assert|~array <<? listable, expecting_array, array, :got = ~array
+  ~assert|~varname <<? symbol, expecting_symbol, varname, :got = ~varname
+  ~assert|~blk <<? block, expecting_block, blk, :got = ~blk
+
+  ~:i = 0
+  ~while~ {!~i < (~array len)} {
+    ~blk (~it_block_ctx|~ctx, (:~varname = ~array (~i))) ()
+    ~:i = ~i + 1
+  }
 }
 
 # ~:val = ~accum~ (|1, 2, 3, 4, 5, 6) n prod { !~n * (~prod) }
