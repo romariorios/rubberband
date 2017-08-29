@@ -1,0 +1,16 @@
+%load char~()
+~:pack = ().{!$};;  # TODO call native pack module
+
+%lit:
+  trigger = '",
+  eval = ~fn~ (|stream) {
+    ~:strdata = (|)
+
+    ~stream skip
+    ~while~ {!~stream char_val /= '"} {
+      ~:strdata = ~strdata concat|~stream char_val
+      ~stream skip
+    }
+
+    !~strdata
+  }
