@@ -1,5 +1,5 @@
 // Rubberband modloader: Load external Rubberband modules
-// Copyright (c) 2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (c) 2016--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -29,29 +29,36 @@ using namespace rbb;
 using namespace rbb::modloader;
 using namespace std;
 
-// FIXME Stop using this global
-json G_cfg;
+struct base::config
+{
+    json cfg;
+};
 
 base::base(const std::string &cfgfile_name) :
     _module_paths_concrete{new vector<string>},
-    module_paths{*_module_paths_concrete.get()}
+    module_paths{*_module_paths_concrete.get()},
+    _cfg{new config}
 {
     ifstream cfgfile{cfgfile_name};
     if (cfgfile.good())
-        cfgfile >> G_cfg;
+        cfgfile >> _cfg->cfg;
 
-    auto &&modpaths = G_cfg["modpaths"];
+    auto &&modpaths = _cfg->cfg["modpaths"];
     if (modpaths.type() == json::value_t::array)
         add_path_list(modpaths);
 }
 
 base::base(std::vector<std::string> &parent_module_paths) :
-    module_paths{parent_module_paths}
+    module_paths{parent_module_paths},
+    _cfg{new config}
+{}
+
+base::~base()
 {}
 
 void base::autoload(object &context) const
 {
-    for (const auto &m : G_cfg["autoload"])
+    for (const auto &m : _cfg->cfg["autoload"])
         load_module(m) << context << object{};
 }
 
