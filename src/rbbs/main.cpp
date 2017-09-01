@@ -1,5 +1,5 @@
 // Rubberband script: Run rubberband code as scripts
-// Copyright (c) 2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (c) 2016--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -56,6 +56,11 @@ public:
         return {};
     }
 
+    auto &loader()
+    {
+        return _loader;
+    }
+
 private:
     modloader::multi _loader;
 
@@ -106,10 +111,10 @@ int main(int argc, char **argv)
     cmd.parse(argc, argv);
 
     rbbs_master master{cfgfile_args.getValue()};
-    master.file_loader.add_path_list(paths_args.getValue());
+    master.loader().add_path_list(paths_args.getValue());
 
     auto main_context = table();
-    master.file_loader.autoload(main_context);
+    master.loader().autoload(main_context);
 
     for (const auto &module : modules_args.getValue()) {
         auto mod = master.load(module);

@@ -1,5 +1,5 @@
 // Rubberband modloader: Load external Rubberband modules
-// Copyright (c) 2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (c) 2016--2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -47,7 +47,7 @@ private:
     base_master &_master;
 };
 
-class could_not_open_file : public std::exception
+class could_not_open_file final : public load_error
 {
 public:
     could_not_open_file(const std::string &f)

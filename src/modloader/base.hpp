@@ -1,5 +1,5 @@
 // Rubberband modloader: Load external Rubberband modules
-// Copyright (c) 2016  Luiz Romário Santana Rios <luizromario at gmail dot com>
+// Copyright (c) 2016, 2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to
@@ -39,6 +39,7 @@ class base
 public:
     base(const std::string &cfgfile_name = {});
     base(std::vector<std::string> &parent_module_paths);
+    ~base();
 
     virtual object load_module(const std::string &modname) const = 0;
 
@@ -52,6 +53,10 @@ private:
 
 protected:
     std::vector<std::string> &module_paths;
+
+private:
+    struct config;
+    std::unique_ptr<config> _cfg;
 };
 
 class load_error : public std::exception
