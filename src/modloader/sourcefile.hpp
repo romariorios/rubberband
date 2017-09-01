@@ -47,7 +47,7 @@ private:
     base_master &_master;
 };
 
-class could_not_open_file : public std::exception
+class could_not_open_file final : public load_error
 {
 public:
     could_not_open_file(const std::string &f)
