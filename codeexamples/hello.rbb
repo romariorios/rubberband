@@ -1,0 +1,5 @@
+%load string~();;
+%load io~()
+
+~puts "Hello, world!"
+

@@ -12,5 +12,17 @@
       ~stream skip
     }
 
-    !~strdata
+    !(~:strdata = ~strdata).{
+      # Make the string respond to the "string" interface
+
+      ~:msg = $
+      !~msg == <<? if_true ~.{
+        !(~merge:).{
+          ~:ifacename = $
+          !~ifacename == string if_true ().{!?t} ~.{
+            !~strdata <<? (~ifacename)
+          }
+        }
+      } ~.{!~strdata (~msg)}
+    }
   }

@@ -1,0 +1,13 @@
+~:putch = %load rbbputch
+%load char~();;
+
+~:puts = ~fn~ (|str) {
+  ~use_assert~puts
+  ~assert|~str <<? string, expecting_string, str, :got = ~str
+
+  ~foreach~ (~str) ch {
+    ~putch (~ch)
+  }
+
+  ~putch '\n
+}
