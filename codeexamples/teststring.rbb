@@ -1,0 +1,10 @@
+%load string~();;
+
+~:hello_string = "Hello"
+
+~:i = 0
+~while~ {!~i < (~hello_string len)} {
+  %inspect_object (~hello_string (~i))
+  ~:i = ~i + 1
+}
+
