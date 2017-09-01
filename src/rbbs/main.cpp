@@ -56,6 +56,11 @@ public:
         return {};
     }
 
+    auto &loader()
+    {
+        return _loader;
+    }
+
 private:
     modloader::multi _loader;
 
@@ -106,10 +111,10 @@ int main(int argc, char **argv)
     cmd.parse(argc, argv);
 
     rbbs_master master{cfgfile_args.getValue()};
-    master.file_loader.add_path_list(paths_args.getValue());
+    master.loader().add_path_list(paths_args.getValue());
 
     auto main_context = table();
-    master.file_loader.autoload(main_context);
+    master.loader().autoload(main_context);
 
     for (const auto &module : modules_args.getValue()) {
         auto mod = master.load(module);
