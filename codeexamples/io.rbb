@@ -1,0 +1,52 @@
+~:putch = %load rbbputch
+%load char~();;
+
+~:puts = ~fn~ (|str) {
+  ~use_assert~puts
+  ~assert|~str <<? string, expecting_string, str, :got = ~str
+
+  ~foreach~ (~str) ch {
+    ~putch (~ch)
+  }
+}
+
+~:putnum = ~fn~ (|n) {
+  ~:p = ~.{~putch ($ + 48)}
+
+  ~n > 0 and (~n <= 9) if_true ~.{
+    ~p (~n)
+  } ~.{
+    ~:rem = ~n mod 10
+
+    ~putnum (~n - (~rem) / 10)
+    ~p (~rem)
+  }
+}
+
+~:putl = ~fn~ (|l) {
+  ~foreach~ (~l) el {
+    ~print (~el)
+  }
+}
+
+~:print = ~fn~ (|arg) {
+  # List instead of table because the order of the elements matters
+  ~:fns = |
+    (|numeric, ~putnum),
+    (|string, ~puts),
+    (|listable, ~putl)
+
+  ~:i = 0, found = ?f
+  ~while~ {!~i < (~fns len) and (~found neg)} {
+    ~arg <<? (~fns (~i) 0) if_true ~.{
+      ~fns (~i) 1 (~arg)
+      ~:found = ?t
+    }
+
+    ~:i = ~i + 1
+  }
+
+  ~found neg if_true_raise:
+    error = could_not_print_value,
+    value = ~arg
+}
