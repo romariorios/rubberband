@@ -39,7 +39,12 @@
 
 %lit:
   trigger = 39,
-  eval = ~.{
+  eval = (~|read_char).{
     $skip
-    !~read_char $
+    ~:res = ~read_char $
+    $skip
+    $char_val /= 39 if_true_raise:
+      error = invalid_char
+
+    !~res
   }
