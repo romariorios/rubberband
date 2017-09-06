@@ -1,28 +1,45 @@
-%lit:
-  trigger = 39,
-  eval = {
-    ~:stream = $
+~:read_char = {
+  ~:stream = $
+
+  !~stream char_val == 92 if_true ~.{  # 92 is \
     ~stream skip
+    !~escape_val (~stream char_val)
+  } ~.{
+    !~stream char_val
+  }
+}:
+  escape_val = (:).{
+    ~:ch = $
+    ~:escapes = |
+      (|34, 34),   # "
+      (|92, 92),   # \
+      (|110, 10),  # \n
+      (|116, 9)    # \t
 
-    !~stream char_val == 92 if_true ~.{  # 92 is \
-      ~stream skip
-      !~escape_val (~stream char_val)
-    } ~.{
-      !~stream char_val
-    }
-  }:
-    escape_val = (:).{
-      ~:ch = $
-
-      !~ch == 110 if_true ~.{  # n
-        !10  # Newline
+    ~:i = 0
+    ~:loop = ~.{
+      ~ch == (~escapes (~i) 0) if_true ~.{
+        ~:res = ~escapes (~i) 1
       } ~.{
-        !~ch == 116 if_true ~.{  # t
-          !9  # Tab
-        } ~.{
-          ?t if_true_raise:
-            error = unknown_scape_sequence,
-            val = ~ch
+        ~:i = ~i + 1
+
+        ~i < (~escapes len) if_true ~.{
+          ~loop()
         }
       }
     }
+    ~loop()
+
+    ~ << res neg if_true_raise:
+      error = unknown_scape_sequence,
+      val = ~ch
+
+    !~res
+  }
+
+%lit:
+  trigger = 39,
+  eval = ~.{
+    $skip
+    !~read_char $
+  }

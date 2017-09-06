@@ -8,7 +8,7 @@
 
     ~stream skip
     ~while~ {!~stream char_val /= '"} {
-      ~:strdata = ~strdata concat (~pack|~stream char_val)
+      ~:strdata = ~strdata concat (~pack|~read_char (~stream))
       ~stream skip
     }
 
