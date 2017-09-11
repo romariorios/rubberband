@@ -245,7 +245,12 @@ object pack(object *, object &msg)
     return object{value_t{pack}, pack_data_send_msg};
 }
 
-extern "C" object rbb_loadobj()
+namespace rbb
+{
+    class base_master;
+}
+
+extern "C" object rbb_loadobj(base_master *)
 {
     return object{value_t{value_t::no_data_t}, pack};
 }

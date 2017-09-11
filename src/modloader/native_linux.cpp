@@ -32,7 +32,7 @@ native_linux::native_linux(base_master *master, std::vector<std::string> &parent
     base{master, parent_module_paths}
 {}
 
-using loadobj_fun = object(*)();
+using loadobj_fun = object(*)(base_master *master);
 
 class dl_handle
 {
@@ -79,7 +79,7 @@ object native_linux::load_module(const string &modname) const
     if (dl_error_str)
         throw dlsym_error{dl_error_str};
 
-    return rbb_loadobj();
+    return rbb_loadobj(&master);
 }
 
 dlopen_error::dlopen_error() :

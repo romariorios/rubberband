@@ -50,7 +50,12 @@ object rbbrandom_send_msg(object *, object &msg)
     throw_msg_error("No such method");
 }
 
-extern "C" object rbb_loadobj()
+namespace rbb
+{
+    class base_master;
+}
+
+extern "C" object rbb_loadobj(base_master *)
 {
     srand(time(nullptr));
 

@@ -38,7 +38,12 @@ object putch_send_msg(object *, object &msg)
     return {};
 }
 
-extern "C" object rbb_loadobj()
+namespace rbb
+{
+    class base_master;
+}
+
+extern "C" object rbb_loadobj(base_master *)
 {
     return object{value_t{value_t::no_data_t}, putch_send_msg};
 }
