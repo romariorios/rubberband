@@ -38,30 +38,19 @@ namespace modloader
 class multi final : public base
 {
 public:
-    explicit multi(const std::string &cfgfile_path = {});
+    explicit multi(base_master *master, const std::string &cfgfile_path = {});
 
     object load_module(const std::string &modname) const override;
 
-    // Loader with no constructor args
     template <typename LoaderT>
-    void add_loader()
-    {
-        _loaders.emplace_back(new LoaderT{module_paths});
-    }
-
-    // Loader with one or more constructor args
-    template <typename LoaderT, typename TArg, typename... TOtherArgs>
-    LoaderT &add_loader(TArg &&a, TOtherArgs &&... otherA)
+    LoaderT &add_loader()
     {
         // Pointer will be passed to emplace_back right away, so it should be okay
-        auto new_loader = new LoaderT{
-            std::forward<TArg>(a),
-            std::forward<TOtherArgs>(otherA)...,
-            module_paths};
+        auto new_loader = new LoaderT{&master, module_paths};
         _loaders.emplace_back(new_loader);
 
         return *new_loader;
-    };
+    }
 
 private:
     std::vector<std::unique_ptr<base>> _loaders;

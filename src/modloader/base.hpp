@@ -37,8 +37,8 @@ namespace modloader
 class base
 {
 public:
-    base(const std::string &cfgfile_name = {});
-    base(std::vector<std::string> &parent_module_paths);
+    base(base_master *master, const std::string &cfgfile_name = {});
+    base(base_master *master, std::vector<std::string> &parent_module_paths);
     ~base();
 
     virtual object load_module(const std::string &modname) const = 0;
@@ -53,6 +53,7 @@ private:
 
 protected:
     std::vector<std::string> &module_paths;
+    base_master &master;
 
 private:
     struct config;

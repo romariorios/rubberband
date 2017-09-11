@@ -37,8 +37,8 @@ class rbbs_master : public base_master
 {
 public:
     rbbs_master(const std::string &cfgfile_name) :
-        _loader{cfgfile_name},
-        file_loader{_loader.add_loader<modloader::sourcefile>(this)}
+        _loader{this, cfgfile_name},
+        file_loader{_loader.add_loader<modloader::sourcefile>()}
     {
         _loader.add_loader<modloader::native_linux>();
     }

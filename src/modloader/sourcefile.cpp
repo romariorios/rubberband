@@ -29,13 +29,11 @@ using namespace rbb::modloader;
 using namespace std;
 
 sourcefile::sourcefile(base_master *master, const string &cfgfile_name) :
-    base{cfgfile_name},
-    _master{*master}
+    base{master, cfgfile_name}
 {}
 
 sourcefile::sourcefile(base_master *master, vector<string> &parent_module_paths) :
-    base{parent_module_paths},
-    _master{*master}
+    base{master, parent_module_paths}
 {}
 
 object sourcefile::load_module(const string &modname) const
@@ -126,12 +124,12 @@ object sourcefile::program_from_file(const string &filename) const
 
     try {
         const auto chunks = split(program, ";;");
-        auto first_chunk = _master.parse("{" + chunks[0] + "}");
+        auto first_chunk = master.parse("{" + chunks[0] + "}");
 
         return object{
             value_t{
                 new sourcefile_module_data{
-                    _master, first_chunk,
+                    master, first_chunk,
                     vector<string>(chunks.cbegin() + 1, chunks.cend())}},
             sourcefile_module_send_msg};
     } catch (const syntax_error &e) {

@@ -35,7 +35,7 @@ namespace modloader
 class native_linux final : public base
 {
 public:
-    explicit native_linux(std::vector<std::string> &parent_module_paths);
+    explicit native_linux(base_master *master, std::vector<std::string> &parent_module_paths);
 
     object load_module(const std::string &modname) const override;
 };

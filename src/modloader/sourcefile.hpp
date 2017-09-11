@@ -42,9 +42,6 @@ public:
 
     object load_module(const std::string &modname) const override;
     object program_from_file(const std::string &filename) const;
-
-private:
-    base_master &_master;
 };
 
 class could_not_open_file final : public load_error

@@ -46,10 +46,10 @@ class rbbi_master : public base_master
 {
 public:
     rbbi_master() :
-        loader_{".cfg.json"}
+        loader_{this, ".cfg.json"}
     {
         loader_.add_loader<modloader::native_linux>();
-        loader_.add_loader<modloader::sourcefile>(this);
+        loader_.add_loader<modloader::sourcefile>();
     }
 
     void autoload(object &obj)

@@ -34,9 +34,10 @@ struct base::config
     json cfg;
 };
 
-base::base(const std::string &cfgfile_name) :
+base::base(base_master *master, const std::string &cfgfile_name) :
     _module_paths_concrete{new vector<string>},
     module_paths{*_module_paths_concrete.get()},
+    master{*master},
     _cfg{new config}
 {
     ifstream cfgfile{cfgfile_name};
@@ -48,8 +49,9 @@ base::base(const std::string &cfgfile_name) :
         add_path_list(modpaths);
 }
 
-base::base(std::vector<std::string> &parent_module_paths) :
+base::base(base_master *master, std::vector<std::string> &parent_module_paths) :
     module_paths{parent_module_paths},
+    master{*master},
     _cfg{new config}
 {}
 
