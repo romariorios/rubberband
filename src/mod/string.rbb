@@ -1,7 +1,7 @@
 %load char~();;
 ~:pack = %load rbbpack
 
-~:mk_string = ~fn~ (|strdata) {
+~:mk_string = ~fn~ strdata {
   !(~:strdata = ~strdata).{
     # Make the string respond to the "string" interface
 
@@ -19,7 +19,7 @@
 
 %lit:
   trigger = '"',
-  eval = ~fn~ (|stream) {
+  eval = ~fn~ stream {
     ~:strdata = ~pack (|)
 
     ~stream skip

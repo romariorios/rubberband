@@ -1,7 +1,7 @@
 ~:putch = %load rbbputch
 %load char~();;
 
-~:puts = ~fn~ (|str) {
+~:puts = ~fn~ str {
   ~use_assert~puts
   ~assert|~str <<? string, expecting_string, str, :got = ~str
 
@@ -10,7 +10,7 @@
   }
 }
 
-~:putnum = ~fn~ (|n) {
+~:putnum = ~fn~ n {
   ~:p = ~.{~putch ($ + 48)}
 
   ~n > 0 and (~n <= 9) if_true ~.{
@@ -23,13 +23,13 @@
   }
 }
 
-~:putl = ~fn~ (|l) {
+~:putl = ~fn~ l {
   ~foreach~ (~l) el {
     ~print (~el)
   }
 }
 
-~:print = ~fn~ (|arg) {
+~:print = ~fn~ arg {
   # List instead of table because the order of the elements matters
   ~:fns = |
     (|numeric, ~putnum),

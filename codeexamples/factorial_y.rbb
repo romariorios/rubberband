@@ -1,0 +1,29 @@
+# Factorial using the fixpoint combinator
+
+~:ycomb = (:).{
+  ~:g = $
+  ~:a = ().{!$$}
+
+  !~a ~.{
+    ~:f = $
+
+    !~g ~.{
+      ~:x = $
+      ~:c = ~f (~f)
+
+      !~c (~x)
+    }
+  }
+}
+
+~:fac = (:).{
+  ~:f = $
+  !~.{
+    ~:n = $
+    !~n == 0 if_true ~.{!1} ~.{
+      !~n * (~f (~n - 1))
+    }
+  }
+}
+
+~:factorial = ~ycomb (~fac)
