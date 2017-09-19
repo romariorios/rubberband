@@ -1,4 +1,4 @@
-~:mergesort = ~fn~ (|array, comp) {
+~:mergesort = ~fn~ array comp {
     !~array len <= 1 if_true ~.{
         !~array
     } ~.{

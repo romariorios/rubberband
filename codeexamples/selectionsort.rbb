@@ -1,4 +1,4 @@
-~:selectionsort = ~fn~ (|array, comp) {
+~:selectionsort = ~fn~ array comp {
     ~:i = 0
 
     ~while~ {!~i < (~array len)} {
