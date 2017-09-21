@@ -50,12 +50,32 @@ public:
     object mk_string;
 };
 
+static string obj_tostr(const object &obj)
+{
+    switch (obj.__value.type) {
+    case value_t::empty_t:
+        return "()";
+    case value_t::integer_t:
+        return std::to_string(obj.__value.integer());
+    case value_t::floating_t:
+        return std::to_string(obj.__value.floating());
+    case value_t::symbol_t:
+        return *obj.__value.symbol();
+    case value_t::boolean_t:
+        return obj.__value.boolean()? "?t" : "?f";
+    default:
+        break;
+    }
+
+    return obj.to_string();
+}
+
 object tostr_send_msg_function(object *thisptr, object &msg)
 {
     auto d = thisptr->__value.data_as<tostr_data>();
 
     return d->mk_string << object{
-        value_t{new native_str_data{msg.to_string()}},
+        value_t{new native_str_data{obj_tostr(msg)}},
         native_str_send_msg};
 }
 
