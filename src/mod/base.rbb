@@ -173,9 +173,16 @@
   ~assert|~varname <<? symbol, expecting_symbol, varname, :got = ~varname
   ~assert|~blk <<? block, expecting_block, blk, :got = ~blk
 
-  ~:i = 0
+  ~:i = 0, last = ?f
   ~while~ {!~i < (~array len)} {
-    ~blk (~it_block_ctx|~ctx, (:~varname = ~array (~i))) ()
+    ~i + 1 == (~array len) if_true ~.{
+      ~:last = ?t
+    }
+  
+    ~blk (~it_block_ctx|
+      ~ctx, (:
+        ~varname = ~array (~i),
+        last_iteration = ~last)) ()
     ~:i = ~i + 1
   }
 }
