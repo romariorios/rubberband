@@ -230,7 +230,9 @@ bool iface::listable::responds_to(object *thisptr, object &msg) const
             msg << SY_LEN == number(2) &&
             in_bounds(*thisptr, msg << number(0));
 
-    return in_bounds(*thisptr, msg);
+    return
+        msg << SY_DLTQM << SY_I_NUM == boolean(true)?
+            in_bounds(*thisptr, msg) : false;
 }
 
 object iface::listable::select_response(object *thisptr, object &msg) const
