@@ -1,5 +1,4 @@
 ~:putch = %load rbbputch
-~:tostr = %load rbbtostr
 %load char~();;
 
 ~:puts = ~fn~ str {
@@ -8,56 +7,5 @@
 
   ~foreach~ (~str) ch {
     ~putch (~ch)
-  }
-}
-
-# Put primitive constant
-~:putprconst = ~fn~ obj {
-  ~puts (~tostr (~obj))
-}
-
-~:putl = ~fn~ l {
-  ~puts "(|"
-
-  ~foreach~ (~l) el {
-    ~print (~el)
-
-    ~last_iteration neg if_true ~.{
-      ~puts ", "
-    }
-  }
-
-  ~puts ")"
-}
-
-~:quotestr = ~fn~ str {
-  ~puts "\""; ~puts (~str); ~puts "\""
-}
-
-~:print = ~fn~ arg {
-  ~arg == () if_true ~.{
-    ~putprconst ()
-  } ~.{
-    # List instead of table because the order of the elements matters
-    ~:fns = |
-      (|numeric, ~putprconst),
-      (|symbol, ~putprconst),
-      (|boolean, ~putprconst),
-      (|string, ~quotestr),
-      (|listable, ~putl)
-
-    ~:i = 0, found = ?f
-    ~while~ {!~i < (~fns len) and (~found neg)} {
-      ~arg <<? (~fns (~i) 0) if_true ~.{
-        ~fns (~i) 1 (~arg)
-        ~:found = ?t
-      }
-
-      ~:i = ~i + 1
-    }
-
-    ~found neg if_true_raise:
-      error = could_not_print_value,
-      value = ~arg
   }
 }
