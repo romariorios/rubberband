@@ -7,16 +7,16 @@ $ /= array if_true ~.{
 }
 
 ~:isdigit = {
-  !($ == '0 or
-  ($ == '1) or
-  ($ == '2) or
-  ($ == '3) or
-  ($ == '4) or
-  ($ == '5) or
-  ($ == '6) or
-  ($ == '7) or
-  ($ == '8) or
-  ($ == '9))
+  !($ == '0' or
+  ($ == '1') or
+  ($ == '2') or
+  ($ == '3') or
+  ($ == '4') or
+  ($ == '5') or
+  ($ == '6') or
+  ($ == '7') or
+  ($ == '8') or
+  ($ == '9'))
 }()
 
 ~:adjust = {
@@ -100,6 +100,9 @@ $ /= array if_true ~.{
     ~sel|+, {!~make_bignum (~pack (~_plus~($data)))}~
     ~sel|==, {!~d == ($data)}~  # will not work for arrays
     ~sel|/=, {!~d /= ($data)}~
+    ~sel|<<, {
+      !($ == * or ($ == +) or ($ == ==) or ($ == /=) or
+        ($ == <<) or ($ == data))}~
     ~sel|data, ~d
 
     ~ << res neg if_true_raise:error = unknown_method, got = ~arg
@@ -115,7 +118,7 @@ $ /= array if_true ~.{
   })
 
 %lit:
-  trigger = 'N,
+  trigger = 'N',
   eval = {
     ~:parser = $
 
@@ -126,7 +129,7 @@ $ /= array if_true ~.{
 
       !~isdigit (~cur_char) if_true ~.{
         ~:val = ~mult_n|~val, 10
-        ~val|0, ~val 0 + (~cur_char) - '0
+        ~val|0, ~val 0 + (~cur_char) - '0'
         ~:val = ~adjust (~val)
 
         ~parser skip
