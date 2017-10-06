@@ -98,24 +98,16 @@ static string obj_tostr(const object &obj)
     return obj.to_string();
 }
 
-object tostr_send_msg_function(object *thisptr, object &msg)
+object tostr_send_msg_function(object *, object &msg)
 {
-    auto d = thisptr->__value.data_as<tostr_data>();
-
-    return d->mk_string << object{
+    return object{
         value_t{new native_str_data{obj_tostr(msg)}},
         native_str_send_msg};
 }
 
-extern "C" object rbb_loadobj(base_master *master)
+extern "C" object rbb_loadobj(base_master *)
 {
-    auto str_imports = rbb::table();
-    master->load("base") << str_imports << empty();
-    master->load("string") << str_imports << empty();
-
-    auto mk_string = str_imports << "mk_string";
-
     return object{
-        value_t{new tostr_data{mk_string}},
+        value_t{value_t::no_data_t},
         tostr_send_msg_function};
 }

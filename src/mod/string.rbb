@@ -1,8 +1,9 @@
 %load char~();;
 ~:pack = %load rbbpack
+~:tostrdata = %load rbbtostr
 
 ~:mk_string = ~fn~ strdata {
-  !(~:strdata = ~strdata).{
+  !(:strdata = ~strdata, mk_string = ~mk_string, pack = ~pack).{
     # Make the string respond to the "string" interface
 
     ~:msg = $
@@ -13,7 +14,20 @@
           !~strdata <<? (~ifacename)
         }
       }
-    } ~.{!~strdata (~msg)}
+    } ~.{
+      !~msg == concat if_true ~.{
+        !(~merge:).{
+          ~:other = $
+          ~other <<? string neg if_true_raise:
+            error = string_expected,
+            got = ~other
+
+          !~mk_string (~strdata concat (~pack (~other)))
+        }
+      } ~.{
+        !~strdata (~msg)
+      }
+    }
   }
 }
 
@@ -29,4 +43,64 @@
     }
 
     !~mk_string (~strdata)
+  };;
+
+~:listable_to_string = ~fn~ list {
+  ~:str = "(|"
+
+  ~foreach~ (~list) el {
+    ~:str = ~str concat (~obj_to_string (~el))
+
+    ~last_iteration neg if_true ~.{
+      ~:str = ~str concat ", "
+    }
   }
+
+  ~:str = ~str concat ")"
+  !~str
+}
+
+~:table_to_string = ~fn~ table {
+  ~:str = "(:"
+
+  ~foreach~ (~table keys) k {
+    ~:str =
+      (~str concat (~obj_to_string (~k))
+        concat " = " concat (~obj_to_string (~table (~k))))
+
+    ~last_iteration neg if_true ~.{
+      ~:str = ~str concat ", "
+    }
+  }
+
+  ~:str = ~str concat ")"
+  !~str
+}
+
+~:obj_to_string = ~fn~ obj {
+  !~obj << to_string and (~obj <<? table neg) if_true ~.{
+    !~obj to_string
+  } ~.{
+    !(~obj == () or
+      (~obj <<? numeric) or
+      (~obj <<? symbol) or
+      (~obj <<? boolean)) if_true ~.{
+        !~mk_string (~tostrdata (~obj))
+      } ~.{
+        !~obj <<? listable and (~obj <<? string neg) if_true ~.{
+          !~listable_to_string (~obj)
+        } ~.{
+          !~obj <<? table if_true ~.{
+            !~table_to_string (~obj)
+          } ~.{
+            !~obj <<? block if_true ~.{
+              !"[block]"
+            } ~.{
+              # TODO allow hooks
+              !"[unknown]"
+            }
+          }
+        }
+      }
+  }
+}
