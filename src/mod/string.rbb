@@ -45,11 +45,27 @@
     !~mk_string (~strdata)
   };;
 
-~:listable_to_string = ~fn~ list {
+~:visited_to_string = ~fn~ el parent visited {
+  ~:contains = ?f, i = 0
+  ~while~ {!~i < (~visited len) and (~contains neg)} {
+    ~:contains = ~visited (~i) == (~el)
+    ~:i = ~i + 1
+  }
+
+  ~contains if_true ~.{
+    ~:el_to_string = "..."
+  } ~.{
+    ~:el_to_string = ~obj_to_string_with_visits (~el) (~visited concat|~parent)
+  }
+
+  !~el_to_string
+}
+
+~:listable_to_string = ~fn~ list visited {
   ~:str = "(|"
 
   ~foreach~ (~list) el {
-    ~:str = ~str concat (~obj_to_string (~el))
+    ~:str = ~str concat (~visited_to_string (~el) (~list) (~visited))
 
     ~last_iteration neg if_true ~.{
       ~:str = ~str concat ", "
@@ -60,13 +76,14 @@
   !~str
 }
 
-~:table_to_string = ~fn~ table {
+~:table_to_string = ~fn~ table visited {
   ~:str = "(:"
 
   ~foreach~ (~table keys) k {
     ~:str =
       (~str concat (~obj_to_string (~k))
-        concat " = " concat (~obj_to_string (~table (~k))))
+        concat " = " concat (
+          ~visited_to_string (~table (~k)) (~table) (~visited)))
 
     ~last_iteration neg if_true ~.{
       ~:str = ~str concat ", "
@@ -78,8 +95,12 @@
 }
 
 ~:obj_to_string = ~fn~ obj {
-  !~obj << to_string and (~obj <<? table neg) if_true ~.{
-    !~obj to_string
+  !~obj_to_string_with_visits (~obj) (|)
+}
+
+~:obj_to_string_with_visits = ~fn~ obj visited {
+  !~obj << to_string and (~obj <<? block neg) if_true ~.{
+    !~obj to_string  # TODO pass visited info to to_string
   } ~.{
     !(~obj == () or
       (~obj <<? numeric) or
@@ -88,10 +109,10 @@
         !~mk_string (~tostrdata (~obj))
       } ~.{
         !~obj <<? listable and (~obj <<? string neg) if_true ~.{
-          !~listable_to_string (~obj)
+          !~listable_to_string (~obj) (~visited)
         } ~.{
           !~obj <<? table if_true ~.{
-            !~table_to_string (~obj)
+            !~table_to_string (~obj) (~visited)
           } ~.{
             !~obj <<? block if_true ~.{
               !"[block]"
