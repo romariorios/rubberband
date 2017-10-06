@@ -55,6 +55,7 @@ cd build &&
         -DCMAKE_INSTALL_PREFIX=../inst\
         -DCMAKE_CXX_COMPILER="$CXX"\
         -DCMAKE_CXX_FLAGS="$CXX_FLAGS" \
+        -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
         -G Ninja &&
     cmake --build . --target install &&
 cd .. &&
