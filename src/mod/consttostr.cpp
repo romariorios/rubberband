@@ -1,4 +1,4 @@
-// Rubberband tostr module: turn objects into strings
+// Rubberband consttostr module: turn primitive constants into strings
 // Copyright (c) 2017  Luiz Romário Santana Rios <luizromario at gmail dot com>
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -62,21 +62,7 @@ IFACES(native_str)
 
 SELECT_RESPONSE_FOR(native_str)
 
-class tostr_data : public shared_data_t
-{
-public:
-    tostr_data(const object &mk_string) :
-        mk_string{mk_string} {}
-
-    object mk_string;
-};
-
-static string data_tostr(value_t::data_ptr &&data)
-{
-    return data->to_string();
-}
-
-static string obj_tostr(const object &obj)
+static string consttostr(object &consttostr, const object &obj)
 {
     switch (obj.__value.type) {
     case value_t::empty_t:
@@ -89,19 +75,17 @@ static string obj_tostr(const object &obj)
         return *obj.__value.symbol();
     case value_t::boolean_t:
         return obj.__value.boolean()? "?t" : "?f";
-    case value_t::data_t:
-        return data_tostr(move(obj.__value.data()));
     default:
         break;
     }
 
-    return obj.to_string();
+    throw message_not_recognized_error{consttostr, obj, "Not a primitive constant"};
 }
 
-object tostr_send_msg_function(object *, object &msg)
+object consttostr_send_msg_function(object *thisptr, object &msg)
 {
     return object{
-        value_t{new native_str_data{obj_tostr(msg)}},
+        value_t{new native_str_data{consttostr(*thisptr, msg)}},
         native_str_send_msg};
 }
 
@@ -109,5 +93,5 @@ extern "C" object rbb_loadobj(base_master *)
 {
     return object{
         value_t{value_t::no_data_t},
-        tostr_send_msg_function};
+        consttostr_send_msg_function};
 }

@@ -1,6 +1,6 @@
 %load char~();;
 ~:pack = %load rbbpack
-~:tostrdata = %load rbbtostr
+~:tostrdata = %load rbbconsttostr
 
 ~:mk_string = ~fn~ strdata {
   !(:strdata = ~strdata, mk_string = ~mk_string, pack = ~pack).{
