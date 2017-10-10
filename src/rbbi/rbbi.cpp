@@ -19,9 +19,6 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
-// boost includes
-#include <boost/format.hpp>
-
 // readline includes
 #include <readline/history.h>
 #include <readline/readline.h>
@@ -38,7 +35,6 @@
 #include <iostream>
 #include <string>
 
-using namespace boost;
 using namespace rbb;
 using namespace std;
 
@@ -100,10 +96,20 @@ private:
     modloader::multi loader_;
 } master;
 
+void print_rbb_string(object &&str)
+{
+    int len = number_to_double(str << "len");
+    for (int i = 0; i < len; ++i)
+        putchar(static_cast<char>(number_to_double(str << i)));
+}
+
 int main(int, char **)
 {
     auto context = table();
     master.autoload(context);
+
+    master.load("string") << context << empty();
+    auto obj_to_string = context << "obj_to_string";
 
     for (;;) {
         auto line = readline("!");
@@ -114,19 +120,20 @@ int main(int, char **)
         if (code.empty())
             continue;
 
-        code = (format("{ !%s }") % code).str();
+        code = "{ !" + code + " }";
 
         try {
             auto block = master.parse(code);
             auto result = block << context << empty();
 
-            cout << format("==> %s") % result.to_string();
+            cout << "==> ";
+            print_rbb_string(obj_to_string << result);
         } catch (const syntax_error &e) {
-            cout << format("%s^\nSyntax error") % string(e.column - 1, ' ');
+            cout << string(e.column - 1, ' ') << "^\nSyntax error\n";
         } catch (const rbb::runtime_error &e) {
             cout
-                << format("Runtime raised the following error object: %s")
-                   % e.error_obj.to_string();
+                << "Runtime raised the following error object: "
+                << e.error_obj.to_string() << "\n";
         } catch (const std::exception &e) {
             cout << "Error: " << e.what();
         }

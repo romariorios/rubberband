@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
 project(rbbi)
-find_package(Boost REQUIRED)
 find_path(readline_DIR readline)
 find_library(readline_LIB readline)
 
