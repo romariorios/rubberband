@@ -29,10 +29,10 @@ auto typename##_iface_collection =\
     mk_interface_collection
 
 #define SELECT_RESPONSE_FOR(typename)\
-object typename##_send_msg(object *thisptr, object &msg)\
+rbb::object typename##_send_msg(rbb::object *thisptr, rbb::object &msg)\
 {\
     if (msg != SY_DLT && *thisptr << SY_DLT << msg != boolean(true))\
-        throw message_not_recognized_error{*thisptr, msg};\
+        throw rbb::message_not_recognized_error{*thisptr, msg};\
 \
     return typename##_iface_collection.select_response(thisptr, msg);\
 }
