@@ -26,12 +26,12 @@
 
 #define IFACES(typename) \
 auto typename##_iface_collection =\
-    mk_interface_collection
+    rbb::mk_interface_collection
 
 #define SELECT_RESPONSE_FOR(typename)\
 rbb::object typename##_send_msg(rbb::object *thisptr, rbb::object &msg)\
 {\
-    if (msg != SY_DLT && *thisptr << SY_DLT << msg != boolean(true))\
+    if (msg != SY_DLT && *thisptr << SY_DLT << msg != rbb::boolean(true))\
         throw rbb::message_not_recognized_error{*thisptr, msg};\
 \
     return typename##_iface_collection.select_response(thisptr, msg);\

@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <fstream>
 #include <error.hpp>
+#include <mod/native_str_obj.hpp>
 #include <modloader/multi.hpp>
 #include <modloader/native_linux.hpp>
 #include <modloader/sourcefile.hpp>
@@ -77,6 +78,11 @@ int main(int argc, char **argv)
         true, "", "Script filename"};
     cmd.add(file_arg);
 
+    UnlabeledMultiArg<string> script_args{
+        "Arguments", "Command-line arguments passed to the script",
+        false, "arg"};
+    cmd.add(script_args);
+
 #ifndef NDEBUG
     SwitchArg debug_arg{
         "d", "debug",
@@ -120,6 +126,17 @@ int main(int argc, char **argv)
         auto mod = master.load(module);
         mod << main_context << empty();
     }
+
+    auto tclap_args = script_args.getValue();
+    auto args = number(tclap_args.size()) << rbb::array();
+
+    master.load("string") << main_context << empty();
+    auto mk_string = main_context << "mk_string";
+
+    for (int i = 0; i < tclap_args.size(); ++i)
+        args << objarr(i, mk_string << native_str_to_obj(move(tclap_args[i])));
+
+    main_context << table({symbol("args")}, {args});
 
     auto result = master.file_loader.program_from_file(file_arg.getValue());
     if (debug_mode)

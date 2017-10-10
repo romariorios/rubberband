@@ -1,0 +1,5 @@
+~foreach~ (~args) a {
+    ~puts (~a)
+    ~puts "\n"
+}
+

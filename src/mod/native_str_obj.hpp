@@ -1,8 +1,10 @@
+#ifndef NATIVE_STR_OBJ_HPP
+#define NATIVE_STR_OBJ_HPP
+
 #include <interfaces.hpp>
 #include <object.hpp>
 #include <shared_data_t.hpp>
 #include <string>
-
 
 namespace ____native_str_obj_hpp_internal
 {
@@ -40,3 +42,20 @@ IFACES(native_str)
 );
 
 SELECT_RESPONSE_FOR(native_str)
+
+#define ____BODY \
+{\
+    return rbb::object{\
+        rbb::value_t{new native_str_data{str}},\
+        native_str_send_msg};\
+}
+
+rbb::object native_str_to_obj(std::string &&str)
+____BODY
+
+rbb::object native_str_to_obj(const std::string &str)
+____BODY
+
+#undef ____BODY
+
+#endif

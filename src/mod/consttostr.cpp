@@ -51,9 +51,7 @@ static string consttostr(object &consttostr, const object &obj)
 
 object consttostr_send_msg_function(object *thisptr, object &msg)
 {
-    return object{
-        value_t{new native_str_data{consttostr(*thisptr, msg)}},
-        native_str_send_msg};
+    return native_str_to_obj(consttostr(*thisptr, msg));
 }
 
 extern "C" object rbb_loadobj(base_master *)
