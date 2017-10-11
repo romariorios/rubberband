@@ -19,6 +19,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+#include "mod_common.hpp"
+
 #include <error.hpp>
 #include <interfaces.hpp>
 #include <mod/native_str_obj.hpp>
@@ -56,7 +58,5 @@ object consttostr_send_msg_function(object *thisptr, object &msg)
 
 extern "C" object rbb_loadobj(base_master *)
 {
-    return object{
-        value_t{value_t::no_data_t},
-        consttostr_send_msg_function};
+    return mk_nativemod(consttostr_send_msg_function);
 }

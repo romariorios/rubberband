@@ -570,13 +570,26 @@ SEND_MSG(block_instance)
     auto d = thisptr->__value.data_as<block_data>();
     d->block_l->set_message(msg);
 
-    auto &&ans = d->block_l->run();
-    if (msg == SY_DLT || msg == SY_DLTQM)
-        return object{value_t{
-            new object_data{ans}},
-            block_instance_get_metainfo_send_msg};
+    try {
+        auto &&ans = d->block_l->run();
+        if (msg == SY_DLT || msg == SY_DLTQM)
+            return object{value_t{
+                new object_data{ans}},
+                block_instance_get_metainfo_send_msg};
 
-    return ans;
+        return ans;
+    } catch (message_not_recognized_error) {
+        if (msg == SY_DLT || msg == SY_DLTQM)
+            return object{
+                value_t{value_t::no_data_t},
+                [](auto, auto)
+                {
+                    return boolean(false);
+                }
+            };
+
+        throw;
+    }
 }
 
 IFACES(block)

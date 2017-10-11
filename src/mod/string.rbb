@@ -99,33 +99,37 @@
 }
 
 ~:obj_to_string_with_visits = ~fn~ obj visited {
-  !~obj <<? string if_true ~.{
-    !"\"" concat (~obj) concat "\""
-  } ~.{
-    !~obj << to_string and (~obj <<? block neg) if_true ~.{
-      !~obj to_string  # TODO pass visited info to to_string
+  !~obj << == if_true ~.{
+    !~obj <<? string if_true ~.{
+      !"\"" concat (~obj) concat "\""
     } ~.{
-      !(~obj == () or
-        (~obj <<? numeric) or
-        (~obj <<? symbol) or
-        (~obj <<? boolean)) if_true ~.{
-          !~mk_string (~tostrdata (~obj))
-        } ~.{
-          !~obj <<? listable and (~obj <<? string neg) if_true ~.{
-            !~listable_to_string (~obj) (~visited)
+      !~obj << to_string and (~obj <<? block neg) if_true ~.{
+        !~obj to_string  # TODO pass visited info to to_string
+      } ~.{
+        !(~obj == () or
+          (~obj <<? numeric) or
+          (~obj <<? symbol) or
+          (~obj <<? boolean)) if_true ~.{
+            !~mk_string (~tostrdata (~obj))
           } ~.{
-            !~obj <<? table if_true ~.{
-              !~table_to_string (~obj) (~visited)
+            !~obj <<? listable if_true ~.{
+              !~listable_to_string (~obj) (~visited)
             } ~.{
-              !~obj <<? block if_true ~.{
-                !"[block]"
+              !~obj <<? table if_true ~.{
+                !~table_to_string (~obj) (~visited)
               } ~.{
-                # TODO allow hooks
-                !"[unknown]"
+                !~obj <<? block if_true ~.{
+                  !"[block]"
+                } ~.{
+                  # TODO allow hooks
+                  !"[unknown]"
+                }
               }
             }
           }
-        }
+      }
     }
+  } ~.{
+    !"[opaque]"
   }
 }

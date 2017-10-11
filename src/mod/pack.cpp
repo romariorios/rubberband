@@ -19,6 +19,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+#include "mod_common.hpp"
+
 #include <error.hpp>
 #include <interfaces.hpp>
 #include <object.hpp>
@@ -252,5 +254,5 @@ namespace rbb
 
 extern "C" object rbb_loadobj(base_master *)
 {
-    return object{value_t{value_t::no_data_t}, pack};
+    return mk_nativemod(pack);
 }

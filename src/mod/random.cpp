@@ -19,6 +19,8 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 
+#include "mod_common.hpp"
+
 #include <error.hpp>
 #include <object.hpp>
 #include <common_syms.hpp>
@@ -59,5 +61,5 @@ extern "C" object rbb_loadobj(base_master *)
 {
     srand(time(nullptr));
 
-    return object{value_t{value_t::no_data_t}, rbbrandom_send_msg};
+    return mk_nativemod(rbbrandom_send_msg);
 }
