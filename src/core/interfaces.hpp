@@ -31,7 +31,7 @@ auto typename##_iface_collection =\
 #define SELECT_RESPONSE_FOR(typename)\
 rbb::object typename##_send_msg(rbb::object *thisptr, rbb::object &msg)\
 {\
-    if (msg != SY_DLT && *thisptr << SY_DLT << msg != rbb::boolean(true))\
+    if (msg != SY_RESP_TO && *thisptr << SY_RESP_TO << msg != rbb::boolean(true))\
         throw rbb::message_not_recognized_error{*thisptr, msg};\
 \
     return typename##_iface_collection.select_response(thisptr, msg);\
@@ -108,10 +108,10 @@ public:
 
     send_msg_function select_function(object *thisptr, object &msg) const
     {
-        if (msg == SY_DLT)
+        if (msg == SY_RESP_TO)
             return iface_collection_responds_to<Interfaces...>;
 
-        if (msg == SY_DLTQM)
+        if (msg == SY_HAS_IFACE)
             return iface_collection_follows_interface<Interfaces...>;
 
         send_msg_function f;
@@ -128,7 +128,7 @@ public:
 
     object select_response(object *thisptr, object &msg) const
     {
-        if (msg == SY_DLT || msg == SY_DLTQM)
+        if (msg == SY_RESP_TO || msg == SY_HAS_IFACE)
             return object{value_t{
                 new metainfo_data<Interfaces...>{*this, *thisptr}},
                 select_function(thisptr, msg)};
@@ -147,7 +147,7 @@ public:
 
     inline bool responds_to(object *thisptr, object &msg) const
     {
-        if (msg == SY_DLT || msg == SY_DLTQM)
+        if (msg == SY_RESP_TO || msg == SY_HAS_IFACE)
             return select_function(thisptr, msg);
 
         bool responds;

@@ -61,7 +61,7 @@ public:
     object custom_operation(const string &op, object &obj) override
     {
         if (op == "add_mod_search_path") {
-            if (obj << symbol("<<?") << symbol("listable") == boolean(false))
+            if (obj << symbol("has_iface") << symbol("listable") == boolean(false))
                 throw rbb::runtime_error{parse(":error = invalid_path")};
 
             string path;
@@ -70,7 +70,7 @@ public:
 
             for (long long i = 0; i < size; ++i) {
                 auto path_symb = obj << number(i);
-                if (path_symb << symbol("<<?") << symbol("symbol") == boolean(false))
+                if (path_symb << symbol("has_iface") << symbol("symbol") == boolean(false))
                     throw rbb::runtime_error{parse(":error = invalid_path")};
 
                 if (path_symb == symbol("[..]"))

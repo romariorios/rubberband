@@ -100,12 +100,12 @@ $ /= array if_true ~.{
     ~sel|+, {!~make_bignum (~pack (~_plus~($data)))}~
     ~sel|==, {!~d == ($data)}~  # will not work for arrays
     ~sel|/=, {!~d /= ($data)}~
-    ~sel|<<, {
+    ~sel|responds_to, {
       !($ == * or ($ == +) or ($ == ==) or ($ == /=) or
-        ($ == <<) or ($ == data))}~
+        ($ == responds_to) or ($ == data))}~
     ~sel|data, ~d
 
-    ~ << res neg if_true_raise:error = unknown_method, got = ~arg
+    ~ responds_to res neg if_true_raise:error = unknown_method, got = ~arg
     
     !~res
   }(~merge:d = $)

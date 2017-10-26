@@ -5,7 +5,7 @@
 
 #define TEST_RESPONDS_TO(message, expected)\
     TEST_CONDITION_WITH_EXCEPTION(\
-        obj << symbol("<<") << message == boolean(expected),\
+        obj << symbol("responds_to") << message == boolean(expected),\
         printf(\
             "Object %s reports it %s to %s\n",\
             obj.to_string().c_str(),\
@@ -14,7 +14,7 @@
     
 #define TEST_INTERFACE(ifacename, expected)\
     TEST_CONDITION_WITH_EXCEPTION(\
-        obj << symbol("<<?") << symbol(ifacename) == boolean(expected),\
+        obj << symbol("has_iface") << symbol(ifacename) == boolean(expected),\
         printf(\
             "Object %s reports it %s interface %s\n",\
             obj.to_string().c_str(),\
@@ -36,7 +36,7 @@ struct test_interfaces_result
 test_interfaces_result test_interfaces(object &obj, const expected_t &responds_to)
 {
     for (auto i = 0; i < interfaces_len; ++i)
-        if (obj << symbol("<<?") << symbol(interfaces[i]) != boolean(responds_to[i]))
+        if (obj << symbol("has_iface") << symbol(interfaces[i]) != boolean(responds_to[i]))
             return {false, interfaces[i]};
 
     return {true, 0};
@@ -61,10 +61,10 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("^"), false)
         TEST_RESPONDS_TO(symbol("*"), true)
         TEST_RESPONDS_TO(symbol(">="), true)
-        TEST_RESPONDS_TO(symbol("<<"), true)
+        TEST_RESPONDS_TO(symbol("responds_to"), true)
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("/="), true)
-        TEST_RESPONDS_TO(symbol("<<?"), true)
+        TEST_RESPONDS_TO(symbol("has_iface"), true)
         TEST_RESPONDS_TO(rbb::array({number(10), number(20), number(30)}), true)
         TEST_RESPONDS_TO(
             table({symbol("valhalla"), symbol("lol")}, {number(10), number(20)}),
@@ -78,8 +78,8 @@ TESTS_INIT()
         object obj; // empty
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("/="), true)
-        TEST_RESPONDS_TO(symbol("<<"), true)
-        TEST_RESPONDS_TO(symbol("<<?"), true)
+        TEST_RESPONDS_TO(symbol("responds_to"), true)
+        TEST_RESPONDS_TO(symbol("has_iface"), true)
         TEST_RESPONDS_TO(symbol("+"), false)
         TEST_RESPONDS_TO(object{}, false)
         
@@ -94,8 +94,8 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("=="), true)
         TEST_RESPONDS_TO(symbol("/="), true)
         TEST_RESPONDS_TO(symbol("<"), false)
-        TEST_RESPONDS_TO(symbol("<<"), true)
-        TEST_RESPONDS_TO(symbol("<<?"), true)
+        TEST_RESPONDS_TO(symbol("responds_to"), true)
+        TEST_RESPONDS_TO(symbol("has_iface"), true)
         
         expected_t expected{1, 0, 0, 0, 0, 0, 0, 1, 0};
         TEST_INTERFACES
@@ -110,7 +110,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("or"), true)
         TEST_RESPONDS_TO(symbol("and"), true)
         TEST_RESPONDS_TO(symbol("+"), false)
-        TEST_RESPONDS_TO(symbol("<<?"), true)
+        TEST_RESPONDS_TO(symbol("has_iface"), true)
         TEST_RESPONDS_TO(number(12), false)
         
        expected_t expected{0, 0, 0, 1, 0, 0, 0, 1, 0};
@@ -127,7 +127,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(number(3), false)
         TEST_RESPONDS_TO(symbol("-"), false)
         TEST_RESPONDS_TO(symbol("slice"), true)
-        TEST_RESPONDS_TO(symbol("<<?"), true)
+        TEST_RESPONDS_TO(symbol("has_iface"), true)
         TEST_RESPONDS_TO(rbb::array({number(0), number(30)}), true)
         TEST_RESPONDS_TO(rbb::array({symbol("a"), number(12)}), false)
         TEST_RESPONDS_TO(rbb::array({number(2)}), false)
@@ -150,7 +150,7 @@ TESTS_INIT()
         TEST_RESPONDS_TO(symbol("a"), true)
         TEST_RESPONDS_TO(symbol("D"), false)
         TEST_RESPONDS_TO(symbol("del"), true)
-        TEST_RESPONDS_TO(symbol("<<?"), true)
+        TEST_RESPONDS_TO(symbol("has_iface"), true)
         TEST_RESPONDS_TO(rbb::array({number(10), number(20)}), false)
         TEST_RESPONDS_TO(rbb::array({symbol("a"), symbol("b")}), true)
         TEST_RESPONDS_TO(rbb::array({symbol("a"), symbol("b"), symbol("d")}), true)
@@ -179,7 +179,7 @@ TESTS_INIT()
     
     {
         auto &&obj = bl.eval() << object{};
-        auto &&ans = obj << symbol("<<") << symbol("pretty_much_anything");
+        auto &&ans = obj << symbol("responds_to") << symbol("pretty_much_anything");
 
         TEST_CONDITION(
             ans == boolean(false),
@@ -188,7 +188,7 @@ TESTS_INIT()
                 "(responded %s)\n",
                 ans.to_string().c_str()))
         
-        auto &&iface = obj << symbol("<<?") << symbol("<-{}");
+        auto &&iface = obj << symbol("has_iface") << symbol("<-{}");
 
         TEST_CONDITION(
             iface == boolean(false),

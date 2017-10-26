@@ -21,16 +21,16 @@ auto mk_nativemod(send_msg_function msg_send)
         value_t{new nativemod_data{msg_send}},
         [](object *thisptr, auto &msg)
         {
-            if (msg == SY_DLT)
+            if (msg == SY_RESP_TO)
                 return object{
                     value_t{value_t::no_data_t},
                     [](auto, auto &msg)
                     {
-                        return boolean(msg == SY_DLT || msg == SY_DLTQM);
+                        return boolean(msg == SY_RESP_TO || msg == SY_HAS_IFACE);
                     }
                 };
 
-            if (msg == SY_DLTQM)
+            if (msg == SY_HAS_IFACE)
                 return object{
                     value_t{value_t::no_data_t},
                     [](auto, auto &msg)

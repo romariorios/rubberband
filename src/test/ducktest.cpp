@@ -5,26 +5,26 @@
 TESTS_INIT()
     TEST_PROGRAM(R"(
         ~:fake_empty -> ().{
-          !$ == <<? ?(:arg -> $) {
+          !$ == has_iface ?(:arg -> $) {
             !().{ !$ == [()] }
           } {
             !~arg == ()
           }
         }
 
-        !~fake_empty <<? [()]
+        !~fake_empty has_iface [()]
     )", table({}, {}), empty(), boolean(true))
 
     TEST_PROGRAM(R"(
         # Will be equivalent to |0, 10
         ~:fake_array -> ().{
-          !$ == <<? ?(:arg -> $) {
+          !$ == has_iface ?(:arg -> $) {
             !().{ !$ == [|] }
           } {
             !~arg == *?~ {
               !2
             } {
-              !~arg <<? [0]?~ {
+              !~arg has_iface [0]?~ {
                 !~arg * 10
               } { }
             }
@@ -38,7 +38,7 @@ TESTS_INIT()
 
     TEST_PROGRAM(R"(
         ~:fake_table -> ().{
-          !$ == <<? ?(:arg -> $) {
+          !$ == has_iface ?(:arg -> $) {
             !().{ !$ == [:] }
           } {
             !~arg == *?~ {
@@ -61,7 +61,7 @@ TESTS_INIT()
 
         # Should be roughly equivalent to (|b)
         ~:fake_array -> ().{
-          !$ == <<? ?(:arg -> $) {
+          !$ == has_iface ?(:arg -> $) {
             !().{ !$ == [|] }
           } {
             !~arg == *?~ {
@@ -76,6 +76,6 @@ TESTS_INIT()
 
         # Take a slice of the context table
         ~:slice -> ~(~fake_array)
-        !~slice b == 20 /\ (~slice << a ><)
+        !~slice b == 20 /\ (~slice responds_to a ><)
     )", table({}, {}), empty(), boolean(true))
 TESTS_END()

@@ -7,18 +7,18 @@
     # Make the string respond to the "string" interface
 
     ~:msg = $
-    !~msg == <<? if_true ~.{
+    !~msg == has_iface if_true ~.{
       !(~merge:).{
         ~:ifacename = $
         !~ifacename == string if_true ().{!?t} ~.{
-          !~strdata <<? (~ifacename)
+          !~strdata has_iface (~ifacename)
         }
       }
     } ~.{
       !~msg == concat if_true ~.{
         !(~merge:).{
           ~:other = $
-          ~other <<? string neg if_true_raise:
+          ~other has_iface string neg if_true_raise:
             error = string_expected,
             got = ~other
 
@@ -99,26 +99,26 @@
 }
 
 ~:obj_to_string_with_visits = ~fn~ obj visited {
-  !~obj << == if_true ~.{
-    !~obj <<? string if_true ~.{
+  !~obj responds_to == if_true ~.{
+    !~obj has_iface string if_true ~.{
       !"\"" concat (~obj) concat "\""
     } ~.{
-      !~obj << to_string and (~obj <<? block neg) if_true ~.{
+      !~obj responds_to to_string and (~obj has_iface block neg) if_true ~.{
         !~obj to_string  # TODO pass visited info to to_string
       } ~.{
         !(~obj == () or
-          (~obj <<? numeric) or
-          (~obj <<? symbol) or
-          (~obj <<? boolean)) if_true ~.{
+          (~obj has_iface numeric) or
+          (~obj has_iface symbol) or
+          (~obj has_iface boolean)) if_true ~.{
             !~mk_string (~tostrdata (~obj))
           } ~.{
-            !~obj <<? listable if_true ~.{
+            !~obj has_iface listable if_true ~.{
               !~listable_to_string (~obj) (~visited)
             } ~.{
-              !~obj <<? table if_true ~.{
+              !~obj has_iface table if_true ~.{
                 !~table_to_string (~obj) (~visited)
               } ~.{
-                !~obj <<? block if_true ~.{
+                !~obj has_iface block if_true ~.{
                   !"[block]"
                 } ~.{
                   # TODO allow hooks

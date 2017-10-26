@@ -31,7 +31,7 @@ using namespace rbb;
 
 object putch_send_msg(object *, object &msg)
 {
-    if (msg << SY_DLTQM << SY_I_NUM == boolean(false))
+    if (msg << SY_HAS_IFACE << SY_I_NUM == boolean(false))
         throw message_not_recognized_error{
             symbol("rbbputch"), msg,
             "Number or character expected"};

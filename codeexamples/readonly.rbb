@@ -4,7 +4,7 @@
 ~:c = |10, 20, 30
 
 ~:readonly = {
-    $ <<? table if_true_raise:
+    $ has_iface table if_true_raise:
         error = cannot_update_vars,
         vars = $
 

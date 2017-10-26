@@ -255,7 +255,7 @@ object rbb::symbol(const std::string &val)
 
 bool has_iface(object &obj, object &iface)
 {
-    return obj << SY_DLTQM << iface == boolean(true);
+    return obj << SY_HAS_IFACE << iface == boolean(true);
 }
 
 // boolean: Boolean object
@@ -572,14 +572,14 @@ SEND_MSG(block_instance)
 
     try {
         auto &&ans = d->block_l->run();
-        if (msg == SY_DLT || msg == SY_DLTQM)
+        if (msg == SY_RESP_TO || msg == SY_HAS_IFACE)
             return object{value_t{
                 new object_data{ans}},
                 block_instance_get_metainfo_send_msg};
 
         return ans;
     } catch (message_not_recognized_error) {
-        if (msg == SY_DLT || msg == SY_DLTQM)
+        if (msg == SY_RESP_TO || msg == SY_HAS_IFACE)
             return object{
                 value_t{value_t::no_data_t},
                 [](auto, auto)

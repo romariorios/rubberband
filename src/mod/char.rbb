@@ -30,7 +30,7 @@
     }
     ~loop()
 
-    ~ << res neg if_true_raise:
+    ~ responds_to res neg if_true_raise:
       error = unknown_scape_sequence,
       val = ~ch
 

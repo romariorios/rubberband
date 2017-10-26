@@ -4,13 +4,13 @@
     !(:ctx = $).{
         ~:msg = $
 
-        ~msg <<? table if_true ~.{
+        ~msg has_iface table if_true ~.{
             ~:i = 0
             ~:ks = ~msg keys
 
             # Check if context already has any of the keys
             ~:loop = ~.{
-                ~ctx << (~ks (~i)) if_true_raise:
+                ~ctx responds_to (~ks (~i)) if_true_raise:
                     error = already_assigned_variable,
                     varname = ~ks (~i)
 
