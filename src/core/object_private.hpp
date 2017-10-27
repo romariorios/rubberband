@@ -22,16 +22,15 @@
 #include <memory>
 #include <unordered_set>
 
-#include "common_syms.hpp"
+#include "object.hpp"
 #include "shared_data_t.hpp"
+
+#include "common_syms.hpp"
 
 namespace rbb
 {
 
-class object;
-
-namespace literal
-{
+namespace literal {
     class block;
 }
 
@@ -71,10 +70,7 @@ class block_data : public shared_data_t
 {
 public:
     block_data(literal::block *block_l) : block_l(block_l) {}
-    ~block_data()
-    {
-        delete block_l;
-    }
+    ~block_data();
     
     std::string to_string(
         std::shared_ptr<std::unordered_set<const object *>> = nullptr) const;
