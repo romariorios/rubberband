@@ -26,7 +26,7 @@ auto mk_nativemod(send_msg_function msg_send)
                     value_t{value_t::no_data_t},
                     [](auto, auto &msg)
                     {
-                        return boolean(msg == SY_RESP_TO || msg == SY_HAS_IFACE);
+                        return boolean(msg << 0 == SY_RESP_TO || msg << 0 == SY_HAS_IFACE);
                     }
                 };
 

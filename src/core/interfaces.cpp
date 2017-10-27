@@ -48,6 +48,16 @@ bool __class::responds_to(object *thisptr, object &msg) const\
     return select_function(thisptr, msg);\
 }
 
+bool rbb::__is_array(const object &obj)
+{
+    return obj.__value.type == value_t::data_t && obj.__value.try_data_as<array_data>();
+}
+
+object rbb::__get_fst(const object &obj)
+{
+    return obj.__value.data_as<array_data>()->arr[0];
+}
+
 iface::arith::arith(
     send_msg_function add_function,
     send_msg_function sub_function,

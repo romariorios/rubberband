@@ -5,7 +5,7 @@
 
 #define TEST_RESPONDS_TO(message, expected)\
     TEST_CONDITION_WITH_EXCEPTION(\
-        obj << symbol("responds_to") << message == boolean(expected),\
+        obj << symbol("responds_to") << rbb::array({message}) == boolean(expected),\
         printf(\
             "Object %s reports it %s to %s\n",\
             obj.to_string().c_str(),\

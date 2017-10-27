@@ -19,6 +19,7 @@
 #define INTERFACES_HPP
 
 #include "common_syms.hpp"
+#include "error.hpp"
 #include "object.hpp"
 #include "shared_data_t.hpp"
 #include "symbol.hpp"
@@ -31,7 +32,10 @@ auto typename##_iface_collection =\
 #define SELECT_RESPONSE_FOR(typename)\
 rbb::object typename##_send_msg(rbb::object *thisptr, rbb::object &msg)\
 {\
-    if (msg != SY_RESP_TO && *thisptr << SY_RESP_TO << msg != rbb::boolean(true))\
+    if (\
+        msg != SY_RESP_TO &&\
+        *thisptr << SY_RESP_TO << rbb::array({msg}) != rbb::boolean(true))\
+\
         throw rbb::message_not_recognized_error{*thisptr, msg};\
 \
     return typename##_iface_collection.select_response(thisptr, msg);\
@@ -76,12 +80,23 @@ object iface_collection_follows_interface(object *thisptr, object &msg)
     return boolean(data->interfaces.follows_interface(msg));
 }
 
+// FIXME shouldn't be necessary
+bool __is_array(const object &obj);
+object __get_fst(const object &obj);
+
 template <typename... Interfaces>
 object iface_collection_responds_to(object *thisptr, object &msg)
 {
-    auto data = thisptr->__value.data_as<metainfo_data<Interfaces...>>();
+    // TODO access msg with messages instead
+    if (!__is_array(msg))
+        throw message_not_recognized_error{
+            *thisptr, msg,
+            "Argument of responds_to must be wrapped with an array"};
 
-    return boolean(data->interfaces.responds_to(&data->obj, msg));
+    auto data = thisptr->__value.data_as<metainfo_data<Interfaces...>>();
+    auto unwrapped = __get_fst(msg);
+
+    return boolean(data->interfaces.responds_to(&data->obj, unwrapped));
 }
 
 template <typename... Interfaces>

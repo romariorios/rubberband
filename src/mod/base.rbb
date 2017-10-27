@@ -81,7 +81,7 @@
     !$ == ____clear_locals if_true ~.{
       ~:local = (:)
     } (~:_a = $).{
-      !~local responds_to (~_a) if_true ~.{
+      !(~local responds_to|~_a) if_true ~.{
         !~local(~_a)
       } ~.{
         !~external(~_a)
@@ -138,7 +138,7 @@
     !(:ctx = $0, vars = $1).{
         ~:msg = $
 
-        !~msg has_iface symbol and (~vars responds_to (~msg)) if_true ~.{
+        !~msg has_iface symbol and (~vars responds_to|~msg) if_true ~.{
             !~vars (~msg)
         } ~.{
             !~ctx (~msg)
@@ -214,13 +214,13 @@
   ~use_assert~range
   ~assert|~to has_iface numeric, expecting_number, to, :got = ~to
 
-  ~ responds_to from if_true ~.{
+  (~ responds_to|from) if_true ~.{
     ~assert|~from has_iface numeric, expecting_number, from, :got = ~from
   } ~.{
     ~:from = 0
   }
 
-  ~ responds_to step if_true ~.{
+  (~ responds_to|step) if_true ~.{
     ~assert|~step has_iface numeric, expecting_number, step, :got = ~step
   } ~.{
     ~:step = 1

@@ -168,7 +168,7 @@ object master_declare_literal_send_msg(object *thisptr, object &msg)
     return d->master.declare_literal(
         trigger,
         msg << SY_LDF_EVAL,
-        msg << SY_RESP_TO << SY_LDF_REVAL == boolean(true)?
+        msg << SY_RESP_TO << rbb::array({SY_LDF_REVAL}) == boolean(true)?
             msg << SY_LDF_REVAL : empty());
 }
 
