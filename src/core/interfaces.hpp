@@ -84,9 +84,25 @@ object iface_collection_follows_interface(object *thisptr, object &msg)
 bool __is_array(const object &obj);
 object __get_fst(const object &obj);
 
+static object resp_to_send_msg(object *, object &msg)
+{
+    if (msg == SY_RESP_TO)
+        return object{value_t{value_t::no_data_t}, resp_to_send_msg};
+
+    if (!__is_array(msg))
+        throw rbb::message_not_recognized_error{
+            symbol("responds_to"), msg,
+            "Argument of responds_to must be wrapped with an array"};
+
+    return boolean(__get_fst(msg) == SY_RESP_TO);
+}
+
 template <typename... Interfaces>
 object iface_collection_responds_to(object *thisptr, object &msg)
 {
+    if (msg == SY_RESP_TO)
+        return object{value_t{value_t::no_data_t}, resp_to_send_msg};
+
     // TODO access msg with messages instead
     if (!__is_array(msg))
         throw message_not_recognized_error{

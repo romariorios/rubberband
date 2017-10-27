@@ -3,6 +3,7 @@
 
 #include <object.hpp>
 #include <common_syms.hpp>
+#include <interfaces.hpp>
 
 namespace rbb
 {
@@ -24,10 +25,7 @@ auto mk_nativemod(send_msg_function msg_send)
             if (msg == SY_RESP_TO)
                 return object{
                     value_t{value_t::no_data_t},
-                    [](auto, auto &msg)
-                    {
-                        return boolean(msg << 0 == SY_RESP_TO || msg << 0 == SY_HAS_IFACE);
-                    }
+                    resp_to_send_msg
                 };
 
             if (msg == SY_HAS_IFACE)
