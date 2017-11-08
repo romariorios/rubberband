@@ -558,7 +558,9 @@ SEND_MSG(block_instance_get_metainfo)
     object ans;
     try {
         ans = d->obj << msg;
-    } catch (message_not_recognized_error) {
+
+    // Should never abort while querying metainfo
+    } catch (...) {
         return boolean(false);
     }
 
@@ -578,7 +580,8 @@ SEND_MSG(block_instance)
                 block_instance_get_metainfo_send_msg};
 
         return ans;
-    } catch (message_not_recognized_error) {
+    } catch (...) {
+        // Should never abort while querying metainfo
         if (msg == SY_RESP_TO || msg == SY_HAS_IFACE)
             return object{
                 value_t{value_t::no_data_t},

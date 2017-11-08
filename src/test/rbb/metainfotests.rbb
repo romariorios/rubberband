@@ -1,0 +1,18 @@
+~:test = %load testscommon(:)()
+
+~:simple_function = ().{
+    !$ + 2
+}
+
+~test assert ((~simple_function responds_to|test) neg)
+~test assert ((~assert_for_blk responds_to|test) neg)
+
+~:raises_runtime_error = ().{
+    !().{
+        ?t if_true_raise:
+            error = should_not_raise_errors_while_querying_metainfo
+    }
+}
+
+~test assert ((~raises_runtime_error responds_to|test) neg)
+
