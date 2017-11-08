@@ -64,6 +64,7 @@ set(rubberbandcore_sources
     block.cpp
     interfaces.cpp
     object.cpp
+    object_private.cpp
     parse.cpp
     symbol.cpp
     to_string.cpp
