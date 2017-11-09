@@ -4,7 +4,7 @@
     !(:ctx = $).{
         ~:msg = $
 
-        ~msg has_iface table if_true ~.{
+        (~msg has_iface|table) if_true ~.{
             ~:i = 0
             ~:ks = ~msg keys
 

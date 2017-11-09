@@ -1,7 +1,7 @@
 # ~assert_condition|<condition>, <error>, <from>, <arg_name>, <extra_args>
 ~:assert_cond = {
   ~:extra = $4
-  ~extra has_iface table neg if_true ~.{
+  (~extra has_iface|table) neg if_true ~.{
     ~:extra = (:)
   }
 
@@ -52,8 +52,8 @@
 ~:while = ~curry_until ().{!$index == 2} (:assert = ~assert_for_blk while).{
   ~:ctx = $0, cond = $1, blk = $2
 
-  ~assert|~cond has_iface block, expecting_block, cond, :got = ~cond
-  ~assert|~blk has_iface block, expecting_block, blk, :got = ~blk
+  ~assert|(~cond has_iface|block), expecting_block, cond, :got = ~cond
+  ~assert|(~blk has_iface|block), expecting_block, blk, :got = ~blk
 
   ~:loop = {
     ~cond (~ctx) () if_true ~.{
@@ -76,7 +76,7 @@
 # ~c      # ()
 ~:fn_ctx = {
   !{
-    ~assert|$ has_iface symbol or ($ has_iface table), expecting_symbol_or_table, access_obj, :got = $
+    ~assert|($ has_iface|symbol) or ($ has_iface|table), expecting_symbol_or_table, access_obj, :got = $
 
     !$ == ____clear_locals if_true ~.{
       ~:local = (:)
@@ -111,14 +111,14 @@
 # ~:fac = ~fn~ n { !~n <= 1 if_true ().{ !1 } ~.{ !~n * (~fac(~n - 1)) } }
 # ~fac 4   # Returns 24
 
-~:fn = ~curry_until ().{!$arg has_iface block} (~merge:assert = ~assert_for_blk fn).{
+~:fn = ~curry_until ().{!$arg has_iface|block} (~merge:assert = ~assert_for_blk fn).{
   # First arg is the context, last arg is the block
   # All other args are the arg_names
   ~:ctx = $0, blk = $($ len - 1)
   ~:arg_names = $ slice|1, $ len - 2
 
-  ~assert|~arg_names has_iface listable, expecting_array, arg_names, :got = ~arg_names
-  ~assert|~blk has_iface block, expecting_block, blk, :got = ~blk
+  ~assert|(~arg_names has_iface|listable), expecting_array, arg_names, :got = ~arg_names
+  ~assert|(~blk has_iface|block), expecting_block, blk, :got = ~blk
 
   !~curry_until (~merge:).{!$index == (~arg_names len - 1)} (~merge:).{
     ~:ctx = ~fn_ctx (~ctx)
@@ -138,7 +138,7 @@
     !(:ctx = $0, vars = $1).{
         ~:msg = $
 
-        !~msg has_iface symbol and (~vars responds_to|~msg) if_true ~.{
+        !(~msg has_iface|symbol) and (~vars responds_to|~msg) if_true ~.{
             !~vars (~msg)
         } ~.{
             !~ctx (~msg)
@@ -150,9 +150,9 @@
 # # ~list will be (|1, 4, 9, 16, 25)
 ~:map = ~fn~ ctx array varname blk {
   ~use_assert~map
-  ~assert|~array has_iface listable, expecting_array, array, :got = ~array
-  ~assert|~varname has_iface symbol, expecting_symbol, varname, :got = ~varname
-  ~assert|~blk has_iface block, expecting_block, blk, :got = ~blk
+  ~assert|(~array has_iface|listable), expecting_array, array, :got = ~array
+  ~assert|(~varname has_iface|symbol), expecting_symbol, varname, :got = ~varname
+  ~assert|(~blk has_iface|block), expecting_block, blk, :got = ~blk
 
   ~:result = (~array len|)
 
@@ -169,9 +169,9 @@
 
 ~:foreach = ~fn~ ctx array varname blk {
   ~use_assert~foreach
-  ~assert|~array has_iface listable, expecting_array, array, :got = ~array
-  ~assert|~varname has_iface symbol, expecting_symbol, varname, :got = ~varname
-  ~assert|~blk has_iface block, expecting_block, blk, :got = ~blk
+  ~assert|(~array has_iface|listable), expecting_array, array, :got = ~array
+  ~assert|(~varname has_iface|symbol), expecting_symbol, varname, :got = ~varname
+  ~assert|(~blk has_iface|block), expecting_block, blk, :got = ~blk
 
   ~:i = 0, last = ?f
   ~while~ {!~i < (~array len)} {
@@ -191,10 +191,10 @@
 # # ~val will be 720
 ~:accum = ~fn~ ctx array item_name accum_name blk {
   ~use_assert~accum
-  ~assert|~array has_iface listable, expecting_array, array, :got = ~array
-  ~assert|~item_name has_iface symbol, expecting_symbol, item_name, :got = ~item_name
-  ~assert|~accum_name has_iface symbol, expecting_symbol, accum_name, :got = ~accum_name
-  ~assert|~blk has_iface block, expecting_block, blk, :got = ~blk
+  ~assert|(~array has_iface|listable), expecting_array, array, :got = ~array
+  ~assert|(~item_name has_iface|symbol), expecting_symbol, item_name, :got = ~item_name
+  ~assert|(~accum_name has_iface|symbol), expecting_symbol, accum_name, :got = ~accum_name
+  ~assert|(~blk has_iface|block), expecting_block, blk, :got = ~blk
 
   # Initialize with first element of array
   # TODO allow optional parameter to set initial value
@@ -212,16 +212,16 @@
 ~:range = ~fn~ args {
   ~(~args)  # Merges args and the current context
   ~use_assert~range
-  ~assert|~to has_iface numeric, expecting_number, to, :got = ~to
+  ~assert|(~to has_iface|numeric), expecting_number, to, :got = ~to
 
   (~ responds_to|from) if_true ~.{
-    ~assert|~from has_iface numeric, expecting_number, from, :got = ~from
+    ~assert|(~from has_iface|numeric), expecting_number, from, :got = ~from
   } ~.{
     ~:from = 0
   }
 
   (~ responds_to|step) if_true ~.{
-    ~assert|~step has_iface numeric, expecting_number, step, :got = ~step
+    ~assert|(~step has_iface|numeric), expecting_number, step, :got = ~step
   } ~.{
     ~:step = 1
   }

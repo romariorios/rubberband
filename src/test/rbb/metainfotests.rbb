@@ -15,4 +15,5 @@
 }
 
 ~test assert ((~raises_runtime_error responds_to|test) neg)
+~test assert ((10 has_iface has_iface|numeric) neg)
 

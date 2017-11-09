@@ -72,42 +72,58 @@ public:
     object obj;
 };
 
-template <typename... Interfaces>
-object iface_collection_follows_interface(object *thisptr, object &msg)
-{
-    auto data = thisptr->__value.data_as<metainfo_data<Interfaces...>>();
-
-    return boolean(data->interfaces.follows_interface(msg));
-}
-
 // FIXME shouldn't be necessary
 bool __is_array(const object &obj);
 object __get_fst(const object &obj);
 
+static object has_iface_send_msg(object *, object &msg);
+static object resp_to_send_msg(object *, object &msg);
+
+#define HANDLE_METAINFO_QUERY(msg, method) \
+{\
+    if ((msg) == SY_HAS_IFACE)\
+        return object{value_t{value_t::no_data_t}, has_iface_send_msg};\
+\
+    if ((msg) == SY_RESP_TO)\
+        return object{value_t{value_t::no_data_t}, resp_to_send_msg};\
+\
+    /* TODO access msg with messages instead */\
+    if (!__is_array(msg))\
+        throw rbb::message_not_recognized_error{\
+            symbol(method), (msg),\
+            "Argument to " method " must be wrapped with an array"};\
+}
+
+object has_iface_send_msg(object *, object &msg)
+{
+    HANDLE_METAINFO_QUERY(msg, "has_iface")
+
+    // The has_iface method has no interfaces
+    return boolean(false);
+}
+
+template <typename... Interfaces>
+object iface_collection_follows_interface(object *thisptr, object &msg)
+{
+    HANDLE_METAINFO_QUERY(msg, "has_iface")
+
+    auto data = thisptr->__value.data_as<metainfo_data<Interfaces...>>();
+
+    return boolean(data->interfaces.follows_interface(__get_fst(msg)));
+}
+
 static object resp_to_send_msg(object *, object &msg)
 {
-    if (msg == SY_RESP_TO)
-        return object{value_t{value_t::no_data_t}, resp_to_send_msg};
+    HANDLE_METAINFO_QUERY(msg, "responds_to")
 
-    if (!__is_array(msg))
-        throw rbb::message_not_recognized_error{
-            symbol("responds_to"), msg,
-            "Argument of responds_to must be wrapped with an array"};
-
-    return boolean(__get_fst(msg) == SY_RESP_TO);
+    return boolean(
+        __get_fst(msg) == SY_RESP_TO || __get_fst(msg) == SY_HAS_IFACE);
 }
 
 template <typename... Interfaces>
 object iface_collection_responds_to(object *thisptr, object &msg)
 {
-    if (msg == SY_RESP_TO)
-        return object{value_t{value_t::no_data_t}, resp_to_send_msg};
-
-    // TODO access msg with messages instead
-    if (!__is_array(msg))
-        throw message_not_recognized_error{
-            *thisptr, msg,
-            "Argument of responds_to must be wrapped with an array"};
+    HANDLE_METAINFO_QUERY(msg, "responds_to")
 
     auto data = thisptr->__value.data_as<metainfo_data<Interfaces...>>();
     auto unwrapped = __get_fst(msg);

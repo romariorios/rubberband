@@ -38,7 +38,7 @@ object rbbrandom_send_msg(object *, object &msg)
         throw message_not_recognized_error{symbol("rbbrandom"), msg, details};
     };
 
-    if (msg << SY_HAS_IFACE << SY_I_SYM == boolean(false))
+    if (msg << SY_HAS_IFACE << rbb::array({SY_I_SYM}) == boolean(false))
         throw_msg_error("Symbol expected");
 
     if (msg == symbol("integer"))

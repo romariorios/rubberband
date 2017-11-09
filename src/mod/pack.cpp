@@ -159,7 +159,7 @@ static object pack_concat_send_msg(object *thisptr, object &msg)
 
 static object pack_slice_send_msg(object *thisptr, object &msg)
 {
-    if (msg << SY_HAS_IFACE << SY_I_ARR != boolean(true))
+    if (msg << SY_HAS_IFACE << rbb::array({SY_I_ARR}) != boolean(true))
         throw message_not_recognized_error{*thisptr, msg, "Expected array"};
 
     if (msg << "len" << ">=" << 2 != boolean(true))
@@ -187,7 +187,7 @@ static object pack_get_element(object *thisptr, int index)
 
 static void pack_set_element(object *thisptr, int index, object el)
 {
-    if (el << SY_HAS_IFACE << SY_I_NUM != boolean(true))
+    if (el << SY_HAS_IFACE << rbb::array({SY_I_NUM}) != boolean(true))
         throw message_not_recognized_error{*thisptr, el, "Number expected"};
 
     auto d = to_data(*thisptr);
@@ -226,14 +226,14 @@ object pack(object *, object &msg)
         throw message_not_recognized_error{symbol("pack"), msg, details};
     };
 
-    if (msg << SY_HAS_IFACE << SY_I_ARR == boolean(false))  // If msg isn't an array
+    if (msg << SY_HAS_IFACE << rbb::array({SY_I_ARR}) == boolean(false))  // If msg isn't an array
         throw_msg_error("array expected");
 
     const auto size = number_to_double(msg << symbol("len"));
     auto pack = new pack_data{static_cast<size_t>(size)};
     for (auto i = 0; i < size; ++i) {
         auto el = msg << number(i);
-        if (el << SY_HAS_IFACE << SY_I_NUM == boolean(false))  // If element isn't a number
+        if (el << SY_HAS_IFACE << rbb::array({SY_I_NUM}) == boolean(false))  // If element isn't a number
             throw_msg_error("all elements should be numbers");
         if (
             el << symbol(">=") << number(0) == boolean(false) ||

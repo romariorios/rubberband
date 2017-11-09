@@ -5,9 +5,6 @@
 ~test:assert = ~.{
     ~:test_count = ~test_count + 1
 
-    $ has_iface boolean neg if_true_raise:
-        error = expecting_boolean_condition
-
     $ neg if_true_raise:
         error = test_failed,
         test_no = ~test_count

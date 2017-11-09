@@ -146,7 +146,7 @@ public:
 
 object post_eval_eval_expr(object *thisptr, object &msg)
 {
-    if (msg << SY_HAS_IFACE << SY_I_NUM == boolean(false))
+    if (msg << SY_HAS_IFACE << rbb::array({SY_I_NUM}) == boolean(false))
         throw message_not_recognized_error{SY_LDF_EVAL_E, msg, "Number expected"};
 
     auto d = thisptr->__value.data_as<post_eval_ctx_data>();

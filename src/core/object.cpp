@@ -255,7 +255,7 @@ object rbb::symbol(const std::string &val)
 
 bool has_iface(object &obj, object &iface)
 {
-    return obj << SY_HAS_IFACE << iface == boolean(true);
+    return obj << SY_HAS_IFACE << rbb::array({iface}) == boolean(true);
 }
 
 // boolean: Boolean object
