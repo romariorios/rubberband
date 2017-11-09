@@ -108,9 +108,6 @@ int main(int, char **)
     auto context = table();
     master.autoload(context);
 
-    master.load("string") << context << empty();
-    auto obj_to_string = context << "obj_to_string";
-
     for (;;) {
         auto line = readline("!");
         auto code = string{line};
@@ -126,19 +123,20 @@ int main(int, char **)
             auto block = master.parse(code);
             auto result = block << context << empty();
 
-            cout << "==> ";
-            print_rbb_string(obj_to_string << result);
+            if (context << "responds_to" << objarr("repl_print") == boolean(true))
+                context << "repl_print" << result;
         } catch (const syntax_error &e) {
             cout << string(e.column - 1, ' ') << "^\nSyntax error\n";
-        } catch (const rbb::runtime_error &e) {
-            cout
-                << "Runtime raised the following error object: "
-                << e.error_obj.to_string() << "\n";
+        } catch (rbb::runtime_error e) {
+            if (context << "responds_to" << objarr("repl_runtime_error") == boolean(true))
+                context << "repl_runtime_error" << e.error_obj;
+            else
+                cout << "Runtime raised an error object";
         } catch (const std::exception &e) {
             cout << "Error: " << e.what();
         }
 
-        cout << "\n\n";
+        cout << "\n";
     }
 }
 
