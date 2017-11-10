@@ -1,3 +1,5 @@
+%load io~()
+
 ~:class = ~fn(:^ = ~, l = (:)) ctx class_name class_methods {
   ~l:class_methods = ~class_methods
   ~l:init = ~l class_methods init
@@ -23,7 +25,7 @@
   minus = { !~operation|-, $ },
   x = { !~this x },
   y = { !~this y },
-  print = { %inspect_object(~this|x, y) }
+  print = { ~^print(~this|x, y) }
 
 ~:p1 = ~point|100, 200
 ~p1 print()

@@ -1,5 +1,7 @@
 # Disable the assignment of new or existing variables in a portion of the code
 
+%load io~()
+
 ~:a = 10, b = 20
 ~:c = |10, 20, 30
 
@@ -12,13 +14,13 @@
 }
 
 (~readonly~).{
-    %inspect_object (~a)
-    %inspect_object (~b)
-    %inspect_object (~c)
+    ~print (~a)
+    ~print (~b)
+    ~print (~c)
 
     # Can still modify already assigned values
     ~c|0, 30
-    %inspect_object (~c)
+    ~print (~c)
 
     # Cannot create new variables
     ~:d = 10 + 20

@@ -1,10 +1,11 @@
 %load string~();;
+%load io~()
 
 ~:hello_string = "Hello"
 
 ~:i = 0
 ~while~ {!~i < (~hello_string len)} {
-  %inspect_object (~hello_string (~i))
+  ~print (~hello_string (~i))
   ~:i = ~i + 1
 }
 

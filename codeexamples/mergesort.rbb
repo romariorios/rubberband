@@ -1,3 +1,5 @@
+%load io~()
+
 ~:mergesort = ~fn~ array comp {
     !~array len <= 1 if_true ~.{
         !~array
@@ -27,4 +29,4 @@
     }
 }
 
-%inspect_object (~mergesort (|10, 203, 12, 23, 121, 65, 19) {!$0 < ($1)})
+~print (~mergesort (|10, 203, 12, 23, 121, 65, 19) {!$0 < ($1)})

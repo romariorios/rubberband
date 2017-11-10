@@ -51,10 +51,8 @@ public:
 
     object custom_operation(const string &name, object &obj)
     {
-        if (name == "inspect_object")
-            puts(obj.to_string().c_str());
-
-        return {};
+        throw message_not_recognized_error{
+            symbol("%" + name), obj, "Operation not recognized: " + name};
     }
 
     auto &loader()

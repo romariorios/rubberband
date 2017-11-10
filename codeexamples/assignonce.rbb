@@ -1,5 +1,7 @@
 # Only allow variables to be assigned once
 
+%load io~()
+
 ~:assignonce = {
     !(:ctx = $).{
         ~:msg = $
@@ -28,17 +30,17 @@
 (~assignonce~).{
     ~:a = 10, b = 20
 
-    %inspect_object (~a)
-    %inspect_object (~b)
+    ~print (~a)
+    ~print (~b)
 
     ~:c = |30, 40
 
-    %inspect_object (~c)
+    ~print (~c)
 
     # Cannot assign to existing variable 'a',
     # even though 'd' and 'e' are new variables
     ~:d = 40, e = 50, a = 5
 
-    %inspect_object (~d)
-    %inspect_object (~e)
+    ~print (~d)
+    ~print (~e)
 }()

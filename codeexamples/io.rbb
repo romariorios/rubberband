@@ -8,4 +8,11 @@
   ~foreach~ (~str) ch {
     ~putch (~ch)
   }
+
+  ~putch '\n'
 }
+
+~:print = ~fn~ obj {
+  ~puts (~obj_to_string (~obj))
+}
+
