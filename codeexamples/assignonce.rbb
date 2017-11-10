@@ -30,17 +30,17 @@
 (~assignonce~).{
     ~:a = 10, b = 20
 
-    ~print (~a)
-    ~print (~b)
+    ~print (~a) ln
+    ~print (~b) ln
 
     ~:c = |30, 40
 
-    ~print (~c)
+    ~print (~c) ln
 
     # Cannot assign to existing variable 'a',
     # even though 'd' and 'e' are new variables
     ~:d = 40, e = 50, a = 5
 
-    ~print (~d)
-    ~print (~e)
+    ~print (~d) ln
+    ~print (~e) ln
 }()

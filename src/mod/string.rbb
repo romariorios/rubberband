@@ -27,9 +27,10 @@
     pack = ~pack,
     str_push_back = ~str_push_back,
     while = ~while).{
-    # Make the string respond to the "string" interface
 
-    ~:msg = $
+    ~:msg = $, self = @~
+
+    # Make the string respond to the "string" interface
     !~msg == has_iface if_true ~.{
       !(~merge:).{
         ($ has_iface|array) if_true_raise:
@@ -65,10 +66,28 @@
           !~mk_string (~new)
         }
       } ~.{
-        !~msg == len if_true ~.{
-          !~strdata len
+        !~msg == app if_true ~.{
+          !(~merge:).{
+            ~:other = $
+            (~other has_iface|string) neg if_true_raise:
+              error = string_expected,
+              got = ~other
+
+            ~:i = 0
+            ~:otherlen = ~other len
+            ~while~ {!~i < (~otherlen)} {
+              ~str_push_back (~strdata) (~other (~i))
+              ~:i = ~i + 1
+            }
+
+            !~self
+          }
         } ~.{
-          !~strdata data (~msg)
+          !~msg == len if_true ~.{
+            !~strdata len
+          } ~.{
+            !~strdata data (~msg)
+          }
         }
       }
     }
@@ -106,35 +125,34 @@
 }
 
 ~:listable_to_string = ~fn~ list visited {
-  ~:str = "(|"
+  ~:str = "(|" concat ""
 
   ~foreach~ (~list) el {
-    ~:str = ~str concat (~visited_to_string (~el) (~list) (~visited))
+    ~str app (~visited_to_string (~el) (~list) (~visited))
 
     ~last_iteration neg if_true ~.{
-      ~:str = ~str concat ", "
+      ~str app ", "
     }
   }
 
-  ~:str = ~str concat ")"
+  ~str app ")"
   !~str
 }
 
 ~:table_to_string = ~fn~ table visited {
-  ~:str = "(:"
+  ~:str = "(:" concat ""
 
   ~foreach~ (~table keys) k {
-    ~:str =
-      (~str concat (~obj_to_string (~k))
-        concat " = " concat (
-          ~visited_to_string (~table (~k)) (~table) (~visited)))
+    (~str app (~obj_to_string (~k))
+      app " = " app (
+        ~visited_to_string (~table (~k)) (~table) (~visited)))
 
     ~last_iteration neg if_true ~.{
-      ~:str = ~str concat ", "
+      ~str app ", "
     }
   }
 
-  ~:str = ~str concat ")"
+  ~str app ")"
   !~str
 }
 
@@ -145,7 +163,7 @@
 ~:obj_to_string_with_visits = ~fn~ obj visited {
   !(~obj responds_to|==) if_true ~.{
     !(~obj has_iface|string) if_true ~.{
-      !"\"" concat (~obj) concat "\""
+      !"\"" concat "" app (~obj) app "\""
     } ~.{
       !(~obj responds_to|to_string) and ((~obj has_iface|block) neg) if_true ~.{
         !~obj to_string  # TODO pass visited info to to_string

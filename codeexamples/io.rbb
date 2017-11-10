@@ -20,6 +20,7 @@
     ~putch '\n'
   } ~.{
     ~puts (~obj_to_string (~obj))
+    ~putch ' '
   }
 
   !~print
