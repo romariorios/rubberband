@@ -31,6 +31,7 @@ class base_master
 {
 public:
     virtual object parse(const std::string &code) final;
+    virtual object parse_top_down(const std::string &code) final;
     virtual object declare_literal(
         unsigned char trigger,
         const object &evaluator,

@@ -27,6 +27,7 @@
 #include "shared_data_t.hpp"
 
 #include <memory>
+#include <tuple>
 
 using namespace rbb;
 using namespace std;
@@ -246,6 +247,155 @@ object base_master::parse(const string &code)
     p.parse(token::t::end_of_input);
 
     return p.result();
+}
+
+namespace {
+
+const char *strip_front_spaces(const char *str)
+{
+    for (; *str != ' '; ++str);
+    return str;
+}
+
+tuple<string, const char *> split_num(const char *str)
+{
+    string res;
+    for (; *str >= '0' && *str <= '9'; ++str)
+        res.push_back(*str);
+
+    return {res, str};
+}
+
+tuple<string, const char *> split_sym(const char *str)
+{
+    string res;
+    for (;
+        (*str >= 'a' && *str <= 'z') ||
+        (*str >= 'A' && *str <= 'Z') ||
+        (*str >= '0' && *str <= '9') ||
+        *str == '_'; ++str)
+
+        res.push_back(*str);
+
+    return {res, str};
+}
+
+const char *special_chars = "*+-/<=>?\\^";
+
+bool is_special_char(char ch)
+{
+    for (const char *cur = special_chars; *cur; ++cur)
+        if (ch == *cur)
+            return true;
+
+    return false;
+}
+
+tuple<string, const char *> split_special(const char *str)
+{
+    string res;
+    for (; is_special_char(*str); ++str)
+        res.push_back(*str);
+
+    return {res, str};
+}
+
+tuple<unique_ptr<expr>, const char *> parse_expr(const char *str)
+{
+    unique_ptr<expr> elist;  // block_statement
+    const char *rest;
+    tie(elist, rest) = parse_msg_send(str);
+
+    return {elist, rest};
+}
+
+tuple<unique_ptr<expr>, const char *> parse_parens(const char *str)
+{
+    const char *orig = str;
+
+    if (*str != '(')
+        return {nullptr, orig};
+    ++str;
+
+    unique_ptr<expr> subexpr;  // block_statement
+    const char *rest;
+    tie(subexpr, rest) = parse_expr(str);
+
+    if (*rest != ')')
+        // TODO throw syntax error "Unclosed parens"
+        return {nullptr, orig};
+    ++rest;
+
+    return {subexpr, rest};
+}
+
+tuple<unique_ptr<expr>, const char *> parse_boolean(const char *str)
+{
+    const char *orig = str;
+
+    if (*str != '?')
+        return {nullptr, orig};
+    ++str;
+
+    switch (*str) {
+    case 't':
+        return {new literal::boolean(true), str + 1};
+    case 'f':
+        return {new literal::boolean(false), str + 1};
+    default:
+        // TODO throw syntax error "Invalid boolean"
+        break;
+    }
+
+    return {nullptr, orig};
+}
+
+tuple<unique_ptr<expr>, const char *> parse_number(const char *str)
+{
+    string num_str;
+    const char *rest;
+    tie(num_str, rest) = split_num(str);
+
+    if (num_str.empty())
+        return {nullptr, str};
+
+    const auto num = stoi(num_str);
+    return {new literal::number(num), rest};
+}
+
+tuple<unique_ptr<expr>, const char *> parse_symbol(const char *str)
+{
+    string sym_str;
+    const char *rest;
+    tie(sym_str, rest) = split_sym(str);
+
+    if (sym_str.empty())
+        tie(sym_str, rest) = split_special(str);
+
+    if (sym_str.empty())
+        return {nullptr, str};
+
+    return {new literal::symbol(sym_str), rest};
+}
+
+tuple<unique_ptr<expr>, const char *> parse_array(const char *str)
+{
+    if (*str != '|')
+        return {nullptr, str};
+    ++str;
+
+    unique_ptr<expr> elist;  // literal::array
+    const char *rest;
+    tie(elist, rest) = parse_array_body(str);
+
+    return {elist, rest};
+}
+
+object base_master::parse_top_down(const string &code)
+{
+    // TODO
+}
+
 }
 
 object base_master::declare_literal(
