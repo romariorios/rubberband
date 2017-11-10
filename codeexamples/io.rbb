@@ -3,7 +3,7 @@
 
 ~:puts = ~fn~ str {
   ~use_assert~puts
-  ~assert|~str has_iface string, expecting_string, str, :got = ~str
+  ~assert|(~str has_iface|string), expecting_string, str, :got = ~str
 
   ~foreach~ (~str) ch {
     ~putch (~ch)

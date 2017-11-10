@@ -2,30 +2,74 @@
 ~:pack = %load rbbpack
 ~:tostrdata = %load rbbconsttostr
 
+~:mk_str_data = ~.{
+  # Start string capacity at 64 bytes
+  !:data = ~pack (64|), len = 0
+}
+
+~:str_push_back = ~fn~ strdata ch {
+  ~:len = ~strdata len
+  ~:datalen = ~strdata data len
+
+  ~len == (~datalen) if_true ~.{
+    ~strdata:data = ~strdata data concat (~pack (~datalen|))  # double capacity
+  }
+
+  ~strdata data|~len, ~ch
+  ~strdata:len = ~len + 1
+}
+
 ~:mk_string = ~fn~ strdata {
-  !(:strdata = ~strdata, mk_string = ~mk_string, pack = ~pack).{
+  !(:
+    strdata = ~strdata,
+    mk_string = ~mk_string,
+    mk_str_data = ~mk_str_data,
+    pack = ~pack,
+    str_push_back = ~str_push_back,
+    while = ~while).{
     # Make the string respond to the "string" interface
 
     ~:msg = $
     !~msg == has_iface if_true ~.{
       !(~merge:).{
-        ~:ifacename = $
+        ($ has_iface|array) if_true_raise:
+          error = has_iface_arg_should_be_wrapped
+
+        ~:ifacename = $0
         !~ifacename == string if_true ().{!?t} ~.{
-          !~strdata has_iface (~ifacename)
+          !~strdata data has_iface (|~ifacename)
         }
       }
     } ~.{
       !~msg == concat if_true ~.{
         !(~merge:).{
           ~:other = $
-          ~other has_iface string neg if_true_raise:
+          (~other has_iface|string) neg if_true_raise:
             error = string_expected,
             got = ~other
 
-          !~mk_string (~strdata concat (~pack (~other)))
+          ~:new = ~mk_str_data()
+
+          ~:i = 0
+          ~while~ {!~i < (~strdata data len)} {
+            ~str_push_back (~new) (~strdata data (~i))
+            ~:i = ~i + 1
+          }
+
+          ~:i = 0
+          ~while~ {!~i < (~other len)} {
+            ~str_push_back (~new) (~other (~i))
+            ~:i = ~i + 1
+          }
+
+          !~mk_string (~new)
         }
       } ~.{
-        !~strdata (~msg)
+        !~msg == len if_true ~.{
+          !~strdata len
+        } ~.{
+          !~strdata data (~msg)
+        }
       }
     }
   }
@@ -34,11 +78,11 @@
 %lit:
   trigger = '"',
   eval = ~fn~ stream {
-    ~:strdata = ~pack (|)
+    ~:strdata = ~mk_str_data()
 
     ~stream skip
     ~while~ {!~stream char_val /= '"'} {
-      ~:strdata = ~strdata concat (~pack|~read_char (~stream))
+      ~str_push_back (~strdata) (~read_char (~stream))
       ~stream skip
     }
 
@@ -110,7 +154,10 @@
           (~obj has_iface|numeric) or
           (~obj has_iface|symbol) or
           (~obj has_iface|boolean)) if_true ~.{
-            !~mk_string (~tostrdata (~obj))
+            ~:d = :data = ~tostrdata (~obj)
+            ~d:len = ~d data len
+
+            !~mk_string (~d)
           } ~.{
             !(~obj has_iface|listable) if_true ~.{
               !~listable_to_string (~obj) (~visited)

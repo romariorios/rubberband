@@ -233,8 +233,14 @@ object pack(object *, object &msg)
     auto pack = new pack_data{static_cast<size_t>(size)};
     for (auto i = 0; i < size; ++i) {
         auto el = msg << number(i);
+
+        if (el == empty()) {
+            pack->pack_array[i] = 0;
+            continue;
+        }
+
         if (el << SY_HAS_IFACE << rbb::array({SY_I_NUM}) == boolean(false))  // If element isn't a number
-            throw_msg_error("all elements should be numbers");
+            throw_msg_error("all elements should be numbers or empty");
         if (
             el << symbol(">=") << number(0) == boolean(false) ||
             el << symbol("<") << number(256) == boolean(false))
