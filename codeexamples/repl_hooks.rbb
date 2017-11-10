@@ -1,0 +1,13 @@
+%load io~()
+%load string~();;
+
+~:repl_print = ~fn~ obj {
+    ~puts "==> "
+    ~print (~obj)
+}
+
+~:repl_runtime_error = ~fn~ obj {
+    ~puts "Runtime raised an error: "
+    ~print (~obj)
+}
+

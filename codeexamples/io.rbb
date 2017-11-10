@@ -8,11 +8,20 @@
   ~foreach~ (~str) ch {
     ~putch (~ch)
   }
+}
 
+~:putsln = ~fn~ str {
+  ~puts (~str)
   ~putch '\n'
 }
 
 ~:print = ~fn~ obj {
-  ~puts (~obj_to_string (~obj))
+  ~obj == ln if_true ~.{
+    ~putch '\n'
+  } ~.{
+    ~puts (~obj_to_string (~obj))
+  }
+
+  !~print
 }
 
