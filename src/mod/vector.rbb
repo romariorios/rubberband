@@ -1,0 +1,42 @@
+~:mk_vec_data = ().{
+    # Start vector capacity at 16 elements
+    !:data = (16|), len = 0
+}
+
+~:vec_push_back = ~fn~ vecdata element {
+    ~:len = ~vecdata len
+    ~:datalen = ~vecdata data len
+
+    ~len == (~datalen) if_true ~.{
+        ~vecdata:data = ~vecdata data concat (~datalen|)  # double capacity
+    }
+
+    ~vecdata data|~len, ~element
+    ~vecdata:len = ~len + 1
+}
+
+~:mk_vector = ~.{
+    !(:
+        data = ~mk_vec_data(),
+        methods = (:
+            has_iface = {
+                ~:arg = $
+
+                (~arg has_iface|array) neg if_true_raise and ($ /= has_iface) and ($ /= responds_to):
+                    error = wrong_arg_to_has_iface
+
+                ~arg len /= 1 if_true_raise:
+                    error = should_pass_one_iface
+
+                !$ == has_iface if_true ().{
+                    !().{!?f}
+                } ~.{
+                    !~arg == responds_to if_true ().{
+                        !().{!$ == responds_to or ($ == has_iface)}
+                    } ~.{
+                        !~arg 0 == vector or (~arg 0 == listable)
+                    }
+                }
+            }
+        )
+}
